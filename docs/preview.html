@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MysticChest v2 — функционал и структура</title>
+<style>
+:root{--bg:#f6f4fb;--card:#fff;--ink:#1e1b2e;--mut:#6b6880;--line:#e2deef;--acc:#7c3aed;--acc2:#a78bfa;--ok:#15803d;--warn:#b45309;--code:#efeaf9}
+@media(prefers-color-scheme:dark){:root{--bg:#14111f;--card:#1d1930;--ink:#ece8fa;--mut:#9a95b5;--line:#322c4d;--acc:#a78bfa;--acc2:#7c3aed;--ok:#4ade80;--warn:#fbbf24;--code:#272142}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.w{max-width:1000px;margin:0 auto;padding:28px 16px 64px}
+h1{font-size:28px;margin:0 0 4px}h2{font-size:20px;margin:38px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--line)}h3{font-size:15px;margin:0 0 6px}
+.sub{color:var(--mut);margin:0 0 8px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card p,.card li{margin:0;color:var(--mut);font-size:14px}.card ul{margin:6px 0 0;padding-left:18px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{background:var(--code);font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}tr:last-child td{border:0}
+code,pre{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}code{background:var(--code);padding:1px 5px;border-radius:5px}
+pre{background:var(--code);padding:12px 14px;border-radius:10px;overflow:auto;margin:0;line-height:1.5}
+.c-h{color:#6b7a99}.c-t{color:#7c3aed;font-weight:600}
+.mc{display:inline-block;background:#c6c6c6;border:3px solid #555;border-radius:4px;padding:8px;color:#3f3f3f;font-family:ui-monospace,Menlo,monospace}
+.mc .t{font-size:13px;margin:0 0 6px;font-weight:700}
+.row{display:grid;grid-template-columns:repeat(9,32px);gap:2px}
+.s{width:32px;height:32px;background:#8b8b8b;border:2px solid;border-color:#373737 #fff #fff #373737;display:flex;align-items:center;justify-content:center;font-size:16px}
+.s.g{background:#a64ac9;border-color:#7a2f99 #c98be0 #c98be0 #7a2f99}.s.l{background:#7bd35a;border-color:#4d9b34 #b6ef9e #b6ef9e #4d9b34}
+.s.k{background:#d9c27a;outline:3px solid #ffd54a;outline-offset:-1px}.s.d{background:#6f6f6f;opacity:.7}
+.cap{font-size:12px;color:var(--mut);margin-top:6px;max-width:330px}
+.gl{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.ok{color:var(--ok)}.no{color:var(--warn)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0 14px}
+.st{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px}.st.k{border-color:var(--acc);color:var(--acc);font-weight:600}.ar{color:var(--mut)}
+.stat{font-size:26px;font-weight:700;color:var(--acc)}.statl{font-size:12px;color:var(--mut)}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:var(--code);color:var(--acc);margin-right:4px}
+</style></head><body><div class="w">
+
+<h1>MysticChest v2</h1>
+<p class="sub">Мистические сундуки в стиле FunTime · Paper/Spigot 1.12.2 → 1.21.11 · один jar (Java 8 байткод, ~330 КБ) · RU / EN</p>
+
+<h2>1. Что добавлено в v2</h2>
+<div class="grid">
+<div class="card"><h3>Языки RU / EN</h3><ul><li><code>language: en</code> — первая настройка в config.yml (по умолчанию EN)</li><li><code>ru</code>, <code>auto</code> (язык клиента игрока), свой <code>lang/xx.yml</code></li><li>Имена тиров на нескольких языках в tiers.yml</li></ul></div>
+<div class="card"><h3>Конфиги с туториалами</h3><ul><li><code>##</code> — объяснения и рецепты, <code>#</code> — готовые примеры</li><li>Автодобавление новых разделов при обновлении, комментарии не теряются</li><li>Валидация: ошибка с путём ключа + откат на дефолт</li></ul></div>
+<div class="card"><h3>4 режима выдачи</h3><ul><li>ROULETTE (SINGLE / SCROLL), FULL_CHEST, INSTANT, PICK</li><li>Глобально и на каждый тир</li></ul></div>
+<div class="card"><h3>4 режима спавна</h3><ul><li>RANDOM_WORLD, NEAR_PLAYER, FIXED_POINTS, AIRDROP</li><li>Несколько профилей одновременно; триггеры INTERVAL / TIMES</li></ul></div>
+<div class="card"><h3>Кулдауны и лимиты</h3><ul><li>Открытие, покупка, claim, спавн; scope PLAYER / PLAYER_TIER / GLOBAL</li><li>Лимиты в день, pity-система, права обхода</li></ul></div>
+<div class="card"><h3>Лут из инвентаря + GUI-редактор</h3><ul><li><code>/mystic loot add</code> забирает весь инвентарь в пулл</li><li>Команды-награды, вес, шансы, редактор прямо в игре</li></ul></div>
+</div>
+
+<h2>2. Файлы плагина</h2>
+<pre>plugins/MysticChest/
+  <span class="c-t">config.yml</span>      глобальные настройки (язык, режимы, кулдауны, спавн, эффекты, оптимизация)
+  <span class="c-t">tiers.yml</span>       цена, имя (по языкам), open-mode, кулдауны и лимиты тира, pity
+  <span class="c-t">loot/&lt;тир&gt;.yml</span>  пулл наград (пишет /mystic loot и GUI-редактор)
+  <span class="c-t">lang/en.yml  ru.yml</span>
+  data/players.yml   кулдауны, дневные счётчики, pity (атомарная запись)
+  data/active.yml    живые сундуки (очистка после краша)
+  data/points.yml    точки FIXED_POINTS</pre>
+<p class="sub" style="margin-top:12px">Фрагмент config.yml — так выглядят описания и туториалы:</p>
+<pre><span class="c-h">## ═══ HOW REWARDS ARE GIVEN ════════════════════════════════════
+## Default way to open a chest (every tier can override it with "open-mode"):
+##   ROULETTE   - animated spin, the prize lands in the middle
+##   FULL_CHEST - a chest GUI full of loot, the player takes what they want
+##   INSTANT    - everything goes straight to the inventory, no GUI
+##   PICK       - mystery cards: pick N face-down cards</span>
+<span class="c-t">default-open-mode</span>: ROULETTE
+
+<span class="c-h">## Recipe "classic FunTime":  click-air: NONE  /  click-block: PLACE</span>
+<span class="c-t">use</span>:
+  click-air: OPEN
+  click-block: PLACE
+
+<span class="c-h">## Seconds between two chest openings.  e.g. 3600 = once per hour.</span>
+<span class="c-t">cooldowns</span>:
+  scope: PLAYER_TIER
+  open-seconds: 0</pre>
+
+<h2>3. Режимы выдачи (превью GUI)</h2>
+<div class="gl">
+<div><div class="mc"><div class="t">Mystic chest · SCROLL</div><div class="row">
+<div class="s g"></div><div class="s g"></div><div class="s g"></div><div class="s g"></div><div class="s l"></div><div class="s g"></div><div class="s g"></div><div class="s g"></div><div class="s g"></div>
+<div class="s">◆</div><div class="s">▪</div><div class="s">▤</div><div class="s">◆</div><div class="s k">★</div><div class="s">▪</div><div class="s">◆</div><div class="s">▤</div><div class="s">▪</div>
+<div class="s g"></div><div class="s g"></div><div class="s g"></div><div class="s g"></div><div class="s l"></div><div class="s g"></div><div class="s g"></div><div class="s g"></div><div class="s g"></div></div></div>
+<div class="cap">ROULETTE/SCROLL: лента едет справа налево и замедляется, приз под указателем. SINGLE меняет только центральный слот. Закрыл раньше — все призы выдаются сразу.</div></div>
+
+<div><div class="mc"><div class="t">Pick 1 card(s) · PICK</div><div class="row">
+<div class="s g"></div><div class="s g"></div><div class="s g"></div><div class="s k">?</div><div class="s k">?</div><div class="s k">?</div><div class="s g"></div><div class="s g"></div><div class="s g"></div>
+<div class="s g"></div><div class="s g"></div><div class="s g"></div><div class="s k">?</div><div class="s">★</div><div class="s d">▪</div><div class="s g"></div><div class="s g"></div><div class="s g"></div>
+<div class="s g"></div><div class="s g"></div><div class="s g"></div><div class="s d">◆</div><div class="s d">▤</div><div class="s d">▪</div><div class="s g"></div><div class="s g"></div><div class="s g"></div></div></div>
+<div class="cap">PICK: закрытые карты, игрок выбирает N; остальные показываются затемнёнными (что могло выпасть). Бездействие 60 с — авто-выбор.</div></div>
+
+<div><div class="mc"><div class="t">Loot: Crusher chest · FULL_CHEST</div><div class="row">
+<div class="s">★</div><div class="s">▤</div><div class="s">◆</div><div class="s">▪</div><div class="s"></div><div class="s"></div><div class="s"></div><div class="s"></div><div class="s"></div></div></div>
+<div class="cap">FULL_CHEST: «полный сундук» (3–6 рядов). Что не забрал — возвращается в инвентарь при закрытии.</div></div>
+</div>
+<p class="sub" style="margin-top:14px">INSTANT — награды сразу в инвентарь, без окна (звук/титул по настройкам эффектов).</p>
+
+<h2>4. Режимы спавна</h2>
+<table><tr><th>mode</th><th>Где появляется</th><th>Особенности</th></tr>
+<tr><td><code>RANDOM_WORLD</code></td><td>Случайная точка в радиусе от спавна мира</td><td>граница мира, мин. дистанция, чёрный список блоков (вода, лава, листва…)</td></tr>
+<tr><td><code>NEAR_PLAYER</code></td><td>Рядом со случайным онлайн-игроком (min..max блоков)</td><td>игрок получает личное уведомление</td></tr>
+<tr><td><code>FIXED_POINTS</code></td><td>Одна из точек <code>/mystic point add &lt;имя&gt;</code></td><td>можно ограничить списком имён</td></tr>
+<tr><td><code>AIRDROP</code></td><td>Падает с неба за <code>fall-seconds</code></td><td>место: RANDOM_WORLD или NEAR_PLAYER; анонс с обратным отсчётом</td></tr></table>
+<p class="sub" style="margin-top:10px">Триггеры: <code>INTERVAL</code> (каждые N минут), <code>TIMES</code> (["12:00","20:00"]) и <code>ONLINE_THRESHOLD</code> (когда онлайн ≥ N, не чаще раза в M минут). Анонс: <code>EXACT</code> координаты · <code>REGION</code> район · <code>HINT</code> «≈150 блоков на северо-запад» · <code>NONE</code>. Чанк с сундуком удерживается plugin-ticket'ом, пока сундук жив.</p>
+
+<h2>5. Кулдауны, лимиты, pity</h2>
+<table><tr><th>Настройка</th><th>Что делает</th></tr>
+<tr><td><code>cooldowns.open-seconds</code></td><td>пауза между открытиями; scope PLAYER (любой сундук) · PLAYER_TIER (по умолчанию) · GLOBAL (общий на тир для всех)</td></tr>
+<tr><td><code>cooldowns.buy-seconds</code></td><td>пауза между покупками в магазине</td></tr>
+<tr><td><code>cooldowns.claim-seconds</code></td><td>сундук, поставленный игроком, открыть может только он</td></tr>
+<tr><td><code>cooldowns.spawn-seconds</code></td><td>минимум между авто-спавнами на сервере</td></tr>
+<tr><td><code>limits.max-opens-per-day / max-purchases-per-day</code></td><td>дневные лимиты игрока</td></tr>
+<tr><td><code>limits.max-active-world-chests</code></td><td>жёсткий предел сундуков в мире</td></tr>
+<tr><td><code>pity: {after: 15}</code> (в тире)</td><td>после 15 открытий без редкого следующее гарантированно редкое</td></tr>
+<tr><td>всё вышеперечисленное</td><td>переопределяется в tiers.yml для каждого тира; права <code>mysticchest.bypass.cooldown</code> / <code>.limits</code></td></tr></table>
+
+<h2>6. Пулл наград: команды и GUI-редактор</h2>
+<div class="grid">
+<div class="card"><h3>Команды <span class="pill">mysticchest.admin.loot</span></h3><ul>
+<li><code>/mystic loot add &lt;тир&gt; [вес] [--keep] [--hand]</code> — весь инвентарь → в пулл, предметы забираются</li>
+<li><code>loot addcmd &lt;тир&gt; &lt;вес&gt; &lt;команда&gt;</code> — награда-команда, иконка = предмет в руке</li>
+<li><code>loot cmd &lt;тир&gt; &lt;#&gt; add [p:] [50%] &lt;команда&gt;</code> / <code>remove n</code> / <code>list</code> / <code>clear</code></li>
+<li><code>loot weight|remove|list|edit|clear</code>, <code>/mystic preview &lt;тир&gt;</code></li></ul></div>
+<div class="card"><h3>Запись в loot/&lt;тир&gt;.yml</h3><pre>- id: a1b2c3
+  material: NETHER_STAR   # или item: (полный NBT)
+  amount: 1
+  weight: 2
+  broadcast: true
+  commands:
+    - run: CONSOLE
+      command: kit crusher {player}
+      chance: 100</pre></div>
+</div>
+<div class="gl" style="margin-top:14px">
+<div><div class="mc"><div class="t">Edit loot: Poor chest</div><div class="row">
+<div class="s">▪</div><div class="s">◆</div><div class="s">▤</div><div class="s k">★</div><div class="s">▪</div><div class="s"></div><div class="s"></div><div class="s"></div><div class="s"></div>
+<div class="s d"></div><div class="s d"></div><div class="s d"></div><div class="s d"></div><div class="s d"></div><div class="s d"></div><div class="s d"></div><div class="s d"></div><div class="s d"></div>
+<div class="s l">◀</div><div class="s">▣</div><div class="s">▾</div><div class="s d"></div><div class="s">▤</div><div class="s d"></div><div class="s">☰</div><div class="s">✖</div><div class="s l">▶</div></div></div>
+<div class="cap">Нижний ряд: ◀ ▶ страницы · ▣ добавить весь инвентарь · ▾ добавить предмет из руки · ▤ счётчик · ☰ следующий тир · ✖ закрыть.</div></div>
+<div class="card" style="flex:1;min-width:280px"><h3>Управление записью</h3><ul>
+<li><b>ЛКМ / ПКМ</b> — вес +1 / −1, <b>Shift</b> — ±10</li>
+<li><b>F</b> — ввод команд в чат (<code>p:</code> от игрока, <code>50%</code> шанс, <code>-2</code> удалить, <code>clear</code>)</li>
+<li><b>Клавиша 1</b> — объявлять всем · <b>клавиша 2</b> — выдавать предмет вкл/выкл</li>
+<li><b>Q дважды</b> — удалить</li>
+<li>Предмет курсором на окно или <b>Shift-клик</b> по инвентарю — добавить в пулл</li>
+<li>В lore каждой записи: шанс %, вес, количество, команды, редкость</li></ul></div></div>
+
+<h2>7. Оптимизация — измеренные цифры</h2>
+<div class="grid">
+<div class="card"><div class="stat">0</div><div class="statl">задач Bukkit в простое (<code>/mystic perf</code>: «Bukkit tasks owned: 0», очередь таймера 0)</div></div>
+<div class="card"><div class="stat">~30 µs</div><div class="statl">бросок лута (бинарный поиск по кумулятивным весам, O(log n))</div></div>
+<div class="card"><div class="stat">2–4 мс</div><div class="statl">открытие рулетки в установившемся режиме (создание GUI и отправка пакетов — работа сервера); первое открытие после старта ≈ 30 мс из-за JIT</div></div>
+<div class="card"><div class="stat">0 утечек</div><div class="statl">после 150 циклов GUI + 60 открытий и GC число объектов плагина в куче совпало с исходным (jcmd GC.class_histogram)</div></div>
+<div class="card"><div class="stat">331 КБ</div><div class="statl">jar (с XSeries, <code>minimize()</code>), было 597 КБ</div></div>
+<div class="card"><div class="stat">atomic</div><div class="statl">запись файлов: tmp + rename, в фоне, debounce 5 с; после <code>kill -9</code> кулдауны сохранились, сундуки и голограммы очищены</div></div>
+</div>
+<ul class="sub" style="margin-top:12px;line-height:1.7">
+<li>Один общий планировщик дедлайнов (TTL, спавн-профили, отложенные сохранения) — ни одной задачи «на сундук» или «на игрока».</li>
+<li>Один общий тикер анимаций: живёт только пока кто-то крутит рулетку.</li>
+<li>Кеш GUI магазина и превью по языку; сбрасывается при reload и изменении лута.</li>
+<li>Поиск места для спавна: ограниченное число попыток, асинхронная загрузка чанков на Paper 1.13+.</li></ul>
+
+<h2>8. Проверено / не проверено</h2>
+<div class="grid">
+<div class="card"><h3 class="ok">Проверено на живых серверах</h3><ul>
+<li>Paper <b>1.21.11</b> (Java 25) и Paper <b>1.12.2</b> (Java 8) — настоящим бот-клиентом (mineflayer)</li>
+<li>Все 4 режима выдачи, редактор, кулдауны, лимиты, спавн-профили, airdrop (12,0 с падения), TIMES, TTL</li>
+<li>RU/EN и <code>auto</code> по локали клиента; апгрейд старого config.yml; краш-тест</li>
+<li>9 юнит-тестов (веса, шаблоны, YAML-блоки, паритет en/ru по ключам и плейсхолдерам)</li></ul></div>
+<div class="card"><h3 class="no">Не проверено / не сделано</h3><ul>
+<li>Добавлено позже: <code>%mysticchest_cooldown_&lt;тир&gt;%</code>, <code>_formatted_</code>, <code>opens_today</code>, <code>pity_&lt;тир&gt;</code>, <code>active_chests</code> (проверено с настоящим PlaceholderAPI 2.11.6); <code>limit-per-player</code> у записи лута; метка тира в PersistentDataContainer (1.14+, на 1.12–1.13 — lore)</li>
+<li>Vault (VaultUnlocked 2.20.3) и ExcellentEconomy 2.8.0 проверены вживую; на других версиях ExcellentEconomy сверьте команды в config.yml</li>
+<li>Промежуточные версии (1.13–1.20) не запускались</li>
+<li>Не сделано: фейерверки в эффектах</li></ul></div>
+</div>
+
+</div></body></html>
