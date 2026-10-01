@@ -19,7 +19,7 @@
 language: en
 
 ## Used to upgrade this file when the plugin updates. Do not change it.
-config-version: 5
+config-version: 6
 
 ## Extra console output for troubleshooting.
 debug: false
@@ -304,7 +304,10 @@ effects:
   aura:
     enabled: true
     style: SPIRAL
-    particle: END_ROD
+    ## DUST (REDSTONE on old versions) can be coloured; END_ROD, FLAME ... keep their own look.
+    particle: DUST
+    ## Colour of DUST particles: TIER (the tier colour) | RANDOM (every particle a different colour) | RAINBOW (a moving rainbow).
+    color-mode: RANDOM
     interval-ticks: 4
     height: 3.0
     radius: 0.9
@@ -314,10 +317,24 @@ effects:
     pitch: 1.2
     sound-interval-seconds: 6
 
-  ## ── Fireworks (instant, harmless) in the tier colour ───────────────────
-  ## The colour is the first colour code of the tier name, or tiers.yml effects.color.
-  ## type: BALL | BALL_LARGE | STAR | BURST | CREEPER
+  ## ── Lines: a particle cross (N, E, S, W) that leads to a standing chest ───────
+  ## A light pulse runs along each line towards the chest. Step into a line and the particles around you
+  ## change colour for "flash-seconds" - only you see it. Lines follow the ground and start outside the structure.
+  ## length = how far they reach (blocks), step = distance between particles, color-mode as for the aura.
+  lines:
+    enabled: true
+    length: 22
+    step: 1.5
+    interval-ticks: 5
+    flash-seconds: 2
+    particle: DUST
+    color-mode: TIER
+
+  ## ── Fireworks (instant, harmless) ────────────────────────────────────────── ───────────────────
+  ## colors: RANDOM (2-3 random colours per burst) | TIER (the tier colour: first colour code of the name,
+  ## or tiers.yml effects.color).   type: BALL | BALL_LARGE | STAR | BURST | CREEPER
   firework:
+    colors: RANDOM
     on-rare: true
     on-spawn: true
     type: BALL_LARGE
@@ -348,7 +365,9 @@ effects:
 structures:
   enabled: true
   chance: 70
+  ## AUTO = the biome's theme, but "theme-surprise-percent" of the time a random one;  RANDOM = always random.
   theme: AUTO
+  theme-surprise-percent: 35
   ## Random 90 degree turn of your own saved structures.
   rotate: true
   decay: 0.08

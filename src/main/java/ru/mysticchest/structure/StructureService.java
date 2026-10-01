@@ -114,9 +114,14 @@ public final class StructureService {
         if (e == null) return null;
         if (forceTheme == null && e.theme != null && (tier == null || !tier.has("theme"))) theme = e.theme;
         Theme t = Theme.parse(theme);
-        if (t == null) {
+        Theme[] all = Theme.values();
+        if (theme != null && theme.equalsIgnoreCase("RANDOM")) {
+            t = all[ThreadLocalRandom.current().nextInt(all.length)];
+        } else if (t == null) {
             Block b = at.getBlock();
             t = Theme.forBiome(String.valueOf(b.getBiome()), String.valueOf(at.getWorld().getEnvironment()));
+            // AUTO follows the biome most of the time, but every so often it is something unexpected
+            if (s.structSurprise > 0 && ThreadLocalRandom.current().nextInt(100) < s.structSurprise) t = all[ThreadLocalRandom.current().nextInt(all.length)];
         }
         return new Spec(e, t, decay, s.structRotate);
     }
@@ -131,7 +136,7 @@ public final class StructureService {
         if (spec.entry.custom()) {
             bp = Blueprint.of(spec.entry.template, spec.rotate ? ThreadLocalRandom.current().nextInt(4) : 0);
         } else {
-            Canvas cv = new Canvas(new Random(cx * 31L + cz * 17L), spec.decay);
+            Canvas cv = new Canvas(new Random(System.nanoTime() ^ (cx * 31L + cz * 17L)), spec.decay);
             spec.entry.shape.draw(cv);
             bp = Blueprint.of(cv, spec.theme);
         }

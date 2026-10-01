@@ -33,7 +33,14 @@ public final class Fireworks implements Listener {
                 Firework fw = at.getWorld().spawn(at.clone().add(0, 1.5 + i * 0.5, 0), Firework.class);
                 ours.add(fw.getUniqueId());
                 FireworkMeta m = fw.getFireworkMeta();
-                FireworkEffect.Builder b = FireworkEffect.builder().with(type).withColor(color).withFade(Color.WHITE);
+                FireworkEffect.Builder b = FireworkEffect.builder().with(type);
+                if (s.fwRandomColors) {
+                    int k = 2 + java.util.concurrent.ThreadLocalRandom.current().nextInt(2);
+                    for (int c = 0; c < k; c++) b.withColor(ru.mysticchest.util.Colors.random());
+                    b.withFade(ru.mysticchest.util.Colors.random());
+                } else {
+                    b.withColor(color).withFade(Color.WHITE);
+                }
                 if (s.fwFlicker) b.withFlicker();
                 if (s.fwTrail) b.withTrail();
                 m.addEffect(b.build());

@@ -20,7 +20,7 @@ public final class Effects {
     private static final String[][] PARTICLE_ALIASES = {
             {"HAPPY_VILLAGER", "VILLAGER_HAPPY"}, {"TOTEM_OF_UNDYING", "TOTEM"},
             {"ANGRY_VILLAGER", "VILLAGER_ANGRY"}, {"CRIT", "CRIT"}, {"FIREWORK", "FIREWORKS_SPARK"},
-            {"ENCHANT", "ENCHANTMENT_TABLE"}, {"SMOKE", "SMOKE_NORMAL"}, {"FLAME", "FLAME"}
+            {"ENCHANT", "ENCHANTMENT_TABLE"}, {"DUST", "REDSTONE"}, {"SMOKE", "SMOKE_NORMAL"}, {"FLAME", "FLAME"}
     };
 
     private final MysticChestPlugin plugin;

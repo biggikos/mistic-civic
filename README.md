@@ -12,7 +12,7 @@ One jar, **Minecraft 1.12.2 → 1.21.x**, English and Russian.
 
 - **Seven tiers** out of the box: Poor, Solid, Rich, Elite, Crusher (donate), Admin, Aristocratic. Add as many as you want.
 - **Four ways to open** a chest, per tier: `ROULETTE` (single flip or CS:GO-style scroll), `FULL_CHEST`, `INSTANT`, `PICK` (mystery cards).
-- **Structures** around chests: golden pyramid, temple, obelisk, ring of standing stones, gate. They rise block by block, collapse afterwards and **restore the terrain**. Save **your own** with a wand and manage them in a GUI.
+- **Structures** around chests: nine shapes (pyramid, temple, obelisk, stone ring, gate, spiral tower, arena, crystals, rune circle), each rolled with its own size and ruin level, in the biome's theme or a surprise one. They rise block by block, collapse afterwards and **restore the terrain**. Save **your own** with a wand and manage them in a GUI.
 - **Announcements that say everything**: type of the chest, rarest loot inside, coordinates, structure, time left, a sound for everyone, a **boss bar** and a countdown hologram.
 - **Hunt, guards, capture, atmosphere**: be first to a chest for a bonus, fight guard mobs and bosses of your own design, capture contested chests in a duel, and feel a local midnight storm around an elite chest.
 - **Leaderboard and achievements**: top lists, hologram boards, period rewards and configurable achievements.
@@ -20,7 +20,7 @@ One jar, **Minecraft 1.12.2 → 1.21.x**, English and Russian.
 - **Four spawn modes** with several profiles at once: random in the world, next to a random player, fixed points, or an **airdrop** that falls from the sky. Triggers: every N minutes, at clock times, or when enough players are online.
 - **Cooldowns and limits** for opening, buying, claiming and spawning. Daily limits, per-player win limits, a pity system for rare rewards, bypass permissions.
 - **Edit loot in game.** `/mystic loot add <tier>` moves your whole inventory into the reward pool. A GUI editor changes weights, chances and commands; items can be dropped onto the window.
-- **Effects**: particle aura around standing chests (ring, light pillar, spiral), fireworks in the tier colour, titles, sounds, optional potions/lightning, and a **chest compass**.
+- **Effects**: particle aura around standing chests (ring, light pillar, spiral) in random or rainbow colours, a **cross of particle lines leading to the chest** that flashes when you walk through it, random-coloured fireworks, titles, sounds, optional potions/lightning, and a **chest compass**.
 - **Command rewards** with chance and run-as-player/console, announcements for rare drops.
 - **Economy**: auto-detects ExcellentEconomy, CoinsEngine, Vault/VaultUnlocked and PlayerPoints. A tier can use its own, e.g. gold from Vault and tokens from PlayerPoints.
 - **PlaceholderAPI** placeholders for cooldowns, daily opens and pity.

@@ -54,6 +54,11 @@ public final class Canvas {
                 for (int z = Math.min(z1, z2); z <= Math.max(z1, z2); z++) worn(x, y, z, s);
     }
 
+    /** Random int in [a, b]. */
+    public int rnd(int a, int b) { return a >= b ? a : a + rnd.nextInt(b - a + 1); }
+
+    public boolean chance(double p) { return rnd.nextDouble() < p; }
+
     public void chest(int x, int y, int z) { chestX = x; chestY = y; chestZ = z; set(x, y, z, Slot.AIR); }
 
     public Slot get(int x, int y, int z) {

@@ -173,7 +173,7 @@ It disappears in 4m 59s. Use /mystic compass to find it!
 
 ## Structures
 
-Chests can appear inside a building: built-in `pyramid`, `temple`, `obelisk`, `henge`, `gate`, plus your own. It rises layer by layer, the chest waits on top or on the altar, and after the chest is opened or times out the building collapses and the original terrain returns (also after a crash). `structures:` in `config.yml` sets the chance, theme (`AUTO` from the biome, or DESERT, STONE, NETHER, END, FROST, OCEAN), ruin level (`decay`), build speed and protection.
+Chests can appear inside a building: nine built-in shapes (`pyramid`, `temple`, `obelisk`, `henge`, `gate`, `tower` with an outer spiral stair, `colosseum` arena, `crystals`, `runes`), plus your own. Every spawn rolls its own size, height, ornaments and ruin level, so no two look alike; the theme is the biome's most of the time (`theme-surprise-percent`) or fully random (`theme: RANDOM`). It rises layer by layer, the chest waits on top or on the altar, and after the chest is opened or times out the building collapses and the original terrain returns (also after a crash). `structures:` in `config.yml` sets the chance, theme (`AUTO` from the biome, or DESERT, STONE, NETHER, END, FROST, OCEAN), ruin level (`decay`), build speed and protection.
 
 **Your own structures**
 
@@ -330,6 +330,8 @@ Check what the plugin found: `/mystic economy`, and your balance of a currency: 
 
 - **Aura** around every standing world chest: `effects.aura.style` = `RING`, `PILLAR` (a light column), `SPIRAL` or `NONE`, with `particle`, `radius`, `height` and a soft chime (`sound`, `sound-interval-seconds`). With a `DUST`/`REDSTONE` particle (1.13+) it is tinted in the tier colour. One shared animation that only runs while chests exist and only draws for players within `effects-view-distance`.
 - **Tier colour**: the first colour code of the tier name (`&6` = gold), or `effects.color: "#ff55ff"` in `tiers.yml`. Per tier you can also override `effects.aura.style` and `effects.aura.particle`.
+- **Random colours around the chest**: `aura.color-mode` is `TIER`, `RANDOM` (every particle a new colour) or `RAINBOW` (a moving rainbow); it applies to `DUST` particles. Fireworks use 2–3 random colours per burst (`firework.colors: RANDOM`) or the tier colour (`TIER`).
+- **Guide lines**: a cross of four particle lines (N, E, S, W) leads to every standing chest, starts outside the structure and follows the ground; a light pulse runs along them towards the chest. Walk through a line and the particles around you change colour for `flash-seconds` (2) - only you see it. `effects.lines`: `enabled`, `length`, `step`, `interval-ticks`, `color-mode`.
 - **Fireworks** (instant and harmless) in the tier colour: `effects.firework` (`on-rare`, `on-spawn`, `type`, `count`, `flicker`, `trail`).
 - **Expire puff** when an unopened chest times out: `effects.expire`.
 - **Extra player effects** in any effect block (`open`, `win`, `rare`, …): `potions: ["SPEED:10:1"]`, `lightning: true` (a flash, no damage), `firework: true`.

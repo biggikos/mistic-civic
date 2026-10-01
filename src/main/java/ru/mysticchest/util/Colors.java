@@ -11,6 +11,30 @@ public final class Colors {
 
     private Colors() {}
 
+    /** h, s, v in 0..1. */
+    public static Color hsv(double h, double sat, double v) {
+        h = h - Math.floor(h);
+        double c = v * sat, x = c * (1 - Math.abs((h * 6) % 2 - 1)), m = v - c, r, g, b;
+        int sector = (int) (h * 6);
+        switch (sector) {
+            case 0: r = c; g = x; b = 0; break;
+            case 1: r = x; g = c; b = 0; break;
+            case 2: r = 0; g = c; b = x; break;
+            case 3: r = 0; g = x; b = c; break;
+            case 4: r = x; g = 0; b = c; break;
+            default: r = c; g = 0; b = x;
+        }
+        return Color.fromRGB((int) Math.round((r + m) * 255), (int) Math.round((g + m) * 255), (int) Math.round((b + m) * 255));
+    }
+
+    public static Color random() { return hsv(java.util.concurrent.ThreadLocalRandom.current().nextDouble(), 0.85 + java.util.concurrent.ThreadLocalRandom.current().nextDouble() * 0.15, 1.0); }
+
+    public static Color mix(Color a, Color b, double t) {
+        t = Math.max(0, Math.min(1, t));
+        return Color.fromRGB((int) Math.round(a.getRed() + (b.getRed() - a.getRed()) * t), (int) Math.round(a.getGreen() + (b.getGreen() - a.getGreen()) * t),
+                (int) Math.round(a.getBlue() + (b.getBlue() - a.getBlue()) * t));
+    }
+
     public static Color parse(String s, Color def) {
         if (s == null) return def;
         String h = s.trim();

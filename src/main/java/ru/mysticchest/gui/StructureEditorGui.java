@@ -49,6 +49,10 @@ public final class StructureEditorGui implements GuiHolder {
             case TEMPLE: return "QUARTZ_BLOCK";
             case OBELISK: return "OBSIDIAN";
             case HENGE: return "MOSSY_COBBLESTONE";
+            case TOWER: return "STONE_BRICKS";
+            case COLOSSEUM: return "SMOOTH_SANDSTONE";
+            case CRYSTALS: return "AMETHYST_BLOCK";
+            case RUNES: return "CHISELED_STONE_BRICKS";
             default: return "PRISMARINE_BRICKS";
         }
     }

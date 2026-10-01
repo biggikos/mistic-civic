@@ -79,12 +79,18 @@ public final class Settings {
     public final Effect fxOpen, fxTick, fxWin, fxRare, fxSpawn;
 
     public enum AuraStyle { NONE, RING, PILLAR, SPIRAL }
+    public enum ColorMode { TIER, RANDOM, RAINBOW }
     public final boolean auraEnabled;
     public final AuraStyle auraStyle;
     public final String auraParticle, auraSound;
     public final int auraInterval, auraSoundInterval;
     public final double auraHeight, auraRadius;
     public final float auraVolume, auraPitch;
+    public final ColorMode auraColorMode, linesColorMode;
+    public final boolean linesEnabled, fwRandomColors;
+    public final int linesLength, linesInterval, linesFlashSeconds;
+    public final double linesStep;
+    public final String linesParticle;
     public final boolean fwOnRare, fwOnSpawn, fwFlicker, fwTrail;
     public final String fwType;
     public final int fwCount;
@@ -104,6 +110,7 @@ public final class Settings {
     public final double structDecay;
     public final String structTheme, structSound;
     public final boolean structRotate;
+    public final int structSurprise;
 
     public final boolean previewEnabled;
     public final String filler;
@@ -191,7 +198,17 @@ public final class Settings {
         auraVolume = (float) au.decimal("volume", 0.4, 0, 10);
         auraPitch = (float) au.decimal("pitch", 1.2, 0, 2);
         auraSoundInterval = au.integer("sound-interval-seconds", 6, 1, 3600);
+        auraColorMode = au.enumOf("color-mode", ColorMode.class, ColorMode.RANDOM);
+        Cfg ln = fx.sub("lines");
+        linesEnabled = ln.bool("enabled", true) && !lowResource;
+        linesLength = ln.integer("length", 22, 4, 80);
+        linesStep = ln.decimal("step", 1.5, 0.5, 5);
+        linesInterval = ln.integer("interval-ticks", 5, 1, 40);
+        linesFlashSeconds = ln.integer("flash-seconds", 2, 1, 30);
+        linesParticle = ln.str("particle", "DUST");
+        linesColorMode = ln.enumOf("color-mode", ColorMode.class, ColorMode.TIER);
         Cfg fw = fx.sub("firework");
+        fwRandomColors = !fw.str("colors", "RANDOM").equalsIgnoreCase("TIER");
         fwOnRare = fw.bool("on-rare", true) && !lowResource;
         fwOnSpawn = fw.bool("on-spawn", true) && !lowResource;
         fwType = fw.str("type", "BALL_LARGE");
@@ -224,6 +241,7 @@ public final class Settings {
         structEnabled = sc.bool("enabled", true);
         structChance = sc.integer("chance", 70, 0, 100);
         structRotate = sc.bool("rotate", true);
+        structSurprise = sc.integer("theme-surprise-percent", 35, 0, 100);
         structTheme = sc.str("theme", "AUTO");
         structDecay = sc.decimal("decay", 0.08, 0, 1);
         structSpeed = sc.integer("build-speed", 40, 1, 2000);
