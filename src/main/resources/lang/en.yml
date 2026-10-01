@@ -361,3 +361,52 @@ mode:
 
 bossbar:
   title: "&d✦ &r{tier} &8| &e{time} &8| &f{x} {y} {z} &8| &7{mode}"
+
+## ═══ leaderboard, stats, achievements ═══
+stat:
+  opens: "Chests opened"
+  rares: "Rare rewards"
+  hunts: "First openers"
+  guards: "Guards defeated"
+  bosses: "Bosses defeated"
+  captures: "Captures"
+top:
+  header: "&5Top: &e{stat} &7({period})"
+  line: " &e#{rank} &f{name} &7- &e{value}"
+  empty: "&7Nobody yet."
+  all-time: "all time"
+  winners: "&6★ Leaderboard &7({period}, {stat}) &6ended: {winners}"
+  board-title: "&5&l{stat} &7({period})"
+  board-line: "&e#{rank} &f{name} &7- &e{value}"
+  board-empty: "&8#{rank} -"
+stats:
+  header: "&5Stats of &e{player} &7({period})"
+  line: " &7{stat}: &e{value} &8(total {total})"
+achievement:
+  announce: "&e{player} &funlocked an achievement: {title}"
+board:
+  usage: "&e/mystic board <create <name> <stat> [all]|remove <name>|list>"
+  created: "&aBoard &e{name} &acreated here."
+  removed: "&aBoard &e{name} &aremoved."
+  exists: "&cA board with that name exists."
+  unknown: "&cNo such board or stat: &e{name}"
+  none: "&7No boards yet."
+
+## ═══ hunt, guards, capture ═══
+hunt:
+  fast: "&6⚡ &e{player} &ffound &r{tier} &ffirst, in &e{ttl}&f! Hunter's bonus!"
+guards:
+  appeared:
+    - "&c⚔ &lThe chest is guarded! &r&7Level: {level}"
+    - "&7Guards: &e{count} &7- kill them all to open the chest."
+  locked: "&cThe chest is locked: &e{count} &cguards are still alive!"
+  cleared: "&a✔ The guards of &r{tier} &aare dead. The chest is open!"
+  left: "&c⚔ Guards left: &e{count}"
+duel:
+  started: "&5⚔ &e{player} &fis capturing &r{tier}&f! Stop them or lose it! &7(&e{seconds}s&7)"
+  keep: "&7Stay in the zone to capture the chest."
+  busy: "&c{player} is already capturing this chest. Drive them out!"
+  failed: "&c{player} lost the capture. The chest is free again!"
+  won: "&6★ &e{player} &fcaptured the chest!"
+  bar: "&a{player} capturing &8| &f{percent}%"
+  bar-contested: "&c{player} CONTESTED! &8| &f{percent}%"

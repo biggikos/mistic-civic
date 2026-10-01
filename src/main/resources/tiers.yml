@@ -22,6 +22,10 @@
 ##   pity:         {after: 10}  - after 10 openings without a rare reward the next one is guaranteed rare
 ##   hologram:     text above a world chest of this tier
 ##   structure:    {shape: GATE, theme: END, chance: 100, enabled: true}  - the building around this tier's chests
+##   hunt:         {window-seconds: 60, bonus-rolls: 3}       - bonus for the first opener
+##   guards:       {chance: 80, levels: {veteran: 40, boss: 60}}  - mobs around the chest (levels: config.yml)
+##   atmosphere:   {enabled: true, time: MIDNIGHT, weather: STORM, radius: 45}  - a mood only near the chest
+##   duel:         {enabled: true, capture-seconds: 15}       - fight for the chest when others are near
 ##   effects:      {color: "#ff55ff", aura: {style: PILLAR, particle: DUST}}
 ##                 tier colour for aura/fireworks (default: first colour code of the name)
 ## ═══════════════════════════════════════════════════════════════════════════
@@ -54,6 +58,10 @@ tiers:
     rolls: 6
     open-mode: PICK
     pity: {after: 10}
+    hunt: {window-seconds: 90, bonus-rolls: 2}
+    guards: {chance: 60, levels: {veteran: 70, boss: 30}}
+    atmosphere: {enabled: true, time: MIDNIGHT, weather: STORM, radius: 45}
+    duel: {enabled: true, capture-seconds: 12}
 
   crusher:
     name: {en: "&cCrusher chest", ru: "&cСундук Крушителя"}
@@ -62,6 +70,9 @@ tiers:
     rolls: 6
     open-mode: FULL_CHEST
     icon: ENDER_CHEST
+    guards: {chance: 100, levels: {boss: 100}}
+    atmosphere: {enabled: true, time: DUSK, weather: RAIN, radius: 40, lightning-interval-seconds: 14}
+    duel: {enabled: true, capture-seconds: 15}
 
   admin:
     name: {en: "&4Admin chest", ru: "&4Сундук Админа"}

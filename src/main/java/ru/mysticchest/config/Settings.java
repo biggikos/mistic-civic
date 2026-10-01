@@ -48,6 +48,7 @@ public final class Settings {
         }
     }
 
+    public final Cfg root;
     public final String language;
     public final boolean debug;
     public final OpenType defaultOpenMode;
@@ -112,6 +113,7 @@ public final class Settings {
 
     public Settings(YamlConfiguration y, Logger log) {
         Cfg c = new Cfg(y, "config.yml", log);
+        root = c;
         language = c.str("language", "en").toLowerCase();
         debug = c.bool("debug", false);
         defaultOpenMode = c.enumOf("default-open-mode", OpenType.class, OpenType.ROULETTE);

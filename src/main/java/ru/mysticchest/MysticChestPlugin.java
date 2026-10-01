@@ -53,6 +53,12 @@ public final class MysticChestPlugin extends JavaPlugin {
     private ru.mysticchest.effects.Fireworks fireworks;
     private ru.mysticchest.chest.Compass compass;
     private ru.mysticchest.effects.BossBars bossBars;
+    private ru.mysticchest.guard.GuardService guards;
+    private ru.mysticchest.atmosphere.Atmosphere atmosphere;
+    private ru.mysticchest.duel.Captures captures;
+    private ru.mysticchest.stats.StatsService stats;
+    private ru.mysticchest.stats.BoardService boards;
+    private ru.mysticchest.core.Scheduler.Handle periodTimer;
     private ru.mysticchest.structure.StructureService structures;
     private Economies economies;
 
@@ -79,6 +85,11 @@ public final class MysticChestPlugin extends JavaPlugin {
         fireworks = new ru.mysticchest.effects.Fireworks(this);
         compass = new ru.mysticchest.chest.Compass(this);
         bossBars = new ru.mysticchest.effects.BossBars(this);
+        guards = new ru.mysticchest.guard.GuardService(this);
+        atmosphere = new ru.mysticchest.atmosphere.Atmosphere(this);
+        captures = new ru.mysticchest.duel.Captures(this);
+        stats = new ru.mysticchest.stats.StatsService(this);
+        boards = new ru.mysticchest.stats.BoardService(this);
         structures = new ru.mysticchest.structure.StructureService(this);
 
         cfg = configs.load("config.yml", true);
@@ -100,6 +111,7 @@ public final class MysticChestPlugin extends JavaPlugin {
             }
         }
         getServer().getPluginManager().registerEvents(fireworks, this);
+        getServer().getPluginManager().registerEvents(guards, this);
         getServer().getPluginManager().registerEvents(structures.wand(), this);
         getServer().getPluginManager().registerEvents(new GuiListener(this), this);
         getServer().getPluginManager().registerEvents(new ru.mysticchest.chest.WorldListener(this), this);
@@ -110,8 +122,12 @@ public final class MysticChestPlugin extends JavaPlugin {
         if (spawner != null) spawner.stop();
         if (animator != null) animator.shutdown();
         if (prompts != null) prompts.clear();
+        if (guards != null) guards.shutdown();
+        if (atmosphere != null) atmosphere.clearAll();
+        if (captures != null) captures.shutdown();
         if (chests != null) chests.removeAll();
         if (structures != null) structures.shutdown();
+        if (boards != null) boards.shutdown();
         if (scheduler != null) scheduler.shutdown();
         if (io != null) io.shutdown();
     }
@@ -129,10 +145,20 @@ public final class MysticChestPlugin extends JavaPlugin {
         tiers.load();
         locators.loadPoints();
         structures.catalog().load();
+        stats.load();
+        boards.load();
+        schedulePeriodCheck();
         spawner.reload();
         guiCache.clear();
         getLogger().info("Loaded " + tiers.all().size() + " tiers, language=" + settings.language
                 + ", economy=" + economies.defaultId());
+    }
+
+    private void schedulePeriodCheck() {
+        if (periodTimer != null) periodTimer.cancel();
+        periodTimer = scheduler.later(3600000L, new Runnable() {
+            public void run() { stats.checkPeriod(); schedulePeriodCheck(); }
+        });
     }
 
     @Override
@@ -190,6 +216,11 @@ public final class MysticChestPlugin extends JavaPlugin {
     public ru.mysticchest.effects.Fireworks fireworks() { return fireworks; }
     public ru.mysticchest.chest.Compass compass() { return compass; }
     public ru.mysticchest.effects.BossBars bossBars() { return bossBars; }
+    public ru.mysticchest.guard.GuardService guards() { return guards; }
+    public ru.mysticchest.atmosphere.Atmosphere atmosphere() { return atmosphere; }
+    public ru.mysticchest.duel.Captures captures() { return captures; }
+    public ru.mysticchest.stats.StatsService stats() { return stats; }
+    public ru.mysticchest.stats.BoardService boards() { return boards; }
     public ru.mysticchest.structure.StructureService structures() { return structures; }
     public Economies economies() { return economies; }
 }

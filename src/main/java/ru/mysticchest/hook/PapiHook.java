@@ -27,6 +27,23 @@ public final class PapiHook extends PlaceholderExpansion {
     @Override
     public String onRequest(OfflinePlayer off, String params) {
         if (params.equals("active_chests")) return String.valueOf(plugin.chests().count());
+        // %mysticchest_top_<stat>_<rank>_name% / _value  (current period)   %mysticchest_toptotal_...  (all time)
+        if (params.startsWith("top_") || params.startsWith("toptotal_")) {
+            boolean all = params.startsWith("toptotal_");
+            String[] p = params.substring(all ? 9 : 4).split("_");
+            if (p.length == 3) {
+                try {
+                    java.util.List<ru.mysticchest.stats.StatsService.Row> rows = plugin.stats().top(p[0], all, Integer.parseInt(p[1]));
+                    int idx = Integer.parseInt(p[1]) - 1;
+                    if (idx < 0 || idx >= rows.size()) return p[2].equals("name") ? "-" : "0";
+                    return p[2].equals("name") ? rows.get(idx).name : String.valueOf(rows.get(idx).value);
+                } catch (NumberFormatException e) { return null; }
+            }
+        }
+        if (off != null && (params.startsWith("stat_") || params.startsWith("stattotal_"))) {
+            boolean all = params.startsWith("stattotal_");
+            return String.valueOf(plugin.stats().get(off.getUniqueId(), params.substring(all ? 10 : 5), all));
+        }
         if (off == null) return "";
         if (params.equals("opens_today")) return String.valueOf(plugin.cooldowns().opensToday(off.getUniqueId()));
         if (params.startsWith("pity_")) {

@@ -19,7 +19,7 @@
 language: en
 
 ## Used to upgrade this file when the plugin updates. Do not change it.
-config-version: 4
+config-version: 5
 
 ## Extra console output for troubleshooting.
 debug: false
@@ -362,6 +362,152 @@ structures:
   ## Highest allowed height difference of the ground under the structure.
   max-slope: 4
   sound: BLOCK_STONE_PLACE
+
+## ═══ HUNT (be the first) ═══════════════════════════════════════════════════
+## Open a world chest within "window-seconds" of its appearance and you get a hunter's bonus:
+## extra rolls, optional commands, an announcement and a point in the "hunts" leaderboard.
+## Every key can be overridden per tier (tiers.yml  hunt: {window-seconds: 60, bonus-rolls: 3}).
+hunt:
+  enabled: true
+  window-seconds: 120
+  bonus-rolls: 1
+  ## Console commands for the hunter, {player} is replaced:  ["eco give {player} 100"]
+  commands: []
+  announce: true
+
+## ═══ GUARDS ═════════════════════════════════════════════════════════════════
+## Mobs that stand guard around a chest. A spawned chest gets guards with "chance" percent.
+## Each guard level below is a recipe: mobs (type, count, name, health, helmet, chestplate, leggings,
+## boots, weapon, effects) and optionally a BOSS with a boss bar and commands for whoever kills it.
+## A tier picks its own chance and level weights (tiers.yml):
+##   guards: {chance: 80, levels: {veteran: 40, boss: 60}}
+## Make your own levels - any name works, any number of them.
+## effects: ["SPEED:99999:1"]  NAME:seconds:level.  Gear never drops; rewards come from the chest and "commands".
+guards:
+  enabled: true
+  chance: 20
+  ## The chest cannot be opened until the guards are dead.
+  lock-chest: true
+  ## Guards spawn up to this far from the chest and are pulled back when they stray beyond "leash".
+  radius: 7
+  leash: 20
+  announce: true
+  levels:
+    patrol:
+      weight: 60
+      name: "&7Patrol"
+      mobs:
+        - {type: ZOMBIE, count: 3, name: "&7Mystic Guard", health: 24, helmet: IRON_HELMET, weapon: IRON_SWORD}
+    veteran:
+      weight: 30
+      name: "&6Veterans"
+      mobs:
+        - {type: SKELETON, count: 3, name: "&6Mystic Archer", health: 30, helmet: CHAINMAIL_HELMET, weapon: BOW}
+        - {type: ZOMBIE, count: 2, name: "&6Mystic Knight", health: 40, helmet: DIAMOND_HELMET, chestplate: IRON_CHESTPLATE, weapon: IRON_SWORD, effects: ["SPEED:99999:0"]}
+    boss:
+      weight: 10
+      name: "&c&lBoss encounter"
+      mobs:
+        - {type: SKELETON, count: 3, name: "&cBoss minion", health: 30, weapon: BOW}
+      boss:
+        type: WITHER_SKELETON
+        name: "&4&lKeeper of the Chest"
+        health: 150
+        helmet: DIAMOND_HELMET
+        weapon: DIAMOND_SWORD
+        effects: ["DAMAGE_RESISTANCE:99999:0", "SPEED:99999:1"]
+        bossbar: {color: RED, style: SEGMENTED_10}
+        commands: []
+
+## ═══ ATMOSPHERE (a mood around the chest) ═══════════════════════════════════
+## While a chest stands, players near it can get their OWN sky: a different time of day, rain/storm and
+## harmless lightning flashes. Only players within "radius" see it; the rest of the world is untouched and
+## leaving the radius brings the normal sky back at once. Off by default - tiers opt in:
+##   tiers.yml:  atmosphere: {enabled: true, time: MIDNIGHT, weather: STORM, radius: 45}
+## time: DAWN | NOON | DUSK | NIGHT | MIDNIGHT | 0-24000 | NONE     weather: CLEAR | RAIN | STORM | NONE
+atmosphere:
+  enabled: false
+  radius: 40
+  time: MIDNIGHT
+  weather: STORM
+  ## Seconds between lightning flashes near the chest (0 = none), and how far from the chest they land.
+  lightning-interval-seconds: 9
+  lightning-radius: 10
+  ## A sound for players in the zone, e.g. AMBIENT_CAVE. Empty = none.
+  ambient-sound: ""
+  ambient-interval-seconds: 12
+
+## ═══ CAPTURE (duel for the chest) ═══════════════════════════════════════════
+## With other players around, opening a chest starts a CAPTURE: a boss bar fills while the capturer stands in
+## the zone alone. Any enemy inside the zone drains it; if the capturer dies or leaves it fails and anybody can
+## start again. Alone, a player simply opens the chest (unless trigger: ALWAYS). Players in the same scoreboard
+## team never contest each other. Off by default - per tier:  duel: {enabled: true, capture-seconds: 15}
+duel:
+  enabled: false
+  trigger: WHEN_CONTESTED     # WHEN_CONTESTED | ALWAYS
+  capture-seconds: 10
+  zone-radius: 5
+  detect-radius: 16           # "other players are around" and who sees the bar
+  decay-per-second: 2.0       # how fast an enemy in the zone drains the progress
+
+## ═══ LEADERBOARD, STATS & ACHIEVEMENTS ═════════════════════════════════════
+## Counted per player: opens, rares, hunts (first openers), guards, bosses, captures.
+## /mystic top [stat] [all]   /mystic stats   holograms: /mystic board create <name> <stat> [all]
+## At the end of every period the top players of "reward-stat" get the commands below
+## ({player}, {rank}, {value}, {stat}). Leave rewards empty for no payout.
+leaderboard:
+  enabled: true
+  period: WEEKLY              # DAILY | WEEKLY | MONTHLY | ALL (never resets)
+  top-size: 10
+  board-lines: 5
+  reward-stat: opens
+  announce-winners: true
+  rewards: {}
+  # rewards:
+  #   1: ["points give {player} 500"]
+  #   2: ["points give {player} 300"]
+  #   3: ["points give {player} 100"]
+
+## One entry per achievement: stat + threshold (all-time). title/subtitle can be a string or {en: .., ru: ..}.
+## announce: true tells everybody. commands: console commands for the player.
+achievements:
+  first_open:
+    stat: opens
+    at: 1
+    title: {en: "&6First mystic!", ru: "&6Первый мистик!"}
+    subtitle: {en: "&7You opened your first chest", ru: "&7Вы открыли первый сундук"}
+  veteran:
+    stat: opens
+    at: 50
+    title: {en: "&bMystic veteran", ru: "&bВетеран мистиков"}
+    subtitle: {en: "&750 chests opened", ru: "&7Открыто 50 сундуков"}
+    announce: true
+  lucky:
+    stat: rares
+    at: 5
+    title: {en: "&dLucky one", ru: "&dСчастливчик"}
+    subtitle: {en: "&75 rare rewards", ru: "&75 редких наград"}
+  fast_hands:
+    stat: hunts
+    at: 10
+    title: {en: "&eFast hands", ru: "&eБыстрые руки"}
+    subtitle: {en: "&710 chests opened first", ru: "&710 сундуков открыто первым"}
+  guard_slayer:
+    stat: guards
+    at: 25
+    title: {en: "&cGuard slayer", ru: "&cУбийца стражей"}
+    subtitle: {en: "&725 guards defeated", ru: "&7Побеждено 25 стражей"}
+  boss_slayer:
+    stat: bosses
+    at: 1
+    title: {en: "&4Boss slayer", ru: "&4Убийца босса"}
+    subtitle: {en: "&7You defeated a chest boss", ru: "&7Вы победили босса сундука"}
+    announce: true
+  conqueror:
+    stat: captures
+    at: 3
+    title: {en: "&5Conqueror", ru: "&5Завоеватель"}
+    subtitle: {en: "&73 chests captured", ru: "&7Захвачено 3 сундука"}
 
 ## ═══ CHEST COMPASS ══════════════════════════════════════════════════════════
 ## /mystic compass gives an item; right click points it at the nearest standing chest.

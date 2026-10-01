@@ -27,7 +27,7 @@ import java.util.Map;
 
 public final class MysticCommand implements TabExecutor {
     private static final List<String> ROOT = Arrays.asList("shop", "preview", "list", "give", "spawn", "reload",
-            "perf", "loot", "point", "economy", "compass", "structure", "chests", "help");
+            "perf", "loot", "point", "economy", "compass", "structure", "chests", "top", "stats", "board", "help");
     private static final List<String> LOOT = Arrays.asList("add", "addcmd", "cmd", "weight", "remove", "list", "edit", "clear");
 
     private final MysticChestPlugin plugin;
@@ -89,6 +89,9 @@ public final class MysticCommand implements TabExecutor {
             case "economy": return economy(s, a);
             case "structure": return structure(s, a);
             case "chests": return chests(s);
+            case "top": return top(s, a);
+            case "stats": return stats(s, a);
+            case "board": return board(s, a);
             case "compass": {
                 if (!need(s, "mysticchest.compass")) return true;
                 Player p = player(s);
@@ -208,6 +211,61 @@ public final class MysticCommand implements TabExecutor {
         } else {
             plugin.lang().send(s, "economy.hint");
         }
+        return true;
+    }
+
+    // ---- leaderboard / stats / boards ------------------------------------
+
+    private static boolean knownStat(String st) {
+        for (String k : ru.mysticchest.stats.StatsService.STATS) if (k.equals(st)) return true;
+        return false;
+    }
+
+    private boolean top(CommandSender s, String[] a) {
+        if (!need(s, "mysticchest.top")) return true;
+        String stat = a.length > 1 && knownStat(a[1].toLowerCase(Locale.ROOT)) ? a[1].toLowerCase(Locale.ROOT) : "opens";
+        boolean all = a.length > 2 && a[2].equalsIgnoreCase("all") || a.length > 1 && a[1].equalsIgnoreCase("all");
+        int n = plugin.settings().root.sub("leaderboard").integer("top-size", 10, 1, 50);
+        java.util.List<ru.mysticchest.stats.StatsService.Row> rows = plugin.stats().top(stat, all, n);
+        plugin.lang().send(s, "top.header", "stat", plugin.lang().get(s, "stat." + stat),
+                "period", all ? plugin.lang().get(s, "top.all-time") : plugin.stats().periodKey());
+        if (rows.isEmpty()) s.sendMessage(plugin.lang().get(s, "top.empty"));
+        int i = 1;
+        for (ru.mysticchest.stats.StatsService.Row r : rows) {
+            s.sendMessage(plugin.lang().get(s, "top.line", "rank", String.valueOf(i++), "name", r.name, "value", String.valueOf(r.value)));
+        }
+        return true;
+    }
+
+    private boolean stats(CommandSender s, String[] a) {
+        if (!need(s, "mysticchest.top")) return true;
+        Player target = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : (s instanceof Player ? (Player) s : null);
+        if (target == null) { plugin.lang().send(s, "unknown-player", "player", a.length > 1 ? a[1] : "?"); return true; }
+        plugin.lang().send(s, "stats.header", "player", target.getName(), "period", plugin.stats().periodKey());
+        for (String st : ru.mysticchest.stats.StatsService.STATS) {
+            s.sendMessage(plugin.lang().get(s, "stats.line", "stat", plugin.lang().get(s, "stat." + st),
+                    "value", String.valueOf(plugin.stats().get(target.getUniqueId(), st, false)),
+                    "total", String.valueOf(plugin.stats().get(target.getUniqueId(), st, true))));
+        }
+        return true;
+    }
+
+    private boolean board(CommandSender s, String[] a) {
+        if (!need(s, "mysticchest.admin")) return true;
+        String sub = a.length > 1 ? a[1].toLowerCase(Locale.ROOT) : "";
+        if (sub.equals("create") && a.length >= 4) {
+            Player p = player(s);
+            if (p == null) return true;
+            String stat = a[3].toLowerCase(Locale.ROOT);
+            if (!knownStat(stat)) { plugin.lang().send(s, "board.unknown", "name", a[3]); return true; }
+            boolean ok = plugin.boards().create(a[2], p.getLocation().add(0, 2.2, 0), stat, a.length > 4 && a[4].equalsIgnoreCase("all"));
+            plugin.lang().send(s, ok ? "board.created" : "board.exists", "name", a[2]);
+        } else if (sub.equals("remove") && a.length >= 3) {
+            plugin.lang().send(s, plugin.boards().remove(a[2]) ? "board.removed" : "board.unknown", "name", a[2]);
+        } else if (sub.equals("list")) {
+            if (plugin.boards().names().isEmpty()) plugin.lang().send(s, "board.none");
+            for (String n : plugin.boards().names()) s.sendMessage(" - " + n);
+        } else plugin.lang().send(s, "board.usage");
         return true;
     }
 
@@ -481,6 +539,11 @@ public final class MysticCommand implements TabExecutor {
                     || (sub.equals("spawn") && a.length == 2)) tiers(out);
             else if (sub.equals("spawn") && a.length == 3) { out.add("here"); out.addAll(plugin.spawner().profiles().keySet()); }
             else if (sub.equals("spawn") && a.length == 4) { for (ru.mysticchest.structure.StructureCatalog.Entry en : plugin.structures().catalog().all()) out.add(en.id); }
+            else if (sub.equals("top") && a.length == 2) { out.addAll(Arrays.asList(ru.mysticchest.stats.StatsService.STATS)); out.add("all"); }
+            else if (sub.equals("top") && a.length == 3) out.add("all");
+            else if (sub.equals("board") && a.length == 2) out.addAll(Arrays.asList("create", "remove", "list"));
+            else if (sub.equals("board") && a.length == 4 && a[1].equalsIgnoreCase("create")) out.addAll(Arrays.asList(ru.mysticchest.stats.StatsService.STATS));
+            else if (sub.equals("board") && a.length == 3 && a[1].equalsIgnoreCase("remove")) out.addAll(plugin.boards().names());
             else if (sub.equals("structure") && a.length == 2) out.addAll(Arrays.asList("wand", "pos1", "pos2", "save", "delete", "edit", "list", "preview", "reload"));
             else if (sub.equals("structure") && (a.length == 3) && (a[1].equalsIgnoreCase("preview") || a[1].equalsIgnoreCase("delete"))) { for (ru.mysticchest.structure.StructureCatalog.Entry en : plugin.structures().catalog().all()) out.add(en.id); }
             else if (sub.equals("spawn") && a.length == 5) { for (ru.mysticchest.structure.Theme th : ru.mysticchest.structure.Theme.values()) out.add(th.name().toLowerCase()); }
@@ -505,6 +568,8 @@ public final class MysticCommand implements TabExecutor {
             case "loot": return s.hasPermission("mysticchest.admin.loot");
             case "structure": return s.hasPermission("mysticchest.admin.structure");
             case "chests": return s.hasPermission("mysticchest.chests");
+            case "top": case "stats": return s.hasPermission("mysticchest.top");
+            case "board": return s.hasPermission("mysticchest.admin");
             case "shop": return s.hasPermission("mysticchest.shop");
             case "compass": return s.hasPermission("mysticchest.compass");
             case "preview": return s.hasPermission("mysticchest.preview");

@@ -8,6 +8,8 @@
 - [Spawning chests](#spawning-chests)
 - [Announcements, boss bar, timers](#announcements-boss-bar-timers)
 - [Structures](#structures)
+- [Hunt, guards, atmosphere, capture](#hunt-guards-atmosphere-capture)
+- [Leaderboard, stats, achievements](#leaderboard-stats-achievements)
 - [Cooldowns, limits, pity](#cooldowns-limits-pity)
 - [Rewards (loot)](#rewards-loot)
 - [Economy](#economy)
@@ -182,6 +184,36 @@ Chests can appear inside a building: built-in `pyramid`, `temple`, `obelisk`, `h
 
 Saved structures keep their exact blocks, are rotated randomly (`rotate: true`) and do not clear the terrain around them (only trees and grass). Sites that are steep, in water or contain player-made blocks (chests, doors, beds, signs…) are skipped and a plain chest appears instead. Per spawn profile or tier you can force a structure: `structure: {shape: gate, theme: end, chance: 100}`.
 
+## Hunt, guards, atmosphere, capture
+
+Each of these is configured in `config.yml` and can be overridden **per tier** in `tiers.yml` (a tier key wins over the global one).
+
+**Hunt**: open a world chest within `hunt.window-seconds` of its appearance and you get `bonus-rolls` extra rewards, optional `commands`, an announcement and a point in the *hunts* leaderboard. `tiers.yml`: `hunt: {window-seconds: 60, bonus-rolls: 3}`.
+
+**Guards**: `guards.chance` percent of chests get guards (mobs around the chest, `radius`, pulled back past `leash`). While they live the chest is locked (`lock-chest`). A **level** is a recipe under `guards.levels.<name>`: a list of `mobs` (type, count, name, health, helmet/chestplate/leggings/boots/weapon, effects) and optionally a `boss` (same fields plus a `bossbar` and `commands` for the killer, `{player}`). Make as many levels as you like; a tier chooses its own chance and level weights:
+
+```yaml
+# tiers.yml
+elite:
+  guards: {chance: 60, levels: {veteran: 70, boss: 30}}
+```
+
+Gear never drops. Guards that vanish without dying (peaceful difficulty, despawn) are counted as gone so a chest never stays locked; the console warns when the world is on PEACEFUL.
+
+**Atmosphere**: a mood only around the chest. Players within `radius` get their own time of day and weather (for example a midnight storm) and harmless lightning flashes; everybody else, and the world itself, are untouched, and leaving the radius restores the normal sky at once. `tiers.yml`: `atmosphere: {enabled: true, time: MIDNIGHT, weather: STORM, radius: 45}`. Options: `time` (DAWN, NOON, DUSK, NIGHT, MIDNIGHT, 0–24000, NONE), `weather` (CLEAR, RAIN, STORM, NONE), `lightning-interval-seconds`, `lightning-radius`, `ambient-sound`.
+
+**Capture** (a duel for the chest): when other players are near (`detect-radius`) opening a chest starts a capture. The boss bar fills while the capturer stands in the `zone-radius` **alone**; any enemy in the zone drains it by `decay-per-second`. The capture fails if the capturer dies or leaves, and then anyone can start again. Alone, a player simply opens the chest (`trigger: ALWAYS` forces the capture every time). Same scoreboard team = no contest. `tiers.yml`: `duel: {enabled: true, capture-seconds: 15}`.
+
+## Leaderboard, stats, achievements
+
+Counted per player: `opens`, `rares`, `hunts`, `guards`, `bosses`, `captures`; for the current period (`leaderboard.period`: DAILY, WEEKLY, MONTHLY, ALL) and for all time.
+
+- `/mystic top [stat] [all]`, `/mystic stats [player]`.
+- Hologram boards: `/mystic board create <name> <stat> [all]` at your position (refreshed every 30 s), `remove`, `list`.
+- At the end of a period the top players of `reward-stat` get the commands in `leaderboard.rewards` (`{player}`, `{rank}`, `{value}`, `{stat}`) and the winners are announced.
+- **Achievements** (`achievements:` in `config.yml`): a stat, a threshold, a title/subtitle (a string or `{en: .., ru: ..}`), optional commands and a public announcement. Add as many as you like.
+- Placeholders: `%mysticchest_top_<stat>_<rank>_name%`, `%mysticchest_top_<stat>_<rank>_value%`, `%mysticchest_toptotal_...%` (all time), `%mysticchest_stat_<stat>%`, `%mysticchest_stattotal_<stat>%`.
+
 ## Cooldowns, limits, pity
 
 ```yaml
@@ -316,6 +348,8 @@ Check what the plugin found: `/mystic economy`, and your balance of a currency: 
 | `/mystic compass` | `mysticchest.compass` (everyone) |
 | `/mystic chests` | `mysticchest.chests` (everyone); coordinates: `mysticchest.chests.coords` (op) |
 | `/mystic structure …` | `mysticchest.admin.structure` (op) |
+| `/mystic top`, `/mystic stats` | `mysticchest.top` (everyone) |
+| `/mystic board …` | `mysticchest.admin` (op) |
 | `/mystic give`, `spawn`, `reload`, `perf`, `point`, `economy` | `mysticchest.admin` (op) |
 | `/mystic loot …` and the editor | `mysticchest.admin.loot` (op) |
 | ignore cooldowns and claim locks | `mysticchest.bypass.cooldown` (nobody) |

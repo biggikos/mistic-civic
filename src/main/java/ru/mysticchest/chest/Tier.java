@@ -25,6 +25,7 @@ public final class Tier {
     public final org.bukkit.Color color;
     public final String auraStyle, auraParticle;
     public final Cfg structure;
+    public final Cfg cfg;
     private LootPool highlightsOf;
     private String highlights = "";
 
@@ -90,6 +91,7 @@ public final class Tier {
         maxPurchases = lim.has("max-purchases-per-day") ? lim.integer("max-purchases-per-day", 0, 0, 1000000) : -1;
         ttl = c.has("ttl-seconds") ? c.integer("ttl-seconds", 300, 5, 31536000) : -1;
         pityAfter = c.sub("pity").integer("after", 0, 0, 100000);
+        this.cfg = c;
         this.structure = c.sub("structure");
         Cfg fx = c.sub("effects");
         this.color = fx.has("color") ? ru.mysticchest.util.Colors.parse(fx.str("color", ""), ru.mysticchest.util.Colors.fromName(anyName, org.bukkit.Color.WHITE))
@@ -111,6 +113,11 @@ public final class Tier {
     public int maxOpensPerDay(Settings s) { return maxOpens >= 0 ? maxOpens : s.maxOpensPerDay; }
     public int maxPurchasesPerDay(Settings s) { return maxPurchases >= 0 ? maxPurchases : s.maxPurchasesPerDay; }
     public int ttlSeconds(Settings s) { return ttl >= 0 ? ttl : s.ttlSeconds; }
+    /** A setting in section {@code name} (hunt, guards, atmosphere, duel): the tier overrides config.yml. */
+    public ru.mysticchest.config.Layered layered(String name, ru.mysticchest.config.Settings s) {
+        return new ru.mysticchest.config.Layered(cfg.sub(name), s.root.sub(name));
+    }
+
     public int rolls() {
         return rollsMin >= rollsMax ? rollsMin : java.util.concurrent.ThreadLocalRandom.current().nextInt(rollsMin, rollsMax + 1);
     }

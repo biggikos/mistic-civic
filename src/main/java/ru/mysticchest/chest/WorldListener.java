@@ -88,10 +88,14 @@ public final class WorldListener implements Listener {
             plugin.lang().send(p, "deny.claimed", "time", plugin.lang().time(p, (a.claimUntil - now + 999) / 1000));
             return;
         }
+        if (plugin.guards().locked(a)) {
+            plugin.lang().send(p, "guards.locked", "count", String.valueOf(plugin.guards().left(a)));
+            return;
+        }
         String[] deny = plugin.open().check(p, a.tier);
         if (deny != null) { sendDeny(p, deny); return; }
-        if (!plugin.chests().remove(a, true)) return;     // first opener wins
-        plugin.open().open(p, a.tier, a.mode);
+        if (plugin.captures().intercept(p, a)) return;
+        plugin.open().openWorldChest(p, a);
     }
 
     private void sendDeny(Player p, String[] deny) {

@@ -77,6 +77,7 @@ public final class Rewards {
         }
         if (deliverItem && e.giveItem) give(p, r.stack);
         String item = Items.name(r.stack);
+        if (e.rare) plugin.stats().add(p, "rares");
         if (e.rare || e.broadcast) {
             plugin.announcer().send(plugin.settings().onRare, p.getLocation(), "announce.rare", t,
                     "player", p.getName(), "item", item, "amount", String.valueOf(r.stack.getAmount()));

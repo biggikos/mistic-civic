@@ -62,19 +62,42 @@ public final class OpenService {
         return OpenType.ROULETTE;
     }
 
-    public void open(Player p, Tier t) { open(p, t, null); }
+    public void open(Player p, Tier t) { open(p, t, null, 0); }
+
+    public void open(Player p, Tier t, OpenType fixed) { open(p, t, fixed, 0); }
 
     /** @param fixed mode decided earlier (a world chest announced as "cards"); null = decide now. */
-    public void open(Player p, Tier t, OpenType fixed) {
+    /**
+     * A player opens a chest that stood in the world. Hunt: whoever is fast enough (hunt.window-seconds)
+     * gets bonus rolls and commands, and a "hunts" point for the leaderboard.
+     */
+    public void openWorldChest(Player p, ru.mysticchest.chest.ChestManager.Active a) {
+        if (!plugin.chests().remove(a, true)) return;     // first opener wins
+        Settings s = plugin.settings();
+        ru.mysticchest.config.Layered h = a.tier.layered("hunt", s);
+        long age = Math.max(0, (System.currentTimeMillis() - a.spawnedAt) / 1000);
+        boolean fast = h.bool("enabled", true) && age <= h.integer("window-seconds", 120, 0, 86400);
+        open(p, a.tier, a.mode, fast ? h.integer("bonus-rolls", 1, 0, 50) : 0);
+        if (!fast) return;
+        plugin.stats().add(p, "hunts");
+        for (String c : h.strings("commands")) {
+            String cmd = c.replace("{player}", p.getName());
+            org.bukkit.Bukkit.dispatchCommand(org.bukkit.Bukkit.getConsoleSender(), cmd.startsWith("/") ? cmd.substring(1) : cmd);
+        }
+        if (h.bool("announce", true)) plugin.announcer().send(s.onOpen, p.getLocation(), "hunt.fast", a.tier, "player", p.getName(), "ttlsec", String.valueOf(age));
+    }
+
+    public void open(Player p, Tier t, OpenType fixed, int extraRolls) {
         long start = System.nanoTime();
         Settings s = plugin.settings();
         int cd = t.cooldownOpen(s);
         if (cd > 0 && !p.hasPermission("mysticchest.bypass.cooldown")) plugin.cooldowns().start(owner(p), key(t), cd);
         plugin.cooldowns().addOpen(p.getUniqueId());
+        plugin.stats().add(p, "opens");
 
         OpenType type = fixed != null && fixed != OpenType.RANDOM ? fixed : pickMode(t);
         if (type != OpenType.INSTANT && plugin.animator().size() >= s.maxAnimations) type = OpenType.FULL_CHEST;
-        List<Reward> rewards = plugin.rewards().roll(p, t, type == OpenType.PICK ? s.pickCards : t.rolls());
+        List<Reward> rewards = plugin.rewards().roll(p, t, (type == OpenType.PICK ? s.pickCards : t.rolls()) + extraRolls);
         plugin.effects().playTier(s.fxOpen, p, t);
         plugin.announcer().send(s.onOpen, p.getLocation(), "announce.opened", t, "player", p.getName(), "modeid", type.name());
 

@@ -16,6 +16,10 @@
   - 🃏 **Pick**: mystery cards, choose your prize
 - **Structures**: chests appear inside a golden pyramid, temple, obelisk, ring of stones or gate that builds itself block by block, then collapses and restores the terrain. Save **your own** buildings with a selection wand.
 - **Full announcements**: chest type, rarest loot inside, coordinates, structure, countdown, a sound for every player and a **boss bar**.
+- **Hunt and capture**: the first to open a chest gets a bonus, and contested chests are won by holding the zone alone.
+- **Guards and bosses**: configurable levels (mobs, gear, boss bar, commands) with a chance per tier; the chest stays locked until they fall.
+- **Atmosphere**: a midnight storm and lightning only around the chest, only for players near it.
+- **Leaderboard, boards and achievements** with period rewards.
 - **RANDOM mode**: every opening is a surprise (roulette, mystery cards, full chest or instant).
 - **Four ways to spawn chests**, several profiles at once:
   - random place in the world, next to a random player, fixed points, or an **airdrop** falling from the sky

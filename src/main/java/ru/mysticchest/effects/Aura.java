@@ -32,11 +32,14 @@ public final class Aura implements Animator.Animation {
     public boolean tick() {
         Settings s = plugin.settings();
         List<ChestManager.Active> chests = plugin.chests().snapshot();
-        if (chests.isEmpty()) { plugin.chests().auraStopped(); return false; }
+        if (chests.isEmpty()) { plugin.atmosphere().clearAll(); plugin.chests().auraStopped(); return false; }
         tick++;
         if (tick % 20 == 0) {
             if (s.holoEnabled && s.holoCountdown) plugin.chests().updateTimers();
             if (s.bossEnabled) plugin.bossBars().update(chests);
+            plugin.guards().tick();
+            plugin.atmosphere().update(chests);
+            plugin.captures().tick();
         }
         if (!s.auraEnabled || s.auraStyle == Settings.AuraStyle.NONE || tick % s.auraInterval != 0) return true;
         phase++;
@@ -99,5 +102,5 @@ public final class Aura implements Animator.Animation {
         } catch (Throwable ignored) {}
     }
 
-    public void abort() { plugin.chests().auraStopped(); }
+    public void abort() { plugin.atmosphere().clearAll(); plugin.chests().auraStopped(); }
 }

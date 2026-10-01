@@ -29,6 +29,9 @@ permissions:
   mysticchest.chests.coords:
     description: See exact coordinates in /mystic chests
     default: op
+  mysticchest.top:
+    description: /mystic top and /mystic stats
+    default: true
   mysticchest.admin.structure:
     description: Save, edit, preview and delete structures
     default: op

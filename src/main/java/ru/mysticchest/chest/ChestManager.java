@@ -52,7 +52,7 @@ public final class ChestManager {
         public String structureId;
         public org.bukkit.boss.BossBar bar;
         ArmorStand holo, holo2;
-        long expiresAt;
+        public long expiresAt, spawnedAt = System.currentTimeMillis();
         Scheduler.Handle ttl;
 
         Active(long key, Location loc, Tier tier, String profile, UUID owner, long claimUntil, Material block) {
@@ -250,6 +250,7 @@ public final class ChestManager {
         hold(b.getWorld(), b.getX() >> 4, b.getZ() >> 4);
         startAura();
         plugin.bossBars().add(a);
+        plugin.guards().spawnFor(a);
         save();
         return true;
     }
@@ -294,6 +295,8 @@ public final class ChestManager {
         }
         if (a.holo2 != null && a.holo2.isValid()) a.holo2.remove();
         plugin.bossBars().remove(a);
+        plugin.guards().cleanup(a);
+        plugin.captures().cancelFor(a);
         if (clearBlock && a.loc.getBlock().getType() == a.block) a.loc.getBlock().setType(Material.AIR);
         release(a.loc.getWorld(), a.loc.getBlockX() >> 4, a.loc.getBlockZ() >> 4);
         if (a.structure != null) plugin.structures().scheduleRestore(a.structure);
@@ -340,6 +343,8 @@ public final class ChestManager {
             for (Entity e : w.getNearbyEntities(l.clone().add(0.5, 0.5, 0.5), 1, 1, 1)) {
                 if (e instanceof ArmorStand) e.remove();
             }
+            plugin.guards().purgeNear(l, 30);
+            plugin.guards().sweepOrphansFor(10);
         }
         f.delete();
     }

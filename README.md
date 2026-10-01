@@ -14,6 +14,8 @@ One jar, **Minecraft 1.12.2 → 1.21.x**, English and Russian.
 - **Four ways to open** a chest, per tier: `ROULETTE` (single flip or CS:GO-style scroll), `FULL_CHEST`, `INSTANT`, `PICK` (mystery cards).
 - **Structures** around chests: golden pyramid, temple, obelisk, ring of standing stones, gate. They rise block by block, collapse afterwards and **restore the terrain**. Save **your own** with a wand and manage them in a GUI.
 - **Announcements that say everything**: type of the chest, rarest loot inside, coordinates, structure, time left, a sound for everyone, a **boss bar** and a countdown hologram.
+- **Hunt, guards, capture, atmosphere**: be first to a chest for a bonus, fight guard mobs and bosses of your own design, capture contested chests in a duel, and feel a local midnight storm around an elite chest.
+- **Leaderboard and achievements**: top lists, hologram boards, period rewards and configurable achievements.
 - **RANDOM open mode**: roulette, full chest, mystery cards or instant, rolled by weight.
 - **Four spawn modes** with several profiles at once: random in the world, next to a random player, fixed points, or an **airdrop** that falls from the sky. Triggers: every N minutes, at clock times, or when enough players are online.
 - **Cooldowns and limits** for opening, buying, claiming and spawning. Daily limits, per-player win limits, a pity system for rare rewards, bypass permissions.

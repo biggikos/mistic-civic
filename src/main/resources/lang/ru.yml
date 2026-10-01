@@ -352,3 +352,52 @@ mode:
 
 bossbar:
   title: "&d✦ &r{tier} &8| &e{time} &8| &f{x} {y} {z} &8| &7{mode}"
+
+## ═══ таблица лидеров, статистика, достижения ═══
+stat:
+  opens: "Открыто сундуков"
+  rares: "Редких наград"
+  hunts: "Открыл первым"
+  guards: "Побеждено стражей"
+  bosses: "Побеждено боссов"
+  captures: "Захватов"
+top:
+  header: "&5Топ: &e{stat} &7({period})"
+  line: " &e#{rank} &f{name} &7- &e{value}"
+  empty: "&7Пока никого."
+  all-time: "за всё время"
+  winners: "&6★ Таблица лидеров &7({period}, {stat}) &6завершена: {winners}"
+  board-title: "&5&l{stat} &7({period})"
+  board-line: "&e#{rank} &f{name} &7- &e{value}"
+  board-empty: "&8#{rank} -"
+stats:
+  header: "&5Статистика &e{player} &7({period})"
+  line: " &7{stat}: &e{value} &8(всего {total})"
+achievement:
+  announce: "&e{player} &fполучил достижение: {title}"
+board:
+  usage: "&e/mystic board <create <имя> <стат> [all]|remove <имя>|list>"
+  created: "&aТаблица &e{name} &aсоздана здесь."
+  removed: "&aТаблица &e{name} &aудалена."
+  exists: "&cТаблица с таким именем уже есть."
+  unknown: "&cНет такой таблицы или статистики: &e{name}"
+  none: "&7Таблиц пока нет."
+
+## ═══ хант, стражи, захват ═══
+hunt:
+  fast: "&6⚡ &e{player} &fнашёл &r{tier} &fпервым, за &e{ttl}&f! Бонус охотника!"
+guards:
+  appeared:
+    - "&c⚔ &lСундук охраняют! &r&7Уровень: {level}"
+    - "&7Стражей: &e{count} &7- убейте всех, чтобы открыть сундук."
+  locked: "&cСундук заперт: живы ещё &e{count} &cстражей!"
+  cleared: "&a✔ Стражи &r{tier} &aпобеждены. Сундук открыт!"
+  left: "&c⚔ Осталось стражей: &e{count}"
+duel:
+  started: "&5⚔ &e{player} &fзахватывает &r{tier}&f! Остановите или потеряете! &7(&e{seconds}с&7)"
+  keep: "&7Оставайтесь в зоне, чтобы захватить сундук."
+  busy: "&c{player} уже захватывает этот сундук. Выбейте его из зоны!"
+  failed: "&c{player} провалил захват. Сундук снова свободен!"
+  won: "&6★ &e{player} &fзахватил сундук!"
+  bar: "&a{player} захватывает &8| &f{percent}%"
+  bar-contested: "&c{player} ОСПАРИВАЕТСЯ! &8| &f{percent}%"
