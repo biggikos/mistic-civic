@@ -1,0 +1,45 @@
+MysticChest License
+
+Copyright (c) 2026 Biggiko. All rights reserved.
+
+Permission is granted to anyone to use the unmodified plugin ("MysticChest",
+the compiled jar and its bundled files) on their own Minecraft servers,
+free of charge, subject to the following conditions.
+
+1. NO MODIFICATION. You may not modify, decompile, disassemble, reverse
+   engineer, repackage, or create derivative works of the plugin or its
+   source code, in whole or in part. Editing the configuration, language and
+   loot files that the plugin creates for you is allowed; that is its intended
+   use.
+
+2. NO COMMERCIAL DISTRIBUTION. You may not sell, rent, sublicense, or
+   otherwise distribute the plugin or any part of it for payment or any other
+   commercial gain. This includes paid downloads, paid resource listings,
+   paywalled or ad-monetised download links, and bundling it into a paid
+   product, plugin pack or server setup that is sold.
+   Using the plugin on a server that earns money from donations or a store is
+   allowed; selling or monetising the plugin file itself is not.
+
+3. ATTRIBUTION REQUIRED. Any distribution of the unmodified plugin, free of
+   charge and where permitted by the author, must keep this license and the
+   copyright notice intact and must clearly credit the original author
+   (Biggiko) and, where possible, link to the original source. Distribution
+   without attribution is forbidden.
+
+4. REDISTRIBUTION ONLY AS ORIGINALLY PUBLISHED. Redistribution is permitted
+   only of the unmodified, complete files exactly as published by the author.
+
+5. NO WARRANTY. The plugin is provided "as is", without warranty of any kind,
+   express or implied, including but not limited to merchantability, fitness
+   for a particular purpose and non-infringement. The author is not liable for
+   any claim, damages or other liability arising from the use of the plugin.
+
+6. TERMINATION. Any breach of these terms ends your permission to use and
+   distribute the plugin automatically. All rights not expressly granted are
+   reserved by the author.
+
+For any use not covered here (modification, commercial use, bundling), ask
+the author for written permission first.
+
+Third-party components keep their own licenses: XSeries (MIT), shaded into
+the jar.

@@ -60,3 +60,7 @@ Tested on **Paper 1.21.11** and **Paper 1.12.2**, with VaultUnlocked 2.20.3, Exc
 
 - Full documentation: see the `docs` folder in the source repository
 - Found a bug? Open an issue and attach the console output (turn on `debug: true` in `config.yml` for more detail).
+
+## License
+
+Free to use on your servers. Modification, commercial distribution and redistribution without crediting the author are not allowed. See the `LICENSE` file in the source repository.

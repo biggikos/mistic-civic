@@ -84,4 +84,4 @@ Requires a JDK; compiles to Java 8 bytecode against Spigot API 1.16.5. [XSeries]
 
 ## License
 
-No license file is included yet; all rights reserved by the author until one is added.
+Custom license, see [LICENSE](LICENSE). In short: free to use on your servers, **no modification, no commercial distribution, and any distribution must credit the author**. Editing the generated config, language and loot files is of course fine.
