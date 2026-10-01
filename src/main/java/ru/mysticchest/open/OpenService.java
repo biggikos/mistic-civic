@@ -57,13 +57,13 @@ public final class OpenService {
         OpenType type = t.openMode(s);
         if (type != OpenType.INSTANT && plugin.animator().size() >= s.maxAnimations) type = OpenType.FULL_CHEST;
         List<Reward> rewards = plugin.rewards().roll(p, t, type == OpenType.PICK ? s.pickCards : t.rolls());
-        plugin.effects().play(s.fxOpen, p);
+        plugin.effects().playTier(s.fxOpen, p, t);
         plugin.announcer().send(s.onOpen, p.getLocation(), "announce.opened", t, "player", p.getName());
 
         switch (type) {
             case INSTANT:
                 for (Reward r : rewards) plugin.rewards().apply(p, t, r, true, false);
-                if (!rewards.isEmpty()) plugin.effects().play(s.fxWin, p, "player", p.getName(), "item", "");
+                if (!rewards.isEmpty()) plugin.effects().playTier(s.fxWin, p, t, "player", p.getName(), "item", "");
                 break;
             case FULL_CHEST:
                 new FullChestSession(plugin, p, t, rewards).start();

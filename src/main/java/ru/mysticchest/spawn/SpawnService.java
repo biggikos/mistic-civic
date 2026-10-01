@@ -137,6 +137,7 @@ public final class SpawnService {
         if (plugin.settings().cdSpawn > 0) plugin.cooldowns().start(CooldownManager.GLOBAL, "spawn", plugin.settings().cdSpawn);
         announce(p.announce, loc, tier, key, new String[0]);
         plugin.effects().playAt(plugin.settings().fxSpawn, loc);
+        if (plugin.settings().fwOnSpawn) plugin.fireworks().launch(loc.clone().add(0.5, 0, 0.5), tier.color);
     }
 
     /** Manual placement from /mystic spawn (exact coordinates, ignores conditions). */
@@ -144,6 +145,7 @@ public final class SpawnService {
         if (!plugin.chests().place(loc.getBlock().getLocation(), tier, "manual", null)) return false;
         announce(SpawnProfile.Announce.EXACT, loc, tier, "announce.spawned", new String[0]);
         plugin.effects().playAt(plugin.settings().fxSpawn, loc);
+        if (plugin.settings().fwOnSpawn) plugin.fireworks().launch(loc.clone().add(0.5, 0, 0.5), tier.color);
         return true;
     }
 

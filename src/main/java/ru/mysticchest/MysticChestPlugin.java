@@ -50,6 +50,8 @@ public final class MysticChestPlugin extends JavaPlugin {
     private SpawnService spawner;
     private GuiCache guiCache;
     private ChatPrompt prompts;
+    private ru.mysticchest.effects.Fireworks fireworks;
+    private ru.mysticchest.chest.Compass compass;
     private Economies economies;
 
     @Override
@@ -72,6 +74,8 @@ public final class MysticChestPlugin extends JavaPlugin {
         spawner = new SpawnService(this, locators);
         prompts = new ChatPrompt(this);
         economies = new Economies(this);
+        fireworks = new ru.mysticchest.effects.Fireworks(this);
+        compass = new ru.mysticchest.chest.Compass(this);
 
         cfg = configs.load("config.yml", true);
         settings = new Settings(cfg, getLogger());
@@ -90,6 +94,7 @@ public final class MysticChestPlugin extends JavaPlugin {
                 getLogger().warning("PlaceholderAPI hook failed: " + t);
             }
         }
+        getServer().getPluginManager().registerEvents(fireworks, this);
         getServer().getPluginManager().registerEvents(new GuiListener(this), this);
         getServer().getPluginManager().registerEvents(new ru.mysticchest.chest.WorldListener(this), this);
     }
@@ -174,5 +179,7 @@ public final class MysticChestPlugin extends JavaPlugin {
     public SpawnService spawner() { return spawner; }
     public GuiCache guiCache() { return guiCache; }
     public ChatPrompt prompts() { return prompts; }
+    public ru.mysticchest.effects.Fireworks fireworks() { return fireworks; }
+    public ru.mysticchest.chest.Compass compass() { return compass; }
     public Economies economies() { return economies; }
 }

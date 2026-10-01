@@ -21,6 +21,8 @@
 ##   limits:       {max-opens-per-day, max-purchases-per-day}
 ##   pity:         {after: 10}  - after 10 openings without a rare reward the next one is guaranteed rare
 ##   hologram:     text above a world chest of this tier
+##   effects:      {color: "#ff55ff", aura: {style: PILLAR, particle: DUST}}
+##                 tier colour for aura/fireworks (default: first colour code of the name)
 ## ═══════════════════════════════════════════════════════════════════════════
 tiers:
   poor:

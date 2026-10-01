@@ -271,6 +271,54 @@ effects:
     pitch: 1.6
     particle: PORTAL
     count: 60
+  ## Smoke puff when an unopened chest times out.
+  expire:
+    sound: ENTITY_GENERIC_EXTINGUISH_FIRE
+    volume: 0.8
+    pitch: 1.0
+    particle: SMOKE
+    count: 30
+
+  ## ── Extra player effects, usable in any event above ────────────────────
+  ##   potions:   ["SPEED:10:1", "NIGHT_VISION:20"]   NAME:seconds[:level]
+  ##   lightning: true                                 harmless lightning flash at the player
+  ##   firework:  true                                 firework burst in the tier colour
+  ## Example:  rare:  {..., potions: ["GLOWING:10"], lightning: true}
+
+  ## ── Aura around every STANDING world chest ─────────────────────────────
+  ## style: RING (circle) | PILLAR (light column like a beacon) | SPIRAL (rising helix) | NONE
+  ## Particles are tinted with the tier colour when the particle is DUST/REDSTONE (1.13+).
+  ## One shared animation: it only runs while chests exist and only draws for players nearby.
+  ## Per tier:  effects: {color: "#ff55ff", aura: {style: PILLAR, particle: DUST}}  in tiers.yml
+  aura:
+    enabled: true
+    style: SPIRAL
+    particle: END_ROD
+    interval-ticks: 4
+    height: 3.0
+    radius: 0.9
+    ## A soft chime near the chest so players can hear it. Empty = silent.
+    sound: BLOCK_AMETHYST_BLOCK_CHIME
+    volume: 0.4
+    pitch: 1.2
+    sound-interval-seconds: 6
+
+  ## ── Fireworks (instant, harmless) in the tier colour ───────────────────
+  ## The colour is the first colour code of the tier name, or tiers.yml effects.color.
+  ## type: BALL | BALL_LARGE | STAR | BURST | CREEPER
+  firework:
+    on-rare: true
+    on-spawn: true
+    type: BALL_LARGE
+    count: 1
+    flicker: true
+    trail: true
+
+## ═══ CHEST COMPASS ══════════════════════════════════════════════════════════
+## /mystic compass gives an item; right click points it at the nearest standing chest.
+compass:
+  enabled: true
+  cooldown-seconds: 3
 
 ## ═══ ANNOUNCEMENTS ══════════════════════════════════════════════════════════
 ## type:   CHAT | TITLE | ACTIONBAR | NONE

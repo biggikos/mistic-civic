@@ -51,7 +51,7 @@ public final class Effects {
         return s;
     }
 
-    private Particle particle(String name) {
+    public Particle particle(String name) {
         if (particles.containsKey(name)) return particles.get(name);
         Particle p = tryParticle(name);
         if (p == null) {
@@ -76,10 +76,15 @@ public final class Effects {
     }
 
     /** Plays for a single player (sound + particles around them + title/actionbar). */
-    public void play(Settings.Effect fx, Player p, String... kv) {
+    public void play(Settings.Effect fx, Player p, String... kv) { play(fx, p, org.bukkit.Color.WHITE, kv); }
+
+    public void playTier(Settings.Effect fx, Player p, ru.mysticchest.chest.Tier t, String... kv) { play(fx, p, t.color, kv); }
+
+    private void play(Settings.Effect fx, Player p, org.bukkit.Color color, String... kv) {
         if (fx == null || p == null || !p.isOnline()) return;
         sound(fx, p, p.getLocation());
         particles(fx, p.getLocation().add(0, 1, 0));
+        extras(fx, p, color);
         if (!fx.title.isEmpty() || !fx.subtitle.isEmpty()) {
             try { p.sendTitle(fmt(fx.title, kv), fmt(fx.subtitle, kv), 5, 40, 10); } catch (Throwable ignored) {}
         }
@@ -94,6 +99,21 @@ public final class Effects {
             if (p.getLocation().distanceSquared(loc) <= max * max) sound(fx, p, loc);
         }
         particles(fx, loc.clone().add(0.5, 1, 0.5));
+    }
+
+    /** Optional potion effects and a harmless lightning bolt for the player. */
+    private void extras(Settings.Effect fx, Player p, org.bukkit.Color color) {
+        for (String spec : fx.potions) {
+            String[] a = spec.split(":");
+            try {
+                org.bukkit.potion.PotionEffectType t = org.bukkit.potion.PotionEffectType.getByName(a[0].trim().toUpperCase());
+                if (t == null) continue;
+                int sec = a.length > 1 ? Integer.parseInt(a[1].trim()) : 5, amp = a.length > 2 ? Integer.parseInt(a[2].trim()) : 0;
+                p.addPotionEffect(new org.bukkit.potion.PotionEffect(t, sec * 20, amp, true, false));
+            } catch (Exception ignored) {}
+        }
+        if (fx.lightning) p.getWorld().strikeLightningEffect(p.getLocation());
+        if (fx.firework) plugin.fireworks().launch(p.getLocation(), color);
     }
 
     private void sound(Settings.Effect fx, Player p, Location at) {

@@ -15,6 +15,7 @@ One jar, **Minecraft 1.12.2 → 1.21.x**, English and Russian.
 - **Four spawn modes** with several profiles at once: random in the world, next to a random player, fixed points, or an **airdrop** that falls from the sky. Triggers: every N minutes, at clock times, or when enough players are online.
 - **Cooldowns and limits** for opening, buying, claiming and spawning. Daily limits, per-player win limits, a pity system for rare rewards, bypass permissions.
 - **Edit loot in game.** `/mystic loot add <tier>` moves your whole inventory into the reward pool. A GUI editor changes weights, chances and commands; items can be dropped onto the window.
+- **Effects**: particle aura around standing chests (ring, light pillar, spiral), fireworks in the tier colour, titles, sounds, optional potions/lightning, and a **chest compass**.
 - **Command rewards** with chance and run-as-player/console, announcements for rare drops.
 - **Economy**: auto-detects ExcellentEconomy, CoinsEngine, Vault/VaultUnlocked and PlayerPoints. A tier can use its own, e.g. gold from Vault and tokens from PlayerPoints.
 - **PlaceholderAPI** placeholders for cooldowns, daily opens and pity.

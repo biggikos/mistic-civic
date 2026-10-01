@@ -52,7 +52,10 @@ public final class WorldListener implements Listener {
         ItemStack hand = p.getInventory().getItemInHand();
         if (hand == null || !hand.hasItemMeta()) return;
         Tier t = plugin.chests().tierOf(hand);
-        if (t == null) return;
+        if (t == null) {
+            if (plugin.compass().is(hand)) { e.setCancelled(true); plugin.compass().use(p); }
+            return;
+        }
         boolean denied = e.isCancelled() || e.useInteractedBlock() == Event.Result.DENY;   // read BEFORE we cancel
         e.setCancelled(true);
         if (!p.hasPermission("mysticchest.use")) { plugin.lang().send(p, "deny.no-permission"); return; }

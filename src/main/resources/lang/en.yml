@@ -221,3 +221,12 @@ papi:
 
 economy:
   hint: "&7Check a currency: &e/mystic economy <currency>&7 (e.g. gold, playerpoints, vault, excellenteconomy:coins)"
+
+compass:
+  name: "&bChest compass"
+  lore:
+    - "&7Right click: points to the nearest"
+    - "&7mystic chest standing in the world"
+  given: "&aYou got a chest compass. Right click it to find the nearest chest."
+  none: "&7There are no chests standing in this world right now."
+  found: "&d✦ &fNearest chest: &r{tier}&f, about &e{distance} blocks &fto the &e{dir}&f. The compass points to it."

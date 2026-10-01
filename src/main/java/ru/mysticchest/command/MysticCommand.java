@@ -27,7 +27,7 @@ import java.util.Map;
 
 public final class MysticCommand implements TabExecutor {
     private static final List<String> ROOT = Arrays.asList("shop", "preview", "list", "give", "spawn", "reload",
-            "perf", "loot", "point", "economy", "help");
+            "perf", "loot", "point", "economy", "compass", "help");
     private static final List<String> LOOT = Arrays.asList("add", "addcmd", "cmd", "weight", "remove", "list", "edit", "clear");
 
     private final MysticChestPlugin plugin;
@@ -87,6 +87,14 @@ public final class MysticCommand implements TabExecutor {
             case "spawn": return spawn(s, a);
             case "perf": return perf(s);
             case "economy": return economy(s, a);
+            case "compass": {
+                if (!need(s, "mysticchest.compass")) return true;
+                Player p = player(s);
+                if (p == null) return true;
+                plugin.rewards().give(p, plugin.compass().item(p));
+                plugin.lang().send(p, "compass.given");
+                return true;
+            }
             case "loot": return loot(s, a);
             case "point": return point(s, a);
             default:
@@ -398,6 +406,7 @@ public final class MysticCommand implements TabExecutor {
             case "give": case "spawn": case "reload": case "perf": case "point": case "economy": return s.hasPermission("mysticchest.admin");
             case "loot": return s.hasPermission("mysticchest.admin.loot");
             case "shop": return s.hasPermission("mysticchest.shop");
+            case "compass": return s.hasPermission("mysticchest.compass");
             case "preview": return s.hasPermission("mysticchest.preview");
             default: return true;
         }

@@ -80,9 +80,10 @@ public final class Rewards {
         if (e.rare || e.broadcast) {
             plugin.announcer().send(plugin.settings().onRare, p.getLocation(), "announce.rare", t,
                     "player", p.getName(), "item", item, "amount", String.valueOf(r.stack.getAmount()));
-            plugin.effects().play(plugin.settings().fxRare, p, "player", p.getName(), "item", item);
+            if (plugin.settings().fwOnRare) plugin.fireworks().launch(p.getLocation(), t.color);
+            plugin.effects().playTier(plugin.settings().fxRare, p, t, "player", p.getName(), "item", item);
         } else if (winFx) {
-            plugin.effects().play(plugin.settings().fxWin, p, "player", p.getName(), "item", item);
+            plugin.effects().playTier(plugin.settings().fxWin, p, t, "player", p.getName(), "item", item);
         }
     }
 

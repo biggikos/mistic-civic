@@ -26,7 +26,12 @@ public final class Settings {
         public final String sound, particle, title, subtitle, actionbar;
         public final float volume, pitch;
         public final int count;
+        public final java.util.List<String> potions;
+        public final boolean lightning, firework;
         Effect(Cfg c, int particleCap) {
+            potions = c.strings("potions");
+            lightning = c.bool("lightning", false);
+            firework = c.bool("firework", false);
             sound = c.str("sound", "");
             particle = c.str("particle", "");
             title = c.str("title", "");
@@ -65,6 +70,20 @@ public final class Settings {
 
     public final Announce onSpawn, onOpen, onRare;
     public final Effect fxOpen, fxTick, fxWin, fxRare, fxSpawn;
+
+    public enum AuraStyle { NONE, RING, PILLAR, SPIRAL }
+    public final boolean auraEnabled;
+    public final AuraStyle auraStyle;
+    public final String auraParticle, auraSound;
+    public final int auraInterval, auraSoundInterval;
+    public final double auraHeight, auraRadius;
+    public final float auraVolume, auraPitch;
+    public final boolean fwOnRare, fwOnSpawn, fwFlicker, fwTrail;
+    public final String fwType;
+    public final int fwCount;
+    public final Effect fxExpire;
+    public final boolean compassEnabled;
+    public final int compassCooldown;
 
     public final boolean previewEnabled;
     public final String filler;
@@ -139,6 +158,28 @@ public final class Settings {
         fxRare = new Effect(fx.sub("rare"), cap);
         fxSpawn = new Effect(fx.sub("spawn"), cap);
 
+        Cfg au = fx.sub("aura");
+        auraEnabled = au.bool("enabled", true) && !lowResource;
+        auraStyle = au.enumOf("style", AuraStyle.class, AuraStyle.SPIRAL);
+        auraParticle = au.str("particle", "END_ROD");
+        auraInterval = au.integer("interval-ticks", 4, 1, 100);
+        auraHeight = au.decimal("height", 3.0, 0.5, 30);
+        auraRadius = au.decimal("radius", 0.9, 0.2, 5);
+        auraSound = au.str("sound", "");
+        auraVolume = (float) au.decimal("volume", 0.4, 0, 10);
+        auraPitch = (float) au.decimal("pitch", 1.2, 0, 2);
+        auraSoundInterval = au.integer("sound-interval-seconds", 6, 1, 3600);
+        Cfg fw = fx.sub("firework");
+        fwOnRare = fw.bool("on-rare", true) && !lowResource;
+        fwOnSpawn = fw.bool("on-spawn", true) && !lowResource;
+        fwType = fw.str("type", "BALL_LARGE");
+        fwCount = fw.integer("count", 1, 1, 5);
+        fwFlicker = fw.bool("flicker", true);
+        fwTrail = fw.bool("trail", true);
+        fxExpire = new Effect(fx.sub("expire"), cap);
+        Cfg cp = c.sub("compass");
+        compassEnabled = cp.bool("enabled", true);
+        compassCooldown = cp.integer("cooldown-seconds", 3, 0, 3600);
         previewEnabled = c.sub("gui").bool("preview-enabled", true);
         filler = c.sub("gui").str("filler", "GRAY_STAINED_GLASS_PANE");
     }

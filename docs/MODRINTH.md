@@ -19,6 +19,7 @@
   - every N minutes, at fixed clock times, or when enough players are online
   - exact coordinates, a rough area, or just "about 150 blocks north-west"
 - **Cooldowns for everything**: opening, buying, claiming, spawning. Daily limits, per-player win limits, a pity system that guarantees a rare reward after N dry openings.
+- **Effects everywhere**: a particle aura (ring, light pillar or spiral) around standing chests, fireworks in the tier colour, titles, sounds, and a **chest compass** that points to the nearest chest.
 - **Command rewards**: kits, ranks, anything, with a chance and "run as player / console".
 - **Works with your economy**: auto-detects **ExcellentEconomy, Vault / VaultUnlocked, PlayerPoints** (and a CoinsEngine preset). Each tier can use its own, for example gold from Vault and donate tokens from PlayerPoints.
 - **PlaceholderAPI** support for cooldowns, daily opens and pity.

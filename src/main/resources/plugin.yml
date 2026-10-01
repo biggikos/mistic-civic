@@ -20,6 +20,9 @@ permissions:
   mysticchest.preview:
     description: Use /mystic preview
     default: true
+  mysticchest.compass:
+    description: Get and use the chest compass
+    default: true
   mysticchest.admin:
     description: give, spawn, reload, perf, point
     default: op

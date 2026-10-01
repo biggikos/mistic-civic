@@ -21,6 +21,9 @@ public final class Tier {
     public final String holoText;
     private final Map<String, String> names = new HashMap<String, String>();
     private final String anyName;
+    /** Colour used by the aura and fireworks: tiers.yml effects.color, else the first colour code of the name. */
+    public final org.bukkit.Color color;
+    public final String auraStyle, auraParticle;
     public LootPool pool = new LootPool(new java.util.ArrayList<LootEntry>(), 0);
 
     public Tier(String id, Cfg c) {
@@ -65,6 +68,11 @@ public final class Tier {
         maxPurchases = lim.has("max-purchases-per-day") ? lim.integer("max-purchases-per-day", 0, 0, 1000000) : -1;
         ttl = c.has("ttl-seconds") ? c.integer("ttl-seconds", 300, 5, 31536000) : -1;
         pityAfter = c.sub("pity").integer("after", 0, 0, 100000);
+        Cfg fx = c.sub("effects");
+        this.color = fx.has("color") ? ru.mysticchest.util.Colors.parse(fx.str("color", ""), ru.mysticchest.util.Colors.fromName(anyName, org.bukkit.Color.WHITE))
+                : ru.mysticchest.util.Colors.fromName(anyName, org.bukkit.Color.WHITE);
+        this.auraStyle = fx.sub("aura").str("style", null);
+        this.auraParticle = fx.sub("aura").str("particle", null);
         holoText = c.has("hologram") ? c.str("hologram", null) : null;
     }
 

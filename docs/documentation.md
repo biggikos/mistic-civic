@@ -256,6 +256,17 @@ Check what the plugin found: `/mystic economy`, and your balance of a currency: 
 
 `announce.on-spawn | on-open | on-rare`: `type` (`CHAT`, `TITLE`, `ACTIONBAR`, `NONE`), `radius` (`-1` = everyone), `world-only`. Messages are sent in each player's own language. Rewards below `rare-below-percent` or marked `broadcast: true` use `on-rare`.
 
+### Aura, fireworks, compass and extra effects
+
+- **Aura** around every standing world chest: `effects.aura.style` = `RING`, `PILLAR` (a light column), `SPIRAL` or `NONE`, with `particle`, `radius`, `height` and a soft chime (`sound`, `sound-interval-seconds`). With a `DUST`/`REDSTONE` particle (1.13+) it is tinted in the tier colour. One shared animation that only runs while chests exist and only draws for players within `effects-view-distance`.
+- **Tier colour**: the first colour code of the tier name (`&6` = gold), or `effects.color: "#ff55ff"` in `tiers.yml`. Per tier you can also override `effects.aura.style` and `effects.aura.particle`.
+- **Fireworks** (instant and harmless) in the tier colour: `effects.firework` (`on-rare`, `on-spawn`, `type`, `count`, `flicker`, `trail`).
+- **Expire puff** when an unopened chest times out: `effects.expire`.
+- **Extra player effects** in any effect block (`open`, `win`, `rare`, …): `potions: ["SPEED:10:1"]`, `lightning: true` (a flash, no damage), `firework: true`.
+- **Chest compass**: `/mystic compass` gives an item; right click points it at the nearest standing chest and tells the distance and direction (`compass:` in `config.yml`, permission `mysticchest.compass`).
+
+`performance.low-resource: true` switches aura, particles, holograms and fireworks off.
+
 ## Commands and permissions
 
 | Command | Permission (default) |
@@ -264,6 +275,7 @@ Check what the plugin found: `/mystic economy`, and your balance of a currency: 
 | `/mystic preview <tier>` | `mysticchest.preview` (everyone) |
 | `/mystic list`, `/mystic help` | – |
 | using chests | `mysticchest.use` (everyone) |
+| `/mystic compass` | `mysticchest.compass` (everyone) |
 | `/mystic give`, `spawn`, `reload`, `perf`, `point`, `economy` | `mysticchest.admin` (op) |
 | `/mystic loot …` and the editor | `mysticchest.admin.loot` (op) |
 | ignore cooldowns and claim locks | `mysticchest.bypass.cooldown` (nobody) |

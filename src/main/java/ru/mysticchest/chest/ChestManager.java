@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import ru.mysticchest.MysticChestPlugin;
 import ru.mysticchest.core.AsyncIO;
+import ru.mysticchest.config.Settings;
 import ru.mysticchest.core.Scheduler;
 import ru.mysticchest.util.Text;
 
@@ -165,6 +166,32 @@ public final class ChestManager {
     public boolean isActive(Block b) { return at(b) != null; }
     public int count() { return total; }
 
+    public List<Active> snapshot() { return all(); }
+
+    private boolean auraRunning;
+
+    public void auraStopped() { auraRunning = false; }
+
+    private void startAura() {
+        Settings st = plugin.settings();
+        if (auraRunning || !st.auraEnabled || st.auraStyle == Settings.AuraStyle.NONE) return;
+        auraRunning = true;
+        plugin.animator().add(new ru.mysticchest.effects.Aura(plugin));
+    }
+
+    /** Closest standing chest in the player's world, or null. */
+    public Active nearest(Location from) {
+        Map<Long, Active> m = byWorld.get(from.getWorld());
+        Active best = null;
+        double bd = Double.MAX_VALUE;
+        if (m == null) return null;
+        for (Active a : m.values()) {
+            double d = a.loc.distanceSquared(from);
+            if (d < bd) { bd = d; best = a; }
+        }
+        return best;
+    }
+
     private List<Active> all() {
         List<Active> out = new ArrayList<Active>(total);
         for (Map<Long, Active> m : byWorld.values()) out.addAll(m.values());
@@ -201,6 +228,7 @@ public final class ChestManager {
         a.ttl = plugin.scheduler().later(t.ttlSeconds(plugin.settings()) * 1000L, new Runnable() {
             public void run() {
                 if (remove(a, true)) {
+                    plugin.effects().playAt(plugin.settings().fxExpire, a.loc);
                     plugin.announcer().send(plugin.settings().onSpawn, a.loc, "announce.expired", a.tier);
                 }
             }
@@ -210,6 +238,7 @@ public final class ChestManager {
         m.put(a.key, a);
         total++;
         hold(b.getWorld(), b.getX() >> 4, b.getZ() >> 4);
+        startAura();
         save();
         return true;
     }

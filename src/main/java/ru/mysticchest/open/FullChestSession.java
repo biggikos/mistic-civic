@@ -40,7 +40,7 @@ final class FullChestSession implements GuiHolder {
             }
             plugin.rewards().apply(p, t, r, false, false);   // commands + announcements, item stays in the GUI
         }
-        plugin.effects().play(plugin.settings().fxWin, p, "player", p.getName(), "item", "");
+        plugin.effects().playTier(plugin.settings().fxWin, p, t, "player", p.getName(), "item", "");
         p.openInventory(inv);
     }
 
