@@ -15,10 +15,7 @@ import ru.mysticchest.cooldown.CooldownManager;
 import ru.mysticchest.core.Animator;
 import ru.mysticchest.core.AsyncIO;
 import ru.mysticchest.core.Scheduler;
-import ru.mysticchest.economy.EconomyProvider;
-import ru.mysticchest.economy.ExcellentEconomyProvider;
-import ru.mysticchest.economy.NoneProvider;
-import ru.mysticchest.economy.VaultProvider;
+import ru.mysticchest.economy.Economies;
 import ru.mysticchest.effects.Announcer;
 import ru.mysticchest.effects.Effects;
 import ru.mysticchest.gui.ChatPrompt;
@@ -53,7 +50,7 @@ public final class MysticChestPlugin extends JavaPlugin {
     private SpawnService spawner;
     private GuiCache guiCache;
     private ChatPrompt prompts;
-    private EconomyProvider economy = new NoneProvider();
+    private Economies economies;
 
     @Override
     public void onEnable() {
@@ -74,6 +71,7 @@ public final class MysticChestPlugin extends JavaPlugin {
         locators = new Locators(this);
         spawner = new SpawnService(this, locators);
         prompts = new ChatPrompt(this);
+        economies = new Economies(this);
 
         cfg = configs.load("config.yml", true);
         settings = new Settings(cfg, getLogger());
@@ -115,13 +113,13 @@ public final class MysticChestPlugin extends JavaPlugin {
         effects.clear();
         effects.warmUp(settings);
         lang.load(settings.language);
-        setupEconomy();
+        economies.reload(cfg.getConfigurationSection("economy"));
         tiers.load();
         locators.loadPoints();
         spawner.reload();
         guiCache.clear();
         getLogger().info("Loaded " + tiers.all().size() + " tiers, language=" + settings.language
-                + ", economy=" + economy.name());
+                + ", economy=" + economies.defaultId());
     }
 
     @Override
@@ -130,23 +128,11 @@ public final class MysticChestPlugin extends JavaPlugin {
     @Override
     public void reloadConfig() { cfg = configs.load("config.yml", true); }
 
-    private void setupEconomy() {
-        String p = cfg.getString("economy.provider", "VAULT").toUpperCase();
-        EconomyProvider found = null;
-        if (p.equals("VAULT")) found = VaultProvider.create();
-        else if (p.equals("EXCELLENT_ECONOMY")) {
-            found = ExcellentEconomyProvider.create(cfg.getConfigurationSection("economy.excellent-economy"));
-        }
-        if (found == null && !p.equals("NONE")) {
-            getLogger().warning("Economy provider " + p + " is not available - shop purchases are disabled.");
-        }
-        economy = found != null ? found : new NoneProvider();
-    }
-
     /** Shop purchase: checks cooldown and daily limit, charges, hands out the chest item. */
     public void buy(Player p, Tier t) {
         if (!t.purchasable) return;
-        if (economy instanceof NoneProvider) { lang.send(p, "shop.economy-disabled"); return; }
+        Economies.Resolved eco = economies.resolve(t.currency);
+        if (eco == null) { lang.send(p, "shop.economy-disabled"); return; }
         UUID id = p.getUniqueId();
         String key = "buy_" + t.id;
         if (!p.hasPermission("mysticchest.bypass.cooldown") && t.cooldownBuy(settings) > 0) {
@@ -158,8 +144,8 @@ public final class MysticChestPlugin extends JavaPlugin {
             lang.send(p, "deny.limit-buys", "max", String.valueOf(max));
             return;
         }
-        if (!economy.has(p, t.currency, t.price) || !economy.withdraw(p, t.currency, t.price)) {
-            lang.send(p, "shop.not-enough", "price", Text.format(t.price), "currency", t.currency);
+        if (!eco.provider.withdraw(p, eco.currency, t.price)) {
+            lang.send(p, "shop.not-enough", "price", Text.format(t.price), "currency", eco.display);
             return;
         }
         rewards.give(p, chests.chestItem(t, p, 1));
@@ -188,5 +174,5 @@ public final class MysticChestPlugin extends JavaPlugin {
     public SpawnService spawner() { return spawner; }
     public GuiCache guiCache() { return guiCache; }
     public ChatPrompt prompts() { return prompts; }
-    public EconomyProvider economy() { return economy; }
+    public Economies economies() { return economies; }
 }

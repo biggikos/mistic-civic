@@ -27,7 +27,7 @@ import java.util.Map;
 
 public final class MysticCommand implements TabExecutor {
     private static final List<String> ROOT = Arrays.asList("shop", "preview", "list", "give", "spawn", "reload",
-            "perf", "loot", "point", "help");
+            "perf", "loot", "point", "economy", "help");
     private static final List<String> LOOT = Arrays.asList("add", "addcmd", "cmd", "weight", "remove", "list", "edit", "clear");
 
     private final MysticChestPlugin plugin;
@@ -86,6 +86,7 @@ public final class MysticCommand implements TabExecutor {
             case "give": return give(s, a);
             case "spawn": return spawn(s, a);
             case "perf": return perf(s);
+            case "economy": return economy(s, a);
             case "loot": return loot(s, a);
             case "point": return point(s, a);
             default:
@@ -185,6 +186,19 @@ public final class MysticCommand implements TabExecutor {
         for (org.bukkit.scheduler.BukkitWorker w : Bukkit.getScheduler().getActiveWorkers()) if (w.getOwner() == plugin) n++;
         for (org.bukkit.scheduler.BukkitTask t : Bukkit.getScheduler().getPendingTasks()) if (t.getOwner() == plugin) n++;
         return n;
+    }
+
+    private boolean economy(CommandSender s, String[] a) {
+        if (!need(s, "mysticchest.admin")) return true;
+        for (String l : plugin.economies().describe()) s.sendMessage("  " + l);
+        if (a.length > 1 && s instanceof Player) {
+            ru.mysticchest.economy.Economies.Resolved r = plugin.economies().resolve(a[1]);
+            if (r == null) plugin.lang().send(s, "shop.economy-disabled");
+            else s.sendMessage("  " + r.provider.id() + " / " + (r.currency.isEmpty() ? "-" : r.currency) + " balance: " + r.provider.balance((Player) s, r.currency));
+        } else {
+            plugin.lang().send(s, "economy.hint");
+        }
+        return true;
     }
 
     // ---- loot ----------------------------------------------------------
@@ -381,7 +395,7 @@ public final class MysticCommand implements TabExecutor {
 
     private boolean perm(CommandSender s, String sub) {
         switch (sub) {
-            case "give": case "spawn": case "reload": case "perf": case "point": return s.hasPermission("mysticchest.admin");
+            case "give": case "spawn": case "reload": case "perf": case "point": case "economy": return s.hasPermission("mysticchest.admin");
             case "loot": return s.hasPermission("mysticchest.admin.loot");
             case "shop": return s.hasPermission("mysticchest.shop");
             case "preview": return s.hasPermission("mysticchest.preview");

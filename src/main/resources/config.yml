@@ -42,18 +42,34 @@ use:
   click-block: PLACE
 
 ## ═══ ECONOMY ════════════════════════════════════════════════════════════════
-## VAULT             - any economy plugin that supports Vault
-## EXCELLENT_ECONOMY - multi-currency mode (gold / tokens), needs PlaceholderAPI
-## NONE              - shop purchases are disabled, give chests with /mystic give
+## Default economy for tiers:
+##   AUTO              - first installed of ExcellentEconomy, CoinsEngine, Vault, PlayerPoints (default)
+##   VAULT             - Vault / VaultUnlocked and any economy plugin behind it (single currency)
+##   EXCELLENT_ECONOMY - multi-currency (gold, tokens ...), needs PlaceholderAPI
+##   COINS_ENGINE      - multi-currency, needs PlaceholderAPI (preset NOT verified on a live server)
+##   PLAYER_POINTS     - PlayerPoints (one integer currency, ideal for donate "tokens")
+##   NONE              - shop purchases are disabled, give chests with /mystic give
+## A tier can pick its own economy in tiers.yml with  currency: "provider:currency"
+##   currency: gold                       -> default provider, currency "gold"
+##   currency: "excellenteconomy:coins"   -> ExcellentEconomy, currency "coins"
+##   currency: playerpoints               -> PlayerPoints (no currency name needed)
+##   currency: vault                      -> Vault
+## So "gold" can come from Vault while "tokens" come from PlayerPoints.
+## Check what the plugin sees with  /mystic economy  (and  /mystic economy <currency>  for your balance).
 economy:
-  provider: VAULT
+  provider: AUTO
   excellent-economy:
-    ## Placeholder that returns the player's raw balance. {currency} = tier "currency".
+    ## Placeholder that returns the raw balance. {currency} = the currency id.
     balance-placeholder: "%excellenteconomy_balance_raw_{currency}%"
     ## Console commands used to charge / refund. ExcellentEconomy 2.8 registers one command per
     ## currency (the currency id is its command), e.g. "money take Steve 100". Verified on 2.8.0.
     take-command: "{currency} take {player} {amount}"
     give-command: "{currency} give {player} {amount}"
+  coins-engine:
+    ## Unverified preset - check the names against your CoinsEngine version and edit if needed.
+    balance-placeholder: "%coinsengine_balance_raw_{currency}%"
+    take-command: "coinsengine take {player} {currency} {amount}"
+    give-command: "coinsengine give {player} {currency} {amount}"
 
 ## ═══ COOLDOWNS ══════════════════════════════════════════════════════════════
 ## Every value can be overridden per tier in tiers.yml (cooldowns: section).

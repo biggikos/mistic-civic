@@ -165,6 +165,7 @@ pre{background:var(--code);padding:12px 14px;border-radius:10px;overflow:auto;ma
 <li>RU/EN и <code>auto</code> по локали клиента; апгрейд старого config.yml; краш-тест</li>
 <li>9 юнит-тестов (веса, шаблоны, YAML-блоки, паритет en/ru по ключам и плейсхолдерам)</li></ul></div>
 <div class="card"><h3 class="no">Не проверено / не сделано</h3><ul>
+<li>Экономики: AUTO-определение, Vault/VaultUnlocked, ExcellentEconomy 2.8.0, PlayerPoints 3.3.3 — все три проверены вживую вместе на одном сервере; у тира можно указать <code>currency: "playerpoints"</code> или <code>"excellenteconomy:coins"</code>; пресет CoinsEngine не проверен (jar недоступен для скачивания)</li>
 <li>Добавлено позже: <code>%mysticchest_cooldown_&lt;тир&gt;%</code>, <code>_formatted_</code>, <code>opens_today</code>, <code>pity_&lt;тир&gt;</code>, <code>active_chests</code> (проверено с настоящим PlaceholderAPI 2.11.6); <code>limit-per-player</code> у записи лута; метка тира в PersistentDataContainer (1.14+, на 1.12–1.13 — lore)</li>
 <li>Vault (VaultUnlocked 2.20.3) и ExcellentEconomy 2.8.0 проверены вживую; на других версиях ExcellentEconomy сверьте команды в config.yml</li>
 <li>Промежуточные версии (1.13–1.20) не запускались</li>

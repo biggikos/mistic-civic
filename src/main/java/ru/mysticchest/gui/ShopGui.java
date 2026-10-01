@@ -46,7 +46,7 @@ public final class ShopGui implements GuiHolder {
         ItemMeta m = it.getItemMeta();
         m.setDisplayName(t.name(plugin.lang().code(p)));
         List<String> lore = new ArrayList<String>();
-        lore.add(plugin.lang().get(p, "gui.shop.price", "price", Text.format(t.price), "currency", t.currency));
+        lore.add(plugin.lang().get(p, "gui.shop.price", "price", Text.format(t.price), "currency", ru.mysticchest.economy.CurrencySpec.parse(t.currency).display));
         int cd = t.cooldownBuy(plugin.settings());
         if (cd > 0) lore.add(plugin.lang().get(p, "gui.shop.cooldown", "time", plugin.lang().time(p, cd)));
         lore.addAll(plugin.lang().list(p, plugin.settings().previewEnabled ? "gui.shop.lore-preview" : "gui.shop.lore"));

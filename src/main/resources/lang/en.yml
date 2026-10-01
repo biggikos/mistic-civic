@@ -218,3 +218,6 @@ perf:
 
 papi:
   ready: "Ready"
+
+economy:
+  hint: "&7Check a currency: &e/mystic economy <currency>&7 (e.g. gold, playerpoints, vault, excellenteconomy:coins)"

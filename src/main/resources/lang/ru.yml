@@ -209,3 +209,6 @@ perf:
 
 papi:
   ready: "Готово"
+
+economy:
+  hint: "&7Проверить валюту: &e/mystic economy <валюта>&7 (например gold, playerpoints, vault, excellenteconomy:coins)"

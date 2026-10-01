@@ -6,7 +6,7 @@ Mystic chests in the style of FunTime for Spigot/Paper **1.12.2 → 1.21.x** (on
 * **Spawn profiles**: `RANDOM_WORLD`, `NEAR_PLAYER`, `FIXED_POINTS`, `AIRDROP` (triggers: `INTERVAL`, `TIMES`)
 * **Cooldowns & limits**: open / buy / claim / spawn, per day limits, pity, bypass permissions
 * **Loot editing in game**: `/mystic loot add <tier>` moves your whole inventory into the reward pool, full GUI editor with weights, chances and commands
-* **Economy**: Vault, ExcellentEconomy (multi-currency via PlaceholderAPI + console commands) or none
+* **Economy**: `AUTO` detection of ExcellentEconomy, CoinsEngine (unverified preset), Vault / VaultUnlocked and PlayerPoints. A tier can pick its own with `currency: "provider:currency"` (gold from Vault, tokens from PlayerPoints). `/mystic economy` shows what was detected.
 * **PlaceholderAPI**: `%mysticchest_cooldown_<tier>%`, `%mysticchest_cooldown_formatted_<tier>%`, `%mysticchest_opens_today%`, `%mysticchest_pity_<tier>%`, `%mysticchest_active_chests%`
 * **Languages**: `language: en | ru | auto` (first key of `config.yml`), custom `lang/<code>.yml`
 
