@@ -19,7 +19,7 @@
 language: en
 
 ## Used to upgrade this file when the plugin updates. Do not change it.
-config-version: 6
+config-version: 7
 
 ## Extra console output for troubleshooting.
 debug: false
@@ -368,6 +368,23 @@ structures:
   ## AUTO = the biome's theme, but "theme-surprise-percent" of the time a random one;  RANDOM = always random.
   theme: AUTO
   theme-surprise-percent: 35
+  ## Blend into the landscape: where the ground next to the building is lower than its floor, earth is filled
+  ## in (grass on top) and slopes down away from it, so the building sits IN the terrain instead of hovering.
+  blend:
+    enabled: true
+    width: 3
+  ## Rubble scattered around the structure: rocks, clusters, toppled columns, broken stubs, now and then a piece
+  ## of an arch. It appears from the building outwards. Everything goes away with the structure unless
+  ## keep-after-collapse is true (then the ruins stay forever). Per spawn the amount varies by +-40%.
+  ##   radius: how far it spreads (blocks)      pieces: how many pieces on average
+  ##   load-chunks: load and hold the chunks of the whole field (needed for a full 30-block field when nobody is near)
+  ## Per profile/tier:  structure: {debris: {enabled: false}}   or   {debris: {radius: 40, pieces: 80}}
+  debris:
+    enabled: true
+    radius: 30
+    pieces: 45
+    load-chunks: true
+    keep-after-collapse: false
   ## Random 90 degree turn of your own saved structures.
   rotate: true
   decay: 0.08

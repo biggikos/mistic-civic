@@ -39,6 +39,8 @@ public final class StructureService {
         public final Theme theme;   // built-in shapes only
         public final double decay;
         public final boolean rotate;
+        public boolean debris;
+        public int debrisRadius, debrisPieces;
         Spec(StructureCatalog.Entry e, Theme t, double d, boolean r) { entry = e; theme = t; decay = d; rotate = r; }
     }
 
@@ -88,6 +90,8 @@ public final class StructureService {
         List<String> filter = null;
         String theme = s.structTheme;
         double decay = s.structDecay;
+        boolean debris = s.debrisEnabled;
+        int dRadius = s.debrisRadius, dPieces = s.debrisPieces;
         for (Cfg lvl : new Cfg[]{profile, tier}) {
             if (lvl == null || !lvl.exists()) continue;
             enabled = lvl.bool("enabled", enabled);
@@ -96,6 +100,12 @@ public final class StructureService {
             if (lvl.has("shape")) { filter = new ArrayList<String>(); filter.add(lvl.str("shape", "")); }
             theme = lvl.str("theme", theme);
             decay = lvl.decimal("decay", decay, 0, 1);
+            Cfg d = lvl.sub("debris");
+            if (d.exists()) {
+                debris = d.bool("enabled", debris);
+                dRadius = d.integer("radius", dRadius, 4, 80);
+                dPieces = d.integer("pieces", dPieces, 0, 400);
+            }
         }
         if (forceName != null || forceTheme != null) {
             enabled = true;
@@ -123,7 +133,12 @@ public final class StructureService {
             // AUTO follows the biome most of the time, but every so often it is something unexpected
             if (s.structSurprise > 0 && ThreadLocalRandom.current().nextInt(100) < s.structSurprise) t = all[ThreadLocalRandom.current().nextInt(all.length)];
         }
-        return new Spec(e, t, decay, s.structRotate);
+        Spec sp = new Spec(e, t, decay, s.structRotate);
+        sp.debris = debris;
+        sp.debrisRadius = dRadius;
+        // +-40% so the amount of rubble differs between spawns too
+        sp.debrisPieces = (int) Math.round(dPieces * (0.6 + ThreadLocalRandom.current().nextDouble() * 0.8));
+        return sp;
     }
 
     // ---- building ---------------------------------------------------------
@@ -141,13 +156,20 @@ public final class StructureService {
             bp = Blueprint.of(cv, spec.theme);
         }
         bp.name = spec.entry.id;
+        Settings st = plugin.settings();
+        int blend = st.structBlend ? st.structBlendWidth : 0;
         final int minX = cx + bp.minX - 1, maxX = cx + bp.maxX + 1, minZ = cz + bp.minZ - 1, maxZ = cz + bp.maxZ + 1;
+        // chunks to load and keep: the structure + terrain skirt, and (optionally) the whole rubble field
+        int reach = spec.debris && st.debrisLoadChunks ? Math.max(spec.debrisRadius, blend + 2) : blend + 2;
         final List<int[]> chunks = new ArrayList<int[]>();
-        for (int x = minX >> 4; x <= maxX >> 4; x++) for (int z = minZ >> 4; z <= maxZ >> 4; z++) chunks.add(new int[]{x, z});
+        int cMinX = Math.min(minX - blend - 1, cx - reach), cMaxX = Math.max(maxX + blend + 1, cx + reach);
+        int cMinZ = Math.min(minZ - blend - 1, cz - reach), cMaxZ = Math.max(maxZ + blend + 1, cz + reach);
+        if (!(spec.debris && st.debrisLoadChunks)) { cMinX = minX - blend - 1; cMaxX = maxX + blend + 1; cMinZ = minZ - blend - 1; cMaxZ = maxZ + blend + 1; }
+        for (int x = cMinX >> 4; x <= cMaxX >> 4; x++) for (int z = cMinZ >> 4; z <= cMaxZ >> 4; z++) chunks.add(new int[]{x, z});
         ensure(w, chunks, 0, new Runnable() {
             public void run() {
                 try {
-                    start(bp, w, cx, cz, minX, maxX, minZ, maxZ, chunks, cb);
+                    start(spec, bp, w, cx, cz, minX, maxX, minZ, maxZ, chunks, cb);
                 } catch (Throwable t) {
                     plugin.getLogger().warning("Structure failed: " + t);
                     for (int[] c : chunks) plugin.chests().release(w, c[0], c[1]);
@@ -166,7 +188,15 @@ public final class StructureService {
         });
     }
 
-    private static boolean soft(String n) { return n.contains("LEAVES") || n.contains("LOG") || n.contains("WOOD") || n.contains("GRASS") || n.contains("FLOWER") || n.contains("SNOW") && !n.contains("BLOCK"); }
+    /** Things that are removed or built over: foliage and plants, never the ground itself. */
+    private static boolean soft(String n) {
+        if (n.endsWith("LEAVES") || n.endsWith("_LOG") || n.equals("LOG") || n.equals("LOG_2") || n.endsWith("_STEM") && !n.startsWith("STRIPPED")) return true;
+        if (n.endsWith("_WOOD") && !n.endsWith("PLANKS")) return true;         // tree trunk blocks (OAK_WOOD), not planks
+        if (n.equals("GRASS") || n.equals("SHORT_GRASS") || n.equals("TALL_GRASS") || n.equals("LONG_GRASS") || n.equals("FERN") || n.equals("LARGE_FERN")
+                || n.equals("DEAD_BUSH") || n.equals("SNOW") || n.equals("VINE") || n.equals("DOUBLE_PLANT") || n.equals("SEAGRASS") || n.equals("TALL_SEAGRASS")) return true;
+        return n.contains("FLOWER") || n.endsWith("_TULIP") || n.equals("POPPY") || n.equals("DANDELION") || n.equals("RED_ROSE") || n.equals("YELLOW_FLOWER")
+                || n.endsWith("BUSH") && !n.startsWith("SWEET") || n.endsWith("MUSHROOM") || n.equals("SUGAR_CANE") || n.equals("REEDS");
+    }
 
     private int groundY(World w, int x, int z) {
         int y = w.getHighestBlockYAt(x, z);
@@ -176,7 +206,7 @@ public final class StructureService {
         return y;
     }
 
-    private void start(Blueprint bp, World w, int cx, int cz, int minX, int maxX, int minZ, int maxZ,
+    private void start(Spec spec, Blueprint bp, World w, int cx, int cz, int minX, int maxX, int minZ, int maxZ,
                        List<int[]> chunks, Callback cb) {
         Settings s = plugin.settings();
         int minH = ru.mysticchest.spawn.Locators.minHeight(w);
@@ -228,6 +258,9 @@ public final class StructureService {
                 ops.add(new int[]{cx + rx, y, cz + rz}); placers.add(e.getValue());
             }
         }
+        int before = ops.size();
+        if (s.structBlend) addSkirt(ops, placers, w, cx, cz, baseY, bp, s.structBlendWidth);
+        if (s.debug) plugin.getLogger().info("[structure] baseY=" + baseY + " ground " + lo + ".." + hi + ", skirt ops=" + (ops.size() - before));
         List<Integer> order = new ArrayList<Integer>();
         for (int i = 0; i < bp.xyz.size(); i++) order.add(i);
         final List<int[]> rel = bp.xyz;
@@ -244,12 +277,131 @@ public final class StructureService {
             ops.add(new int[]{cx + p[0], baseY + p[1], cz + p[2]});
             placers.add(bp.placers.get(i));
         }
+        int mainOps = ops.size();
+        if (spec.debris && spec.debrisPieces > 0) addDebris(ops, placers, w, cx, cz, bp, spec.theme, spec.debrisRadius, spec.debrisPieces);
+        int keepFrom = s.debrisKeep && ops.size() > mainOps ? mainOps : -1;
         Location chest = new Location(w, cx + bp.chestX, baseY + bp.chestY, cz + bp.chestZ);
         Structure st = new Structure(w, minX, maxX, baseY - 10, top, minZ, maxZ, chest);
         st.chunks.addAll(chunks);
         st.name = bp.name;
         active.add(st);
-        plugin.animator().add(new BuildJob(st, ops, placers, cb, new Location(w, cx + 0.5, baseY + 1, cz + 0.5)));
+        plugin.animator().add(new BuildJob(st, ops, placers, cb, new Location(w, cx + 0.5, baseY + 1, cz + 0.5), keepFrom));
+    }
+
+    /**
+     * Terrain skirt: where the ground next to the structure lies lower than the floor, earth is filled in
+     * (grass on top) so the building sits INTO the landscape, sloping down by one block per step away from it.
+     */
+    private void addSkirt(List<int[]> ops, List<Placer> placers, World w, int cx, int cz, int baseY, Blueprint bp, int width) {
+        int minH = ru.mysticchest.spawn.Locators.minHeight(w);
+        for (int x = cx + bp.minX - width - 1; x <= cx + bp.maxX + width + 1; x++) {
+            for (int z = cz + bp.minZ - width - 1; z <= cz + bp.maxZ + width + 1; z++) {
+                int rx = x - cx, rz = z - cz;
+                int d = Math.max(Math.max(bp.minX - 1 - rx, rx - bp.maxX - 1), Math.max(bp.minZ - 1 - rz, rz - bp.maxZ - 1)) + 1;   // 1 = right next to the footprint
+                if (d < 1 || d > width) continue;
+                if (!w.isChunkLoaded(x >> 4, z >> 4)) continue;
+                int g = groundY(w, x, z);                        // first air above the ground
+                int want = baseY - d;                             // wanted height of the topmost ground block
+                int top = g - 1;
+                if (top >= want || top <= minH + 1) continue;
+                Block surface = w.getBlockAt(x, top, z);
+                if (surface.isLiquid() || surface.getType().name().endsWith("AIR")) continue;
+                Placer topMat = Snap.of(surface);
+                Block below = w.getBlockAt(x, top - 1, z);
+                Placer fill = below.getType().name().endsWith("AIR") || below.isLiquid() ? topMat : Snap.of(below);
+                for (int y = top + 1; y <= want; y++) {
+                    ops.add(new int[]{x, y, z});
+                    placers.add(y == want ? topMat : fill);
+                }
+            }
+        }
+    }
+
+    /** Scatters rubble (rocks, clusters, toppled columns, broken stubs, rare arch pieces) over the surroundings. */
+    private void addDebris(List<int[]> ops, List<Placer> placers, World w, int cx, int cz, Blueprint bp, Theme theme, int radius, int pieces) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int minR = Math.max(Math.max(Math.abs(bp.minX), Math.abs(bp.maxX)), Math.max(Math.abs(bp.minZ), Math.abs(bp.maxZ))) + 3;
+        if (radius <= minR + 1) return;
+        final List<int[]> newOps = new ArrayList<int[]>();
+        final List<Placer> newPl = new ArrayList<Placer>();
+        Set<Long> planned = new HashSet<Long>();
+        int placed = 0;
+        for (int attempt = 0; attempt < pieces * 4 && placed < pieces; attempt++) {
+            double ang = r.nextDouble() * Math.PI * 2, dist = minR + (radius - minR) * Math.pow(r.nextDouble(), 1.4);
+            int x = cx + (int) Math.round(Math.cos(ang) * dist), z = cz + (int) Math.round(Math.sin(ang) * dist);
+            if (!w.isChunkLoaded(x >> 4, z >> 4)) continue;
+            int g = groundY(w, x, z);
+            Block under = w.getBlockAt(x, g - 1, z);
+            if (under.isLiquid() || under.getType().name().endsWith("AIR") || !w.getBlockAt(x, g, z).getType().name().endsWith("AIR")) continue;
+            if (nearPlayerMade(w, x, g, z)) continue;
+            int roll = r.nextInt(100);
+            if (roll < 38) {                                                   // a single rock
+                put(newOps, newPl, planned, w, x, g, z, r.nextInt(4) == 0 ? theme.mat(Canvas.Slot.ACCENT) : theme.mat(Canvas.Slot.BASE));
+            } else if (roll < 63) {                                            // a small cluster, maybe two layers high
+                int n = 2 + r.nextInt(3);
+                for (int i = 0; i < n; i++) {
+                    int dx = r.nextInt(3) - 1, dz = r.nextInt(3) - 1;
+                    if (!w.isChunkLoaded((x + dx) >> 4, (z + dz) >> 4)) continue;
+                    int gg = groundY(w, x + dx, z + dz);
+                    if (Math.abs(gg - g) > 1) continue;
+                    put(newOps, newPl, planned, w, x + dx, gg, z + dz, r.nextBoolean() ? theme.mat(Canvas.Slot.BASE) : theme.mat(Canvas.Slot.ACCENT));
+                    if (r.nextInt(3) == 0) put(newOps, newPl, planned, w, x + dx, gg + 1, z + dz, theme.mat(Canvas.Slot.BASE));
+                }
+            } else if (roll < 78) {                                            // a toppled column lying on the ground
+                boolean alongX = r.nextBoolean();
+                int len = 3 + r.nextInt(2);
+                for (int i = 0; i < len; i++) {
+                    int px = x + (alongX ? i : 0), pz = z + (alongX ? 0 : i);
+                    if (!w.isChunkLoaded(px >> 4, pz >> 4)) break;
+                    int gg = groundY(w, px, pz);
+                    if (Math.abs(gg - g) > 1) break;
+                    put(newOps, newPl, planned, w, px, gg, pz, i == len - 1 ? theme.mat(Canvas.Slot.TRIM) : theme.mat(Canvas.Slot.ACCENT));
+                }
+            } else if (roll < 95) {                                            // a broken stub still standing
+                int h = 2 + r.nextInt(3);
+                for (int i = 0; i < h; i++) put(newOps, newPl, planned, w, x, g + i, z, theme.mat(Canvas.Slot.BASE));
+                put(newOps, newPl, planned, w, x, g + h, z, r.nextInt(4) == 0 ? theme.mat(Canvas.Slot.LIGHT) : theme.mat(Canvas.Slot.ACCENT));
+            } else {                                                           // two stubs and a lintel: part of an arch
+                int h = 3 + r.nextInt(2);
+                boolean alongX = r.nextBoolean();
+                int ox = alongX ? 3 : 0, oz = alongX ? 0 : 3;
+                if (!w.isChunkLoaded((x + ox) >> 4, (z + oz) >> 4)) continue;
+                int g2 = groundY(w, x + ox, z + oz);
+                if (Math.abs(g2 - g) > 1) continue;
+                for (int i = 0; i < h; i++) { put(newOps, newPl, planned, w, x, g + i, z, theme.mat(Canvas.Slot.BASE)); put(newOps, newPl, planned, w, x + ox, g2 + i, z + oz, theme.mat(Canvas.Slot.BASE)); }
+                for (int t = 0; t <= 3; t++) put(newOps, newPl, planned, w, x + (alongX ? t : 0), g + h, z + (alongX ? 0 : t), t == 1 || t == 2 ? theme.mat(Canvas.Slot.ACCENT) : theme.mat(Canvas.Slot.TRIM));
+            }
+            placed++;
+        }
+        // the rubble appears from the structure outwards, like a shock wave
+        Integer[] idx = new Integer[newOps.size()];
+        for (int i = 0; i < idx.length; i++) idx[i] = i;
+        final int fx = cx, fz = cz;
+        java.util.Arrays.sort(idx, new java.util.Comparator<Integer>() {
+            public int compare(Integer a, Integer b) {
+                double da = Math.hypot(newOps.get(a)[0] - fx, newOps.get(a)[2] - fz), db = Math.hypot(newOps.get(b)[0] - fx, newOps.get(b)[2] - fz);
+                return da < db ? -1 : (da > db ? 1 : 0);
+            }
+        });
+        for (Integer i : idx) { ops.add(newOps.get(i)); placers.add(newPl.get(i)); }
+    }
+
+    private void put(List<int[]> ops, List<Placer> pl, Set<Long> planned, World w, int x, int y, int z, Placer m) {
+        if (!w.getBlockAt(x, y, z).getType().name().endsWith("AIR")) return;
+        if (!planned.add(ru.mysticchest.chest.ChestManager.key(x, y, z))) return;
+        ops.add(new int[]{x, y, z});
+        pl.add(m);
+    }
+
+    private boolean nearPlayerMade(World w, int x, int y, int z) {
+        for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) {
+            if (!w.isChunkLoaded((x + dx) >> 4, (z + dz) >> 4)) continue;
+            for (int dy = -1; dy <= 2; dy++) {
+                String n = w.getBlockAt(x + dx, y + dy, z + dz).getType().name();
+                for (String bad : PLAYER_MADE) if (n.contains(bad)) return true;
+            }
+        }
+        return false;
     }
 
     private void abort(World w, List<int[]> chunks, Callback cb, String why) {
@@ -267,8 +419,10 @@ public final class StructureService {
         final Set<Long> seen = new HashSet<Long>();
         int idx, tick;
 
-        BuildJob(Structure st, List<int[]> ops, List<Placer> mats, Callback cb, Location center) {
-            this.st = st; this.ops = ops; this.mats = mats; this.cb = cb; this.center = center;
+        final int keepFrom;
+
+        BuildJob(Structure st, List<int[]> ops, List<Placer> mats, Callback cb, Location center, int keepFrom) {
+            this.st = st; this.ops = ops; this.mats = mats; this.cb = cb; this.center = center; this.keepFrom = keepFrom;
         }
 
         public boolean tick() {
@@ -276,7 +430,8 @@ public final class StructureService {
             for (int i = 0; i < per && idx < ops.size(); i++, idx++) {
                 int[] p = ops.get(idx);
                 Block b = st.world.getBlockAt(p[0], p[1], p[2]);
-                if (seen.add(ru.mysticchest.chest.ChestManager.key(p[0], p[1], p[2]))) {
+                boolean keep = keepFrom >= 0 && idx >= keepFrom;      // rubble that stays after the collapse is not recorded
+                if (!keep && seen.add(ru.mysticchest.chest.ChestManager.key(p[0], p[1], p[2]))) {
                     st.positions.add(p);
                     st.originals.add(Snap.of(b));
                 }

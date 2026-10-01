@@ -110,7 +110,8 @@ public final class Settings {
     public final double structDecay;
     public final String structTheme, structSound;
     public final boolean structRotate;
-    public final int structSurprise;
+    public final int structSurprise, structBlendWidth, debrisRadius, debrisPieces;
+    public final boolean structBlend, debrisEnabled, debrisLoadChunks, debrisKeep;
 
     public final boolean previewEnabled;
     public final String filler;
@@ -242,6 +243,14 @@ public final class Settings {
         structChance = sc.integer("chance", 70, 0, 100);
         structRotate = sc.bool("rotate", true);
         structSurprise = sc.integer("theme-surprise-percent", 35, 0, 100);
+        structBlend = sc.sub("blend").bool("enabled", true);
+        structBlendWidth = sc.sub("blend").integer("width", 3, 1, 8);
+        Cfg db = sc.sub("debris");
+        debrisEnabled = db.bool("enabled", true);
+        debrisRadius = db.integer("radius", 30, 4, 80);
+        debrisPieces = db.integer("pieces", 45, 0, 400);
+        debrisLoadChunks = db.bool("load-chunks", true);
+        debrisKeep = db.bool("keep-after-collapse", false);
         structTheme = sc.str("theme", "AUTO");
         structDecay = sc.decimal("decay", 0.08, 0, 1);
         structSpeed = sc.integer("build-speed", 40, 1, 2000);

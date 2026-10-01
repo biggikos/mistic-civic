@@ -182,6 +182,8 @@ Chests can appear inside a building: nine built-in shapes (`pyramid`, `temple`, 
 3. `/mystic structure save <name>`. The chest is detected automatically, air is not stored, the lowest layer sits on the ground, a foundation fills gaps below it.
 4. `/mystic structure edit` opens the catalog: weights with live chance %, on/off, fixed theme, preview (`F`), delete (`Q` twice). `/mystic structure preview <name>` builds it in front of you for 40 seconds.
 
+**Sits in the landscape**: the floor is level with the ground, trees and plants on the site are cleared, columns under the floor are filled down to the ground, and where the ground beside the building is lower, earth (grass on top) is filled in and slopes down away from it (`structures.blend`, `width`). **Rubble** (`structures.debris`): rocks, clusters, toppled columns, broken stubs and now and then a piece of an arch are scattered up to `radius` (30) blocks around, appearing from the building outwards; the amount varies by ±40% per spawn, it only lands on free ground away from player-made blocks, and it is removed together with the structure unless `keep-after-collapse: true`. Tune or switch off per profile or tier: `structure: {debris: {radius: 40, pieces: 80}}`.
+
 Saved structures keep their exact blocks, are rotated randomly (`rotate: true`) and do not clear the terrain around them (only trees and grass). Sites that are steep, in water or contain player-made blocks (chests, doors, beds, signs…) are skipped and a plain chest appears instead. Per spawn profile or tier you can force a structure: `structure: {shape: gate, theme: end, chance: 100}`.
 
 ## Hunt, guards, atmosphere, capture
