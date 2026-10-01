@@ -1,0 +1,211 @@
+##############################################################################
+##                      MysticChest  -  lang/ru.yml                           ##
+##############################################################################
+## Все тексты, которые видят игроки. Цвета: &a &l ... и &#RRGGBB (1.16+).
+## {плейсхолдеры} подставляет плагин - оставляйте их как есть.
+## Недостающие ключи берутся из встроенного текста, можно удалять неизменённые строки.
+## Свой язык: скопируйте файл в lang/<код>.yml и укажите  language: <код>  в config.yml.
+
+prefix: "&5[Мистик] &r"
+
+time:
+  d: "д"
+  h: "ч"
+  m: "м"
+  s: "с"
+
+deny:
+  no-permission: "&cУ вас нет прав."
+  cooldown: "&cПодождите &e{time}&c, прежде чем снова открыть этот сундук."
+  buy-cooldown: "&cПодождите &e{time}&c, прежде чем снова купить этот сундук."
+  limit-opens: "&cДневной лимит исчерпан: &e{max} &cсундуков в день."
+  limit-buys: "&cДневной лимит покупок исчерпан: &e{max}&c."
+  no-loot: "&cУ этого сундука не настроены награды."
+  cannot-place: "&cЗдесь нельзя поставить сундук."
+  claimed: "&cЭтот сундук принадлежит другому игроку ещё &e{time}&c."
+only-players: "&cЭта команда только для игроков."
+unknown-tier: "&cТакого сундука нет: &e{tier}"
+unknown-player: "&cИгрок не найден: &e{player}"
+unknown-profile: "&cНеизвестный профиль спавна: &e{profile}"
+reloaded: "&aКонфигурация перезагружена."
+given: "&aВыдано &e{count}x &r{tier} &aигроку &f{player}&a."
+
+usage:
+  root: "&eИспользуйте &f/mystic help"
+  give: "&e/mystic give <игрок> <тир> [кол-во]"
+  spawn: "&e/mystic spawn <тир> [here|<профиль>]"
+  preview: "&e/mystic preview <тир>"
+  point: "&e/mystic point <add <имя>|remove <имя>|list>"
+  loot: "&e/mystic loot <add|addcmd|cmd|weight|remove|list|edit|clear> <тир> ..."
+  loot-add: "&e/mystic loot add <тир> [вес] [--keep] [--hand]"
+  loot-addcmd: "&e/mystic loot addcmd <тир> <вес> <команда...>"
+  loot-cmd: "&e/mystic loot cmd <тир> <#> <add [player:] [50%] <команда>|remove <n>|list|clear>"
+  loot-weight: "&e/mystic loot weight <тир> <#> <вес>"
+
+help:
+  player:
+    - "&5&lМистические сундуки"
+    - "&e/mystic shop &7- купить сундуки"
+    - "&e/mystic preview <тир> &7- награды и шансы"
+    - "&e/mystic list &7- все сундуки"
+  admin:
+    - "&5&lМистические сундуки &7(админ)"
+    - "&e/mystic shop, preview <тир>, list"
+    - "&e/mystic give <игрок> <тир> [кол-во]"
+    - "&e/mystic spawn <тир> [here|<профиль>] &7- поставить / запустить профиль"
+    - "&e/mystic loot add <тир> [вес] [--keep] [--hand] &7- добавить инвентарь в награды"
+    - "&e/mystic loot addcmd <тир> <вес> <команда> &7- награда-команда (иконка = предмет в руке)"
+    - "&e/mystic loot cmd|weight|remove|list|edit|clear <тир> ..."
+    - "&e/mystic point add|remove|list &7- точки спавна"
+    - "&e/mystic reload, perf"
+
+shop:
+  economy-disabled: "&cЭкономика не подключена - покупка недоступна."
+  not-enough: "&cНедостаточно средств! Нужно: &e{price} {currency}&c."
+  bought: "&aВы купили &r{tier}&a."
+
+world:
+  placed: "&aВы поставили &r{tier}&a. Нажмите ПКМ, чтобы открыть!"
+
+item:
+  lore:
+    - "&7Нажмите ПКМ, чтобы открыть"
+
+announce:
+  spawned:
+    exact: "&d✦ &r{tier} &fпоявился на &e{x} {y} {z} &7({world})&f!"
+    region: "&d✦ &r{tier} &fпоявился в районе &e{x} {z} &7({world})&f!"
+    hint: "&d✦ &r{tier} &fпоявился примерно в &e{distance} блоках &fна &e{dir}&f!"
+  airdrop:
+    exact: "&d✈ &fАирдроп с &r{tier} &fпадает на &e{x} {z} &7({world}) &f- приземлится через &e{seconds}с&f!"
+    region: "&d✈ &fАирдроп с &r{tier} &fпадает в районе &e{x} {z} &7({world})&f!"
+    hint: "&d✈ &fАирдроп с &r{tier} &fпадает примерно в &e{distance} блоках &fна &e{dir}&f!"
+  landed:
+    exact: "&d✦ &fАирдроп &r{tier} &fприземлился на &e{x} {y} {z}&f!"
+    region: "&d✦ &fАирдроп &r{tier} &fприземлился в районе &e{x} {z}&f!"
+    hint: "&d✦ &fАирдроп &r{tier} &fприземлился примерно в &e{distance} блоках &fна &e{dir}&f!"
+  expired: "&7Мистический сундук &r{tier}&7 исчез."
+  opened: "&e{player} &fоткрыл &r{tier}&f!"
+  rare: "&6★ &e{player} &fвыиграл &e{amount}x {item} &fиз &r{tier}&f!"
+
+dir:
+  e: "востоке"
+  se: "юго-востоке"
+  s: "юге"
+  sw: "юго-западе"
+  w: "западе"
+  nw: "северо-западе"
+  n: "севере"
+  ne: "северо-востоке"
+
+spawn:
+  failed: "&cНе удалось найти место для сундука."
+  near-you: "&dРядом с вами появился мистический сундук! Осмотритесь!"
+
+point:
+  none: "&7Точек пока нет. Используйте &e/mystic point add <имя>"
+  added: "&aТочка &e{name} &aсохранена на вашей позиции."
+  removed: "&aТочка &e{name} &aудалена."
+  unknown: "&cНет такой точки: &e{name}"
+
+loot:
+  added: "&aДобавлено &e{count} &aстек(ов) в &r{tier} &7(вес {weight})"
+  nothing: "&cНечего добавлять - инвентарь пуст."
+  added-cmd: "&aДобавлена награда-команда в &r{tier} &7(вес {weight}). Текст команды: /mystic loot cmd."
+  weight-set: "&aУ записи &e#{n} &aтеперь вес &e{weight}&a."
+  removed: "&aЗапись &e#{n} &aудалена из &r{tier}&a."
+  list-header: "&5Награды &r{tier} &7({count})"
+  list-line: "&e#{n} &f{item} &7x{amount} &8| &7вес {weight} ({chance}%) &8| &7команд: {cmds}"
+  clear-confirm: "&cЭто удалит ВСЕ награды &r{tier}&c. Повторите с &e confirm &cв конце."
+  cleared: "&aВсе награды &r{tier} &aудалены."
+  no-commands: "&7У этой записи нет команд."
+  cmd-line: "&e{n}. &7[{run}, {chance}%] &f{command}"
+  cmd-added: "&aКоманда добавлена к записи &e#{n}&a."
+  cmd-removed: "&aКоманда &e{n} &aудалена."
+  cmd-cleared: "&aВсе команды записи &e#{n} &aудалены."
+  bad-index: "&cВ этом тире нет записи #{n}. Смотрите /mystic loot list <тир>."
+
+prompt:
+  commands:
+    - "&5&lВведите команду в чат &7(без /)"
+    - "&7Префикс &fp: &7- от имени игрока, &f50% &7- шанс выполнения."
+    - "&7Примеры: &fgive {player} diamond 1 &7| &fp: spawn &7| &f25% kit vip {player}"
+    - "&7Также: &f-2 &7удалит команду 2, &fclear &7удалит все, &fcancel &7отмена."
+  timeout: "&7Время ввода истекло."
+
+gui:
+  prev: "&e◀ Предыдущая страница"
+  next: "&eСледующая страница ▶"
+  back: "&cНазад в магазин"
+  close: "&cЗакрыть"
+  roulette:
+    title: "&5Мистический сундук"
+  chest:
+    title: "&5Лут: {tier}"
+  pick:
+    title: "&5Выберите карт: {picks}"
+    card: "&d? Тайная карта"
+    card-lore:
+      - "&7Нажмите, чтобы открыть"
+    missed: "&8(не выбрано)"
+  shop:
+    title: "&5Магазин мистических сундуков"
+    price: "&7Цена: &e{price} {currency}"
+    cooldown: "&7Кулдаун покупки: &e{time}"
+    lore:
+      - ""
+      - "&aНажмите, чтобы купить"
+    lore-preview:
+      - ""
+      - "&aЛКМ: &fкупить"
+      - "&eПКМ: &fпосмотреть награды"
+  preview:
+    title: "&5Награды: {tier}"
+    chance: "&7Шанс: &e{chance}%"
+    amount: "&7Количество: &f{min}-{max}"
+    rare: "&6★ Редкий"
+  editor:
+    title: "&5Лут: {tier}"
+    add-inventory: "&aДобавить весь мой инвентарь"
+    add-inventory-lore:
+      - "&7Переносит все предметы из инвентаря"
+      - "&7в награды этого сундука."
+    add-hand: "&aДобавить предмет в руке"
+    add-hand-lore:
+      - "&7Переносит только предмет в руке."
+    info: "&eЗаписей: {entries}"
+    info-lore:
+      - "&7Страница {page}/{pages}"
+      - ""
+      - "&7Бросьте предмет на окно"
+      - "&7или shift-клик по нему в инвентаре,"
+      - "&7чтобы добавить награду."
+    next-tier: "&bСледующий сундук"
+    line:
+      weight: "&7Вес: &e{weight} &7(&e{chance}%&7)"
+      amount: "&7Количество: &f{amount}"
+      gives: "&7Выдаёт предмет"
+      no-item: "&cТолько команды (без предмета)"
+      broadcast: "&6Объявляется всем"
+      commands: "&7Команды:"
+      cmd: "&8 {n}. [{run} {chance}%] &f{command}"
+    help:
+      - "&8ЛКМ/ПКМ: &7вес +1 / -1"
+      - "&8Shift + клик: &7вес +10 / -10"
+      - "&8F: &7команды  &8Клавиша 1: &7объявление"
+      - "&8Клавиша 2: &7выдавать предмет вкл/выкл"
+      - "&8Q: &7удалить (нажать дважды)"
+    help-armed:
+      - "&c&lНажмите Q ещё раз, чтобы удалить #{n}"
+
+perf:
+  - "&5&lMysticChest &7- живые показатели"
+  - "&7Сундуков в мире: &e{chests}  &7Анимаций: &e{anims}  &7Кеш GUI: &e{gui}"
+  - "&7Очередь таймера: &e{timers} &7(задача таймера активна: &e{awake}&7)  &7Задач Bukkit: &e{tasks}"
+  - "&7Записей игроков: &e{players}  &7Ожидают сохранения: &e{pendingio}"
+  - "&7Сохранений: &e{saves}  &7последнее: &e{lastsave} назад"
+  - "&7Бросок лута: &e{roll} мкс &7(макс {rollmax}, всего {rolls})  &7Открытие: &e{open} мкс &7(макс {openmax}, всего {opens})"
+  - "&7Память JVM: &e{mem} МБ"
+
+papi:
+  ready: "Готово"

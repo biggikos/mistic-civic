@@ -1,0 +1,220 @@
+##############################################################################
+##                      MysticChest  -  lang/en.yml                           ##
+##############################################################################
+## All player-visible texts. Colours: &a &l ... and &#RRGGBB (1.16+).
+## {placeholders} are filled in by the plugin - keep them as they are.
+## Missing keys fall back to the built-in English text, so you may delete lines you don't change.
+## To add a language: copy this file to lang/<code>.yml and set  language: <code>  in config.yml.
+
+prefix: "&5[Mystic] &r"
+
+## ═══ time units (used in "{time}") ═══
+time:
+  d: "d"
+  h: "h"
+  m: "m"
+  s: "s"
+
+## ═══ errors / denials ═══
+deny:
+  no-permission: "&cYou don't have permission."
+  cooldown: "&cWait &e{time} &cbefore opening this chest again."
+  buy-cooldown: "&cWait &e{time} &cbefore buying this chest again."
+  limit-opens: "&cDaily limit reached: &e{max} &cchests per day."
+  limit-buys: "&cDaily purchase limit reached: &e{max}&c."
+  no-loot: "&cThis chest has no rewards configured."
+  cannot-place: "&cYou can't place a chest here."
+  claimed: "&cThis chest belongs to another player for &e{time}&c."
+only-players: "&cThis command is for players."
+unknown-tier: "&cUnknown chest tier: &e{tier}"
+unknown-player: "&cPlayer not found: &e{player}"
+unknown-profile: "&cUnknown spawn profile: &e{profile}"
+reloaded: "&aConfiguration reloaded."
+given: "&aGave &e{count}x &r{tier} &ato &f{player}&a."
+
+## ═══ usage ═══
+usage:
+  root: "&eUse &f/mystic help"
+  give: "&e/mystic give <player> <tier> [amount]"
+  spawn: "&e/mystic spawn <tier> [here|<profile>]"
+  preview: "&e/mystic preview <tier>"
+  point: "&e/mystic point <add <name>|remove <name>|list>"
+  loot: "&e/mystic loot <add|addcmd|cmd|weight|remove|list|edit|clear> <tier> ..."
+  loot-add: "&e/mystic loot add <tier> [weight] [--keep] [--hand]"
+  loot-addcmd: "&e/mystic loot addcmd <tier> <weight> <command...>"
+  loot-cmd: "&e/mystic loot cmd <tier> <#> <add [player:] [50%] <command>|remove <n>|list|clear>"
+  loot-weight: "&e/mystic loot weight <tier> <#> <weight>"
+
+help:
+  player:
+    - "&5&lMystic chests"
+    - "&e/mystic shop &7- buy chests"
+    - "&e/mystic preview <tier> &7- see rewards and chances"
+    - "&e/mystic list &7- all chest tiers"
+  admin:
+    - "&5&lMystic chests &7(admin)"
+    - "&e/mystic shop, preview <tier>, list"
+    - "&e/mystic give <player> <tier> [amount]"
+    - "&e/mystic spawn <tier> [here|<profile>] &7- place / run a profile"
+    - "&e/mystic loot add <tier> [weight] [--keep] [--hand] &7- add your inventory to the rewards"
+    - "&e/mystic loot addcmd <tier> <weight> <command> &7- command reward (icon = held item)"
+    - "&e/mystic loot cmd|weight|remove|list|edit|clear <tier> ..."
+    - "&e/mystic point add|remove|list &7- fixed spawn points"
+    - "&e/mystic reload, perf"
+
+## ═══ shop ═══
+shop:
+  economy-disabled: "&cNo economy is connected - purchases are disabled."
+  not-enough: "&cNot enough funds! You need &e{price} {currency}&c."
+  bought: "&aYou bought &r{tier}&a."
+
+world:
+  placed: "&aYou placed &r{tier}&a. Right click it to open!"
+
+## ═══ chest item ═══
+item:
+  lore:
+    - "&7Right click to open"
+
+## ═══ announcements (use {tier}, {player} ...) ═══
+announce:
+  spawned:
+    exact: "&d✦ &r{tier} &fappeared at &e{x} {y} {z} &7({world})&f!"
+    region: "&d✦ &r{tier} &fappeared around &e{x} {z} &7({world})&f!"
+    hint: "&d✦ &r{tier} &fappeared about &e{distance} blocks &fto the &e{dir}&f!"
+  airdrop:
+    exact: "&d✈ &fAn airdrop with &r{tier} &fis falling at &e{x} {z} &7({world}) &f- lands in &e{seconds}s&f!"
+    region: "&d✈ &fAn airdrop with &r{tier} &fis falling around &e{x} {z} &7({world})&f!"
+    hint: "&d✈ &fAn airdrop with &r{tier} &fis falling about &e{distance} blocks &fto the &e{dir}&f!"
+  landed:
+    exact: "&d✦ &fThe airdrop &r{tier} &flanded at &e{x} {y} {z}&f!"
+    region: "&d✦ &fThe airdrop &r{tier} &flanded around &e{x} {z}&f!"
+    hint: "&d✦ &fThe airdrop &r{tier} &flanded about &e{distance} blocks &fto the &e{dir}&f!"
+  expired: "&7A mystic chest &r{tier}&7 disappeared."
+  opened: "&e{player} &fopened &r{tier}&f!"
+  rare: "&6★ &e{player} &fwon &e{amount}x {item} &ffrom &r{tier}&f!"
+
+dir:
+  e: "east"
+  se: "south-east"
+  s: "south"
+  sw: "south-west"
+  w: "west"
+  nw: "north-west"
+  n: "north"
+  ne: "north-east"
+
+spawn:
+  failed: "&cCould not find a place for the chest."
+  near-you: "&dA mystic chest appeared near you! Look around!"
+
+point:
+  none: "&7No fixed points yet. Use &e/mystic point add <name>"
+  added: "&aPoint &e{name} &asaved at your position."
+  removed: "&aPoint &e{name} &aremoved."
+  unknown: "&cNo such point: &e{name}"
+
+## ═══ loot commands ═══
+loot:
+  added: "&aAdded &e{count} &astack(s) to &r{tier} &7(weight {weight})"
+  nothing: "&cNothing to add - your inventory is empty."
+  added-cmd: "&aAdded a command reward to &r{tier} &7(weight {weight}). Add the command text with /mystic loot cmd."
+  weight-set: "&aEntry &e#{n} &anow has weight &e{weight}&a."
+  removed: "&aRemoved entry &e#{n} &afrom &r{tier}&a."
+  list-header: "&5Rewards of &r{tier} &7({count})"
+  list-line: "&e#{n} &f{item} &7x{amount} &8| &7weight {weight} ({chance}%) &8| &7commands: {cmds}"
+  clear-confirm: "&cThis deletes ALL rewards of &r{tier}&c. Repeat with &e confirm &cat the end."
+  cleared: "&aAll rewards of &r{tier} &awere removed."
+  no-commands: "&7This entry has no commands."
+  cmd-line: "&e{n}. &7[{run}, {chance}%] &f{command}"
+  cmd-added: "&aCommand added to entry &e#{n}&a."
+  cmd-removed: "&aCommand &e{n} &aremoved."
+  cmd-cleared: "&aAll commands of entry &e#{n} &aremoved."
+  bad-index: "&cNo entry #{n} in this tier. See /mystic loot list <tier>."
+
+prompt:
+  commands:
+    - "&5&lType the command in chat &7(without /)"
+    - "&7Prefix &fp: &7to run it as the player, &f50% &7for a chance."
+    - "&7Examples: &fgive {player} diamond 1 &7| &fp: spawn &7| &f25% kit vip {player}"
+    - "&7Also: &f-2 &7removes command 2, &fclear &7removes all, &fcancel &7aborts."
+  timeout: "&7Input timed out."
+
+## ═══ GUI texts ═══
+gui:
+  prev: "&e◀ Previous page"
+  next: "&eNext page ▶"
+  back: "&cBack to shop"
+  close: "&cClose"
+  roulette:
+    title: "&5Mystic chest"
+  chest:
+    title: "&5Loot: {tier}"
+  pick:
+    title: "&5Pick {picks} card(s)"
+    card: "&d? Mystery card"
+    card-lore:
+      - "&7Click to reveal"
+    missed: "&8(missed)"
+  shop:
+    title: "&5Mystic chest shop"
+    price: "&7Price: &e{price} {currency}"
+    cooldown: "&7Purchase cooldown: &e{time}"
+    lore:
+      - ""
+      - "&aClick to buy"
+    lore-preview:
+      - ""
+      - "&aLeft click: &fbuy"
+      - "&eRight click: &fpreview rewards"
+  preview:
+    title: "&5Rewards: {tier}"
+    chance: "&7Chance: &e{chance}%"
+    amount: "&7Amount: &f{min}-{max}"
+    rare: "&6★ Rare"
+  editor:
+    title: "&5Edit loot: {tier}"
+    add-inventory: "&aAdd my whole inventory"
+    add-inventory-lore:
+      - "&7Moves every item from your inventory"
+      - "&7into this tier's rewards."
+    add-hand: "&aAdd item in hand"
+    add-hand-lore:
+      - "&7Moves only the held item."
+    info: "&eEntries: {entries}"
+    info-lore:
+      - "&7Page {page}/{pages}"
+      - ""
+      - "&7Drop an item on the window"
+      - "&7or shift-click it in your inventory"
+      - "&7to add it as a reward."
+    next-tier: "&bSwitch tier"
+    line:
+      weight: "&7Weight: &e{weight} &7(&e{chance}%&7)"
+      amount: "&7Amount: &f{amount}"
+      gives: "&7Gives the item"
+      no-item: "&cOnly runs commands (no item)"
+      broadcast: "&6Announced to everyone"
+      commands: "&7Commands:"
+      cmd: "&8 {n}. [{run} {chance}%] &f{command}"
+    help:
+      - "&8Left/Right click: &7weight +1 / -1"
+      - "&8Shift + click: &7weight +10 / -10"
+      - "&8F: &7edit commands  &8Key 1: &7announce"
+      - "&8Key 2: &7give item on/off"
+      - "&8Q: &7delete (press twice)"
+    help-armed:
+      - "&c&lPress Q again to delete #{n}"
+
+## ═══ /mystic perf ═══
+perf:
+  - "&5&lMysticChest &7- live numbers"
+  - "&7World chests: &e{chests}  &7Animations: &e{anims}  &7GUI cache: &e{gui}"
+  - "&7Timer queue: &e{timers} &7(timer task awake: &e{awake}&7)  &7Bukkit tasks owned: &e{tasks}"
+  - "&7Player records: &e{players}  &7Pending saves: &e{pendingio}"
+  - "&7Saves: &e{saves}  &7last: &e{lastsave} ago"
+  - "&7Loot roll: &e{roll} µs &7(max {rollmax}, {rolls} total)  &7Open: &e{open} µs &7(max {openmax}, {opens} total)"
+  - "&7JVM memory in use: &e{mem} MB"
+
+papi:
+  ready: "Ready"

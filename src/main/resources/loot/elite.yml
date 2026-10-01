@@ -1,0 +1,23 @@
+##############################################################################
+## Rewards of tier "elite".  Edit in game:  /mystic loot edit elite
+## This file is REWRITTEN (comments are lost) when you change loot in game.
+##
+## entry keys:
+##   material: item name (works on every version)   | item: <full serialized item>
+##   amount: N  or  min/max: random amount          weight: bigger = more common
+##   give-item: false = only run commands (the item is just the icon)
+##   commands: ["kit x {player}", {run: PLAYER, command: "spawn", chance: 50}]
+##   broadcast: true = announce when someone wins it
+##   permission: only players with it can win this entry
+##############################################################################
+entries:
+  - {material: NETHERITE_INGOT, min: 2, max: 5, weight: 25}
+  - {material: NETHERITE_BLOCK, amount: 1, weight: 8}
+  - {material: ENCHANTED_GOLDEN_APPLE, min: 3, max: 6, weight: 20}
+  - {material: BEACON, amount: 1, weight: 5}
+  - material: NETHER_STAR
+    name: "&cCrusher resources"
+    amount: 1
+    weight: 6
+    broadcast: true
+    commands: ["kit crusher_res {player}"]

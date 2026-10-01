@@ -1,0 +1,304 @@
+##############################################################################
+##                         MysticChest  -  config.yml                         ##
+##############################################################################
+## HOW TO READ THIS FILE
+##   "## text"  = explanation / tutorial for the setting right below it.
+##   "# key: v" = an optional example. Remove the leading "# " to enable it.
+##   Seconds are real seconds. 0 means "off" for cooldowns and limits.
+##   After editing run  /mystic reload  (no restart needed).
+##   Tiers (prices, names, per-tier overrides) live in tiers.yml,
+##   rewards live in loot/<tier>.yml, texts live in lang/*.yml.
+##############################################################################
+
+## ═══ LANGUAGE ═══════════════════════════════════════════════════════════════
+## Language of all messages and GUIs.
+##   en   - English (default)
+##   ru   - Russian
+##   auto - use each player's client language (falls back to en)
+## You can add your own file lang/<code>.yml and write its code here.
+language: en
+
+## Used to upgrade this file when the plugin updates. Do not change it.
+config-version: 2
+
+## Extra console output for troubleshooting.
+debug: false
+
+## ═══ HOW REWARDS ARE GIVEN ══════════════════════════════════════════════════
+## Default way to open a chest (every tier can override it with "open-mode"):
+##   ROULETTE   - animated spin, the prize lands in the middle (see "roulette")
+##   FULL_CHEST - a chest GUI full of loot, the player takes what they want
+##   INSTANT    - everything goes straight to the inventory, no GUI
+##   PICK       - mystery cards: pick N face-down cards (see "pick")
+default-open-mode: ROULETTE
+
+## What a right click with the chest item does.
+##   click-air:   OPEN | NONE
+##   click-block: PLACE (put the chest in the world, players open it there)
+##                OPEN  (open immediately) | NONE
+## Recipe "classic FunTime":  click-air: NONE  /  click-block: PLACE
+use:
+  click-air: OPEN
+  click-block: PLACE
+
+## ═══ ECONOMY ════════════════════════════════════════════════════════════════
+## VAULT             - any economy plugin that supports Vault
+## EXCELLENT_ECONOMY - multi-currency mode (gold / tokens), needs PlaceholderAPI
+## NONE              - shop purchases are disabled, give chests with /mystic give
+economy:
+  provider: VAULT
+  excellent-economy:
+    ## Placeholder that returns the player's raw balance. {currency} = tier "currency".
+    balance-placeholder: "%excellenteconomy_balance_raw_{currency}%"
+    ## Console commands used to charge / refund. ExcellentEconomy 2.8 registers one command per
+    ## currency (the currency id is its command), e.g. "money take Steve 100". Verified on 2.8.0.
+    take-command: "{currency} take {player} {amount}"
+    give-command: "{currency} give {player} {amount}"
+
+## ═══ COOLDOWNS ══════════════════════════════════════════════════════════════
+## Every value can be overridden per tier in tiers.yml (cooldowns: section).
+## Players with  mysticchest.bypass.cooldown  ignore all of these.
+cooldowns:
+  ## Who shares an "open" cooldown:
+  ##   PLAYER      - one cooldown for any chest the player opens
+  ##   PLAYER_TIER - separate cooldown per tier (default)
+  ##   GLOBAL      - everybody shares the cooldown of a tier (one player opening "poor" blocks "poor" for all)
+  scope: PLAYER_TIER
+  ## Seconds between two chest openings.  e.g. 3600 = once per hour.
+  open-seconds: 0
+  ## Seconds between two shop purchases.
+  buy-seconds: 0
+  ## Chest placed by a player: only they can open it for this many seconds.
+  claim-seconds: 0
+  ## Minimum seconds between two automatic spawns on the whole server.
+  spawn-seconds: 0
+
+## ═══ LIMITS ═════════════════════════════════════════════════════════════════
+## Players with  mysticchest.bypass.limits  ignore the per-player limits.
+limits:
+  ## Per player per day (server time). 0 = unlimited.
+  max-opens-per-day: 0
+  max-purchases-per-day: 0
+  ## Hard cap for chests standing in the world at the same time.
+  max-active-world-chests: 20
+
+## ═══ WORLD CHEST ════════════════════════════════════════════════════════════
+## A chest that stands in the world until somebody opens it.
+world-chest:
+  ## Seconds until an unopened chest disappears.
+  ttl-seconds: 300
+  hologram:
+    enabled: true
+    ## {tier} = coloured tier name.
+    text: "{tier}"
+  ## What happens with chunk unload etc. is handled automatically (chest is removed).
+
+## ═══ PROTECTION ═════════════════════════════════════════════════════════════
+protection:
+  prevent-break: true
+  prevent-explosions: true
+  prevent-pistons: true
+  ## Obey WorldGuard & co.: placing is denied where other plugins cancel the click.
+  respect-regions: true
+
+## ═══ OPEN MODES ═════════════════════════════════════════════════════════════
+roulette:
+  ## SINGLE = the middle slot flips through items.
+  ## SCROLL = a belt of items slides by (CS:GO style).
+  style: SCROLL
+  ## Length of one spin in ticks (20 ticks = 1 second).
+  ticks: 60
+  ## Ticks to show a prize before the next spin when a tier has several rolls.
+  pause-ticks: 14
+
+full-chest:
+  ## 3 = 27 slots, 6 = 54 slots. Anything left in the GUI is given back on close.
+  rows: 3
+
+pick:
+  ## Face-down cards shown (max 27) and how many the player may pick.
+  cards: 9
+  picks: 1
+  ## Ticks the revealed board stays open after the last pick.
+  close-delay-ticks: 50
+
+## ═══ LOOT ═══════════════════════════════════════════════════════════════════
+loot:
+  ## Weight given to items added with /mystic loot add when you don't type one.
+  default-weight: 10
+  ## Show drop chances in /mystic preview and the shop.
+  show-chances: true
+  ## Entries with a chance below this percent are "rare":
+  ## they are announced (announce.on-rare) and counted by the pity system.
+  rare-below-percent: 3
+  ## Adding an identical item again adds its weight to the existing entry
+  ## instead of creating a duplicate.
+  merge-identical: true
+
+## ═══ AUTOMATIC SPAWNING ═════════════════════════════════════════════════════
+## Any number of profiles can run at the same time. Disable with "enabled: false".
+##
+## mode (where/how the chest appears):
+##   RANDOM_WORLD - a random surface point around the world spawn
+##   NEAR_PLAYER  - a random online player gets a chest nearby
+##   FIXED_POINTS - one of the points set with /mystic point add <name>
+##   AIRDROP      - the chest falls from the sky (location from airdrop.location)
+##
+## trigger:
+##   type: INTERVAL  + minutes: N          - every N minutes
+##   type: TIMES     + times: ["12:00"]    - at these server-clock times
+##   type: ONLINE_THRESHOLD + players: 10 + cooldown-minutes: 60
+##                                         - when 10+ players are online, at most once per hour
+##
+## announce: EXACT (coordinates) | REGION (rough area) | HINT (distance + direction) | NONE
+spawn:
+  profiles:
+    main:
+      enabled: true
+      mode: RANDOM_WORLD
+      trigger:
+        type: INTERVAL
+        minutes: 30
+      ## Spawn only while at least this many players are online.
+      min-players: 1
+      worlds: [world]
+      ## Higher weight = more common. Unknown tiers are ignored.
+      tier-weights:
+        poor: 50
+        solid: 30
+        rich: 15
+        elite: 5
+      announce: EXACT
+      ## Max chests of THIS profile standing at once.
+      max-active: 3
+      random-world:
+        radius: 1500
+        min-distance-from-spawn: 50
+        ## Ground blocks whose name contains one of these are rejected.
+        avoid-ground: [WATER, LAVA, LEAVES, ICE, CACTUS, MAGMA, POWDER_SNOW]
+    # Example: a chest next to a random player every 20 minutes.
+    near_player:
+      enabled: false
+      mode: NEAR_PLAYER
+      trigger: {type: INTERVAL, minutes: 20}
+      min-players: 2
+      worlds: [world]
+      tier-weights: {poor: 70, solid: 30}
+      announce: HINT
+      max-active: 2
+      near-player:
+        min-distance: 40
+        max-distance: 150
+        ## Tell the chosen player privately.
+        notify-player: true
+    # Example: chests at hand-picked spots (/mystic point add spawn_plaza).
+    points:
+      enabled: false
+      mode: FIXED_POINTS
+      trigger: {type: TIMES, times: ["12:00", "20:00"]}
+      worlds: [world]
+      tier-weights: {rich: 70, elite: 30}
+      announce: EXACT
+      max-active: 2
+      fixed-points:
+        ## Only these points (empty list = all points).
+        names: []
+    # Example: an airdrop event twice a day.
+    airdrop:
+      enabled: false
+      mode: AIRDROP
+      trigger: {type: TIMES, times: ["15:00", "21:00"]}
+      min-players: 3
+      worlds: [world]
+      tier-weights: {elite: 60, crusher: 40}
+      announce: EXACT
+      max-active: 1
+      airdrop:
+        ## Where it lands: RANDOM_WORLD or NEAR_PLAYER (uses the settings above).
+        location: RANDOM_WORLD
+        height: 60
+        fall-seconds: 12
+      random-world: {radius: 1000, min-distance-from-spawn: 100}
+
+## ═══ EFFECTS ════════════════════════════════════════════════════════════════
+## Per event: sound (XSeries name, works on every version), volume, pitch,
+## particle (name or "" for none) + count, and title/subtitle/actionbar for the player.
+## Placeholders: {player} {tier} {item}.  Leave a value empty to disable it.
+effects:
+  open:
+    sound: BLOCK_CHEST_OPEN
+    volume: 1.0
+    pitch: 1.0
+    particle: ""
+    count: 0
+  tick:
+    sound: UI_BUTTON_CLICK
+    volume: 0.5
+    pitch: 1.4
+  win:
+    sound: ENTITY_PLAYER_LEVELUP
+    volume: 1.0
+    pitch: 1.0
+    particle: HAPPY_VILLAGER
+    count: 20
+  rare:
+    sound: UI_TOAST_CHALLENGE_COMPLETE
+    volume: 1.0
+    pitch: 1.0
+    particle: TOTEM_OF_UNDYING
+    count: 40
+    title: "&6&l★ RARE ★"
+    subtitle: "&f{item}"
+  spawn:
+    sound: ENTITY_ENDER_DRAGON_GROWL
+    volume: 0.4
+    pitch: 1.6
+    particle: PORTAL
+    count: 60
+
+## ═══ ANNOUNCEMENTS ══════════════════════════════════════════════════════════
+## type:   CHAT | TITLE | ACTIONBAR | NONE
+## radius: only players within N blocks hear it (-1 = everyone)
+## world-only: only players in the same world
+announce:
+  on-spawn:
+    type: CHAT
+    radius: -1
+    world-only: false
+  on-open:
+    type: CHAT
+    radius: -1
+    world-only: false
+  on-rare:
+    type: CHAT
+    radius: -1
+    world-only: false
+
+## PlaceholderAPI (if installed) gets %mysticchest_cooldown_<tier>%, %mysticchest_cooldown_formatted_<tier>%,
+## %mysticchest_opens_today%, %mysticchest_pity_<tier>% and %mysticchest_active_chests%.
+
+## ═══ GUI ════════════════════════════════════════════════════════════════════
+gui:
+  ## Right click a chest in the shop to preview its loot.
+  preview-enabled: true
+  ## Material for empty slots in editors/previews (XSeries name).
+  filler: GRAY_STAINED_GLASS_PANE
+
+## ═══ PERFORMANCE ════════════════════════════════════════════════════════════
+## The plugin is built to cost ~0 when idle. These knobs are for huge servers.
+## Check live numbers with  /mystic perf
+performance:
+  ## Write files on a background thread (recommended).
+  async-io: true
+  ## Files are saved at most once per this many seconds (debounce).
+  save-interval-seconds: 5
+  ## Keep ready-made GUI items instead of rebuilding them on each open.
+  gui-cache: true
+  ## Cap on simultaneously running roulette/pick/airdrop animations.
+  max-concurrent-animations: 100
+  ## Players farther than this (blocks) don't receive particles.
+  effects-view-distance: 32
+  ## Hard cap for particles per effect.
+  particle-limit: 60
+  ## true = no particles, no holograms (weakest servers).
+  low-resource: false

@@ -1,0 +1,34 @@
+name: MysticChest
+version: ${version}
+main: ru.mysticchest.MysticChestPlugin
+api-version: 1.13
+authors: [Biggiko]
+description: Mystic chests in the style of FunTime
+softdepend: [Vault, ExcellentEconomy, PlaceholderAPI]
+commands:
+  mystic:
+    description: Mystic chests
+    aliases: [mc, mistic]
+    usage: /mystic help
+permissions:
+  mysticchest.use:
+    description: Open mystic chests
+    default: true
+  mysticchest.shop:
+    description: Use /mystic shop
+    default: true
+  mysticchest.preview:
+    description: Use /mystic preview
+    default: true
+  mysticchest.admin:
+    description: give, spawn, reload, perf, point
+    default: op
+  mysticchest.admin.loot:
+    description: Edit chest rewards (/mystic loot, editor GUI)
+    default: op
+  mysticchest.bypass.cooldown:
+    description: Ignore chest cooldowns and claim locks
+    default: false
+  mysticchest.bypass.limits:
+    description: Ignore daily limits
+    default: false

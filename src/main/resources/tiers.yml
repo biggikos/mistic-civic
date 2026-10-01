@@ -1,0 +1,73 @@
+##############################################################################
+##                          MysticChest  -  tiers.yml                         ##
+##############################################################################
+## One block per chest tier. The block name (poor, solid, ...) is the tier id
+## used in commands:  /mystic give Steve rich
+## Rewards are NOT here - they live in loot/<tier-id>.yml and are edited in game with
+## /mystic loot edit <tier>.
+##
+## Every key except name/price is optional; missing ones fall back to config.yml.
+##
+##   name:         display name. A plain string, or one string per language:
+##                 name: {en: "&6Rich chest", ru: "&6Богатый сундук"}
+##   icon:         material shown in the shop (default CHEST)
+##   price:        cost in the tier currency
+##   currency:     Vault ignores it. ExcellentEconomy: the currency id (gold, tokens...)
+##   purchasable:  false = can only be given/spawned, never bought
+##   rolls:        how many rewards one opening gives. Number, or {min: 2, max: 4}
+##   open-mode:    ROULETTE | FULL_CHEST | INSTANT | PICK  (overrides default-open-mode)
+##   ttl-seconds:  how long a world chest of this tier waits to be opened
+##   cooldowns:    {open-seconds, buy-seconds, claim-seconds}  (overrides config.yml)
+##   limits:       {max-opens-per-day, max-purchases-per-day}
+##   pity:         {after: 10}  - after 10 openings without a rare reward the next one is guaranteed rare
+##   hologram:     text above a world chest of this tier
+## ═══════════════════════════════════════════════════════════════════════════
+tiers:
+  poor:
+    name: {en: "&7Poor chest", ru: "&7Бедный сундук"}
+    price: 10000000
+    currency: gold
+    rolls: 3
+    # open-mode: INSTANT
+    # cooldowns: {open-seconds: 60}
+
+  solid:
+    name: {en: "&aSolid chest", ru: "&aСолидный сундук"}
+    price: 25000000
+    currency: gold
+    rolls: {min: 3, max: 5}
+
+  rich:
+    name: {en: "&6Rich chest", ru: "&6Богатый сундук"}
+    price: 60000000
+    currency: gold
+    rolls: 5
+    pity: {after: 15}
+
+  elite:
+    name: {en: "&dElite chest", ru: "&dЭлитный сундук"}
+    price: 150000000
+    currency: gold
+    rolls: 6
+    open-mode: PICK
+    pity: {after: 10}
+
+  crusher:
+    name: {en: "&cCrusher chest", ru: "&cСундук Крушителя"}
+    price: 16500
+    currency: tokens
+    rolls: 6
+    open-mode: FULL_CHEST
+    icon: ENDER_CHEST
+
+  admin:
+    name: {en: "&4Admin chest", ru: "&4Сундук Админа"}
+    purchasable: false
+    rolls: 8
+    open-mode: FULL_CHEST
+
+  aristocratic:
+    name: {en: "&5&lAristocratic chest", ru: "&5&lАристократический сундук"}
+    purchasable: false
+    rolls: 10
+    open-mode: FULL_CHEST

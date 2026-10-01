@@ -1,0 +1,21 @@
+##############################################################################
+## Rewards of tier "crusher".  Edit in game:  /mystic loot edit crusher
+## This file is REWRITTEN (comments are lost) when you change loot in game.
+##
+## entry keys:
+##   material: item name (works on every version)   | item: <full serialized item>
+##   amount: N  or  min/max: random amount          weight: bigger = more common
+##   give-item: false = only run commands (the item is just the icon)
+##   commands: ["kit x {player}", {run: PLAYER, command: "spawn", chance: 50}]
+##   broadcast: true = announce when someone wins it
+##   permission: only players with it can win this entry
+##############################################################################
+entries:
+  - {material: NETHERITE_BLOCK, min: 1, max: 3, weight: 20}
+  - {material: ENCHANTED_GOLDEN_APPLE, min: 4, max: 8, weight: 25}
+  - material: NETHER_STAR
+    name: "&cCrusher kit"
+    amount: 1
+    weight: 15
+    broadcast: true
+    commands: ["kit crusher {player}"]
