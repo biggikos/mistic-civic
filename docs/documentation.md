@@ -1,0 +1,308 @@
+# MysticChest documentation
+
+- [Concepts](#concepts)
+- [Files](#files)
+- [Languages](#languages)
+- [Tiers](#tiers)
+- [How chests are opened](#how-chests-are-opened)
+- [Spawning chests](#spawning-chests)
+- [Cooldowns, limits, pity](#cooldowns-limits-pity)
+- [Rewards (loot)](#rewards-loot)
+- [Economy](#economy)
+- [Effects and announcements](#effects-and-announcements)
+- [Commands and permissions](#commands-and-permissions)
+- [PlaceholderAPI](#placeholderapi)
+- [Performance](#performance)
+- [Troubleshooting](#troubleshooting)
+
+## Concepts
+
+- A **tier** is a kind of chest (Poor, Rich, …) with a price, a name and a reward pool.
+- A **chest item** is what a player holds. Right click uses it according to `use.click-air` / `use.click-block`.
+- A **world chest** stands in the world until somebody opens it or its TTL runs out. Players place them, or **spawn profiles** create them.
+- A **reward** is an item and/or commands with a weight. The chance of a reward is its weight divided by the total weight of the tier.
+
+## Files
+
+```
+plugins/MysticChest/
+  config.yml        global settings, every option is explained with ## comments
+  tiers.yml         per-tier price, names, open mode, cooldown/limit overrides, pity
+  loot/<tier>.yml   rewards of a tier (rewritten by /mystic loot and the editor)
+  lang/en.yml       texts (en, ru shipped; add your own lang/<code>.yml)
+  lang/ru.yml
+  data/players.yml  cooldowns, daily counters, pity, per-player wins   (managed)
+  data/active.yml   chests currently standing in the world             (managed)
+  data/points.yml   fixed spawn points                                   (managed)
+```
+
+In the YAML files `## text` is an explanation and `# key: value` is an example you can uncomment. After editing run `/mystic reload`.
+
+**Updating the plugin.** When a new version adds config sections, they are appended to your `config.yml` as text (your comments and values stay). A fresh template is written to `config.yml.new` so you can see new options inside existing sections. Language files are never overwritten: a missing key falls back to the built-in English text; delete a lang file to get the new version.
+
+A wrong value never crashes the plugin: you get a console warning with the key path and the default is used.
+
+## Languages
+
+```yaml
+language: en     # en | ru | auto
+```
+
+- `en`, `ru`: fixed language for everyone.
+- `auto`: each player sees their client language, falling back to English.
+- Any other code works once `lang/<code>.yml` exists (copy `en.yml` and translate).
+
+Tier names can be per language:
+
+```yaml
+name: {en: "&6Rich chest", ru: "&6Богатый сундук"}
+```
+
+Colors: `&a`, `&l`, … and `&#RRGGBB` on 1.16+. Inventory titles are cut to 32 characters on servers older than 1.14.
+
+## Tiers
+
+`tiers.yml`; the key (`poor`, `rich`, …) is the id used in commands.
+
+| Key | Meaning |
+|---|---|
+| `name` | display name (string or one per language) |
+| `icon` | shop item and world block (default `CHEST`; a non-block material falls back to a chest block) |
+| `price`, `currency` | cost, see [Economy](#economy) |
+| `purchasable` | `false` = only given or spawned, never sold |
+| `rolls` | rewards per opening: `5` or `{min: 3, max: 5}` |
+| `open-mode` | `ROULETTE`, `FULL_CHEST`, `INSTANT`, `PICK` (default: `default-open-mode`) |
+| `ttl-seconds` | how long a world chest of this tier waits |
+| `cooldowns` | `{open-seconds, buy-seconds, claim-seconds}` |
+| `limits` | `{max-opens-per-day, max-purchases-per-day}` |
+| `pity` | `{after: 15}` |
+| `hologram` | text above the world chest (`{tier}` = name) |
+
+Anything omitted falls back to `config.yml`.
+
+## How chests are opened
+
+`default-open-mode` and the tier's `open-mode`:
+
+| Mode | Behaviour |
+|---|---|
+| `ROULETTE` | animated spin. `roulette.style: SCROLL` slides a belt of items under a pointer, `SINGLE` flips the middle slot. A tier with several rolls spins once per reward. Closing the window early hands out the remaining prizes immediately; nothing is ever lost. |
+| `FULL_CHEST` | a chest GUI (`full-chest.rows`, 1–6) with all rewards. The player takes what they like; the rest goes to the inventory on close. |
+| `INSTANT` | rewards go straight to the inventory, no window. |
+| `PICK` | `pick.cards` face-down cards, the player picks `pick.picks`. Afterwards the others are shown dimmed. If the player idles for 60 s, the picks are made automatically. |
+
+What a click does:
+
+```yaml
+use:
+  click-air: OPEN         # OPEN | NONE
+  click-block: PLACE      # PLACE (put the chest in the world) | OPEN | NONE
+```
+
+"Classic FunTime": `click-air: NONE`, `click-block: PLACE`.
+
+A world chest can only be opened by the first player to click it. With `cooldowns.claim-seconds` a chest placed by a player is reserved for them for that long. Chests cannot be broken, blown up or pushed by pistons (each protection can be switched off under `protection:`). `respect-regions: true` honours WorldGuard-style plugins when placing.
+
+## Spawning chests
+
+`spawn.profiles.<name>` in `config.yml`; any number run side by side. Disable one with `enabled: false`.
+
+```yaml
+spawn:
+  profiles:
+    main:
+      enabled: true
+      mode: RANDOM_WORLD
+      trigger: {type: INTERVAL, minutes: 30}
+      min-players: 1
+      worlds: [world]
+      tier-weights: {poor: 50, solid: 30, rich: 15, elite: 5}
+      announce: EXACT
+      max-active: 3
+```
+
+**Modes**
+
+| Mode | Where the chest appears |
+|---|---|
+| `RANDOM_WORLD` | random surface point around the world spawn (`radius`, `min-distance-from-spawn`, `avoid-ground`); stays inside the world border |
+| `NEAR_PLAYER` | near a random online player (`min-distance`..`max-distance`); `notify-player` tells them privately |
+| `FIXED_POINTS` | one of the points saved with `/mystic point add <name>` (optionally limited by `names`) |
+| `AIRDROP` | falls from `height` blocks over `fall-seconds`; lands at `airdrop.location` (`RANDOM_WORLD` or `NEAR_PLAYER`) |
+
+**Triggers**
+
+| Trigger | Fields |
+|---|---|
+| `INTERVAL` | `minutes` |
+| `TIMES` | `times: ["12:00", "20:00"]` (server clock) |
+| `ONLINE_THRESHOLD` | `players`, `cooldown-minutes`: fires when that many players are online, at most once per cooldown (checked every 30 s) |
+
+**Announce**: `EXACT` (coordinates), `REGION` (rounded to 100 blocks), `HINT` (distance and direction from each player), `NONE`.
+
+Chunks with chests are kept loaded while the chest exists (Paper/Spigot 1.13+; on older servers the unload is vetoed). After a crash the next start removes leftover chest blocks and holograms.
+
+Force a profile now: `/mystic spawn <tier> <profile>`; place at your feet: `/mystic spawn <tier> here`.
+
+## Cooldowns, limits, pity
+
+```yaml
+cooldowns:
+  scope: PLAYER_TIER   # PLAYER | PLAYER_TIER | GLOBAL
+  open-seconds: 0
+  buy-seconds: 0
+  claim-seconds: 0
+  spawn-seconds: 0
+limits:
+  max-opens-per-day: 0
+  max-purchases-per-day: 0
+  max-active-world-chests: 20
+```
+
+`0` means off. Scopes for the open cooldown: `PLAYER` (one cooldown for any chest), `PLAYER_TIER` (per tier), `GLOBAL` (everybody shares the cooldown of a tier). Every value can be overridden per tier. Cooldowns survive restarts and crashes. Players with `mysticchest.bypass.cooldown` / `mysticchest.bypass.limits` ignore them.
+
+**Pity**: `pity: {after: 15}` in a tier. After 15 openings without a *rare* reward, the next opening is guaranteed to contain one. "Rare" means a chance below `loot.rare-below-percent` (default 3%).
+
+**Per-player win limit**: `limit-per-player: 1` on a reward; a player can win it at most that many times, even inside one opening.
+
+## Rewards (loot)
+
+### In game
+
+| Command | Effect |
+|---|---|
+| `/mystic loot add <tier> [weight] [--keep] [--hand]` | moves **all** items of your inventory/hotbar (not armor/offhand) into the pool, each stack as one reward; `--keep` leaves the items with you, `--hand` adds only the held item. Run it as many times as you like. |
+| `/mystic loot addcmd <tier> <weight> <command…>` | a command-only reward; the icon is your held item |
+| `/mystic loot cmd <tier> <#> add [p:] [50%] <command…>` | add a command to reward `#` (`p:` run as the player, `50%` chance) |
+| `/mystic loot cmd <tier> <#> remove <n>` / `list` / `clear` | manage commands |
+| `/mystic loot weight <tier> <#> <weight>` | change the weight |
+| `/mystic loot remove <tier> <#> [--return]` | delete (and optionally get the item back) |
+| `/mystic loot list <tier>` | list with chances |
+| `/mystic loot edit <tier>` | open the GUI editor |
+| `/mystic loot clear <tier> confirm` | delete everything |
+
+Identical items are merged (their weights add up) when `loot.merge-identical` is on.
+
+### GUI editor
+
+Every reward shows its chance, weight, amount, commands and flags.
+
+| Action | Result |
+|---|---|
+| Left / right click | weight +1 / −1 (Shift: ±10) |
+| `F` (swap hands) | type commands in chat: `give {player} diamond 1`, `p: spawn`, `25% kit vip {player}`, `-2` removes command 2, `clear`, `cancel` |
+| Number key `1` | toggle "announce to everyone" |
+| Number key `2` | toggle "give the item" (off = command-only reward) |
+| `Q` twice | delete |
+| Drop an item on the window, or Shift-click it in your inventory | add as a reward |
+| Bottom row | pages, add whole inventory, add held item, switch tier, close |
+
+### File format
+
+`loot/<tier>.yml`:
+
+```yaml
+entries:
+  - id: a1b2c3
+    material: NETHER_STAR        # or item: <full serialized item with NBT>
+    amount: 1                    # or min: / max:
+    weight: 2
+    broadcast: true
+    limit-per-player: 1
+    permission: ""
+    give-item: true
+    commands:
+      - run: CONSOLE
+        command: kit crusher {player}
+        chance: 100
+```
+
+Plain items are stored as `material:` (readable and valid across versions); items with names/enchants/NBT are stored as a full `item:` (valid for the Minecraft version they were saved on). The file is rewritten, without comments, whenever loot is changed in game.
+
+## Economy
+
+```yaml
+economy:
+  provider: AUTO
+```
+
+| Provider | Notes |
+|---|---|
+| `AUTO` | first installed of ExcellentEconomy, CoinsEngine, Vault, PlayerPoints |
+| `VAULT` | Vault / VaultUnlocked and the economy plugin behind it; the tier currency name is ignored |
+| `EXCELLENT_ECONOMY` | multi-currency, needs PlaceholderAPI; charges with console commands |
+| `COINS_ENGINE` | same mechanism as above, preset **not verified** |
+| `PLAYER_POINTS` | integer points through the PlayerPoints API |
+| `NONE` | no purchases; use `/mystic give` |
+
+Per tier you can name the provider in `currency`:
+
+```yaml
+currency: gold                      # default provider, currency "gold"
+currency: "excellenteconomy:coins"  # ExcellentEconomy, currency "coins"
+currency: playerpoints              # PlayerPoints
+currency: vault                     # Vault
+```
+
+Short forms `ee`, `ce`, `pp` work too. This lets gold come from Vault and donate tokens from PlayerPoints.
+
+**ExcellentEconomy / CoinsEngine** read the balance from a PlaceholderAPI placeholder and charge by console command. The templates are in `config.yml` because names differ between versions. Verified on ExcellentEconomy 2.8.0: it registers one command per currency, so the defaults are `{currency} take {player} {amount}` and `%excellenteconomy_balance_raw_{currency}%`. The currency (for example `gold`) must exist in that plugin.
+
+Check what the plugin found: `/mystic economy`, and your balance of a currency: `/mystic economy <currency>`.
+
+## Effects and announcements
+
+`effects.open | tick | win | rare | spawn`: `sound` (version-independent names like `ENTITY_PLAYER_LEVELUP`), `volume`, `pitch`, `particle`, `count`, and for players `title`, `subtitle`, `actionbar` (placeholders `{player}`, `{item}`, `{tier}`). Empty means off. Particles and sounds only reach players within `performance.effects-view-distance`.
+
+`announce.on-spawn | on-open | on-rare`: `type` (`CHAT`, `TITLE`, `ACTIONBAR`, `NONE`), `radius` (`-1` = everyone), `world-only`. Messages are sent in each player's own language. Rewards below `rare-below-percent` or marked `broadcast: true` use `on-rare`.
+
+## Commands and permissions
+
+| Command | Permission (default) |
+|---|---|
+| `/mystic shop` | `mysticchest.shop` (everyone) |
+| `/mystic preview <tier>` | `mysticchest.preview` (everyone) |
+| `/mystic list`, `/mystic help` | – |
+| using chests | `mysticchest.use` (everyone) |
+| `/mystic give`, `spawn`, `reload`, `perf`, `point`, `economy` | `mysticchest.admin` (op) |
+| `/mystic loot …` and the editor | `mysticchest.admin.loot` (op) |
+| ignore cooldowns and claim locks | `mysticchest.bypass.cooldown` (nobody) |
+| ignore daily limits | `mysticchest.bypass.limits` (nobody) |
+
+Aliases: `/mc`, `/mistic`.
+
+## PlaceholderAPI
+
+Registered automatically when PlaceholderAPI is installed.
+
+| Placeholder | Value |
+|---|---|
+| `%mysticchest_cooldown_<tier>%` | seconds until the player can open that tier (0 = now) |
+| `%mysticchest_cooldown_formatted_<tier>%` | `1h 5m 3s` or `Ready` |
+| `%mysticchest_opens_today%` | chests opened today |
+| `%mysticchest_pity_<tier>%` | openings since the last rare reward |
+| `%mysticchest_active_chests%` | chests standing in the world |
+
+## Performance
+
+The plugin is built to cost almost nothing while idle.
+
+- One shared timer for every deadline (chest TTL, spawn profiles, delayed saves) and one shared animation ticker that only runs while someone is spinning a roulette. `/mystic perf` shows "Bukkit tasks owned: 0" on an idle server.
+- Files are written on a background thread, debounced, and atomically (temp file + rename), so a crash never leaves a half-written file.
+- Loot rolls use cumulative weights and a binary search; GUI items are cached per language until loot changes.
+- Measured on Paper 1.21.11: a loot roll takes tens of microseconds; opening a roulette costs a few milliseconds of server GUI work (the very first opening after start is slower while the JVM warms up). No objects stay in memory after GUIs close.
+
+`performance:` in `config.yml`: `async-io`, `save-interval-seconds`, `gui-cache`, `max-concurrent-animations`, `effects-view-distance`, `particle-limit`, `low-resource` (no particles, no holograms).
+
+## Troubleshooting
+
+| Problem | Check |
+|---|---|
+| "No economy is connected" when buying | `/mystic economy`; install Vault + an economy plugin, or set the tier `currency` to a provider that exists |
+| "Not enough funds" with plenty of money (ExcellentEconomy) | the currency id in `tiers.yml` must exist there; watch the console for "cannot read the balance of currency …" |
+| A chest item does nothing | `use.click-air` / `use.click-block`; the `mysticchest.use` permission; region plugins cancelling the click |
+| Chests don't spawn | profile `enabled`, `min-players`, `worlds` names, `max-active`; set `debug: true` to see why each attempt was skipped |
+| Some rewards missing on an old server | items that don't exist in that version are skipped silently |
+| Text shows `<some.key>` | a missing key in your custom lang file |
+
+Turn on `debug: true` for extra console output.
