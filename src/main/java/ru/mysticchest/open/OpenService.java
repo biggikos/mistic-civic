@@ -47,18 +47,36 @@ public final class OpenService {
         return null;
     }
 
-    public void open(Player p, Tier t) {
+    /** The concrete way this tier opens now: RANDOM is rolled from random-mode.weights. */
+    public OpenType pickMode(Tier t) {
+        OpenType type = t.openMode(plugin.settings());
+        if (type != OpenType.RANDOM) return type;
+        long total = 0;
+        for (Integer w : plugin.settings().randomModes.values()) total += w;
+        if (total <= 0) return OpenType.ROULETTE;
+        long r = (long) (java.util.concurrent.ThreadLocalRandom.current().nextDouble() * total);
+        for (java.util.Map.Entry<OpenType, Integer> e : plugin.settings().randomModes.entrySet()) {
+            r -= e.getValue();
+            if (r < 0) return e.getKey();
+        }
+        return OpenType.ROULETTE;
+    }
+
+    public void open(Player p, Tier t) { open(p, t, null); }
+
+    /** @param fixed mode decided earlier (a world chest announced as "cards"); null = decide now. */
+    public void open(Player p, Tier t, OpenType fixed) {
         long start = System.nanoTime();
         Settings s = plugin.settings();
         int cd = t.cooldownOpen(s);
         if (cd > 0 && !p.hasPermission("mysticchest.bypass.cooldown")) plugin.cooldowns().start(owner(p), key(t), cd);
         plugin.cooldowns().addOpen(p.getUniqueId());
 
-        OpenType type = t.openMode(s);
+        OpenType type = fixed != null && fixed != OpenType.RANDOM ? fixed : pickMode(t);
         if (type != OpenType.INSTANT && plugin.animator().size() >= s.maxAnimations) type = OpenType.FULL_CHEST;
         List<Reward> rewards = plugin.rewards().roll(p, t, type == OpenType.PICK ? s.pickCards : t.rolls());
         plugin.effects().playTier(s.fxOpen, p, t);
-        plugin.announcer().send(s.onOpen, p.getLocation(), "announce.opened", t, "player", p.getName());
+        plugin.announcer().send(s.onOpen, p.getLocation(), "announce.opened", t, "player", p.getName(), "modeid", type.name());
 
         switch (type) {
             case INSTANT:

@@ -36,7 +36,7 @@ given: "&aGave &e{count}x &r{tier} &ato &f{player}&a."
 usage:
   root: "&eUse &f/mystic help"
   give: "&e/mystic give <player> <tier> [amount]"
-  spawn: "&e/mystic spawn <tier> [here|<profile>]"
+  spawn: "&e/mystic spawn <tier> [here|<profile>] [shape] [theme]"
   preview: "&e/mystic preview <tier>"
   point: "&e/mystic point <add <name>|remove <name>|list>"
   loot: "&e/mystic loot <add|addcmd|cmd|weight|remove|list|edit|clear> <tier> ..."
@@ -78,20 +78,84 @@ item:
 
 ## ═══ announcements (use {tier}, {player} ...) ═══
 announce:
+  structure-line: "&7Place: &f{name}"
   spawned:
-    exact: "&d✦ &r{tier} &fappeared at &e{x} {y} {z} &7({world})&f!"
-    region: "&d✦ &r{tier} &fappeared around &e{x} {z} &7({world})&f!"
-    hint: "&d✦ &r{tier} &fappeared about &e{distance} blocks &fto the &e{dir}&f!"
+    exact:
+      - "&8&m                                           "
+      - "&d✦ &lMYSTIC CHEST APPEARED! &r{tier}"
+      - "&7Type: &f{mode}  &8|  &7Inside: &f{loot}"
+      - "&7Coordinates: &e{x} {y} {z} &7({world})"
+      - "{structure}"
+      - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "&8&m                                           "
+    region:
+      - "&8&m                                           "
+      - "&d✦ &lMYSTIC CHEST APPEARED! &r{tier}"
+      - "&7Type: &f{mode}  &8|  &7Inside: &f{loot}"
+      - "&7Area: &e~{x} {z} &7({world})"
+      - "{structure}"
+      - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "&8&m                                           "
+    hint:
+      - "&8&m                                           "
+      - "&d✦ &lMYSTIC CHEST APPEARED! &r{tier}"
+      - "&7Type: &f{mode}  &8|  &7Inside: &f{loot}"
+      - "&7About &e{distance} blocks &7to the &e{dir}"
+      - "{structure}"
+      - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "&8&m                                           "
   airdrop:
-    exact: "&d✈ &fAn airdrop with &r{tier} &fis falling at &e{x} {z} &7({world}) &f- lands in &e{seconds}s&f!"
-    region: "&d✈ &fAn airdrop with &r{tier} &fis falling around &e{x} {z} &7({world})&f!"
-    hint: "&d✈ &fAn airdrop with &r{tier} &fis falling about &e{distance} blocks &fto the &e{dir}&f!"
+    exact:
+      - "&8&m                                           "
+      - "&d✈ &lAIRDROP INCOMING! &r{tier}"
+      - "&7Lands in &e{seconds}s &8|  &7Type: &f{mode}  &8|  &7Inside: &f{loot}"
+      - "&7Coordinates: &e{x} {y} {z} &7({world})"
+      - "{structure}"
+      - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "&8&m                                           "
+    region:
+      - "&8&m                                           "
+      - "&d✈ &lAIRDROP INCOMING! &r{tier}"
+      - "&7Lands in &e{seconds}s &8|  &7Type: &f{mode}  &8|  &7Inside: &f{loot}"
+      - "&7Area: &e~{x} {z} &7({world})"
+      - "{structure}"
+      - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "&8&m                                           "
+    hint:
+      - "&8&m                                           "
+      - "&d✈ &lAIRDROP INCOMING! &r{tier}"
+      - "&7Lands in &e{seconds}s &8|  &7Type: &f{mode}  &8|  &7Inside: &f{loot}"
+      - "&7About &e{distance} blocks &7to the &e{dir}"
+      - "{structure}"
+      - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "&8&m                                           "
   landed:
-    exact: "&d✦ &fThe airdrop &r{tier} &flanded at &e{x} {y} {z}&f!"
-    region: "&d✦ &fThe airdrop &r{tier} &flanded around &e{x} {z}&f!"
-    hint: "&d✦ &fThe airdrop &r{tier} &flanded about &e{distance} blocks &fto the &e{dir}&f!"
+    exact:
+      - "&8&m                                           "
+      - "&d✦ &lAIRDROP LANDED! &r{tier}"
+      - "&7Type: &f{mode}  &8|  &7Inside: &f{loot}"
+      - "&7Coordinates: &e{x} {y} {z} &7({world})"
+      - "{structure}"
+      - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "&8&m                                           "
+    region:
+      - "&8&m                                           "
+      - "&d✦ &lAIRDROP LANDED! &r{tier}"
+      - "&7Type: &f{mode}  &8|  &7Inside: &f{loot}"
+      - "&7Area: &e~{x} {z} &7({world})"
+      - "{structure}"
+      - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "&8&m                                           "
+    hint:
+      - "&8&m                                           "
+      - "&d✦ &lAIRDROP LANDED! &r{tier}"
+      - "&7Type: &f{mode}  &8|  &7Inside: &f{loot}"
+      - "&7About &e{distance} blocks &7to the &e{dir}"
+      - "{structure}"
+      - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "&8&m                                           "
   expired: "&7A mystic chest &r{tier}&7 disappeared."
-  opened: "&e{player} &fopened &r{tier}&f!"
+  opened: "&e{player} &fopened &r{tier} &7({mode})&f!"
   rare: "&6★ &e{player} &fwon &e{amount}x {item} &ffrom &r{tier}&f!"
 
 dir:
@@ -230,3 +294,70 @@ compass:
   given: "&aYou got a chest compass. Right click it to find the nearest chest."
   none: "&7There are no chests standing in this world right now."
   found: "&d✦ &fNearest chest: &r{tier}&f, about &e{distance} blocks &fto the &e{dir}&f. The compass points to it."
+
+hologram:
+  timer: "&7Disappears in &e{time}"
+
+chests:
+  header: "&5Standing mystic chests: &e{count}"
+  line: " &d✦ &r{tier} &7- &e{time} &7- {where}"
+  blocks: "blocks"
+
+structure:
+  name:
+    pyramid: "Golden pyramid"
+    temple: "Ancient temple"
+    obelisk: "Glowing obelisk"
+    henge: "Ring of standing stones"
+    gate: "Gate on a dais"
+  usage: "&e/mystic structure <wand|pos1|pos2|save <name>|delete <name>|list|edit|preview <name> [theme]|reload>"
+  bad-name: "&cName: 1-32 characters, a-z 0-9 _ -"
+  no-selection: "&cSelect two corners first (wand: left / right click, or /mystic structure pos1, pos2)."
+  unknown: "&cNo such structure: &e{name}"
+  cannot-build: "&cCannot build here (steep, water, or player-made blocks)."
+  previewing: "&7Building &e{name} &7here, it disappears in 40 seconds."
+  corner: "&7Corner &e{n} &7set at &f{x} {y} {z} &7(selection {size})"
+  saved: "&aSaved structure &e{name} &a({blocks} blocks, {w}×{d}×{h}). It is now in the rotation: /mystic structure edit"
+  deleted: "&aStructure &e{name} &adeleted."
+  list-header: "&5Structures:"
+  list-line: " &e{name} &7({kind}) weight {weight} = {chance}% &8| {on}"
+  err:
+    too-big: "&cSelection too big (max 48×64×48 and 80 000 blocks)."
+    no-chest: "&cPlace a CHEST inside the selection where the mystic chest should appear, then save again."
+    empty: "&cThe selection contains almost no blocks."
+  wand:
+    name: "&6Structure wand"
+    lore:
+      - "&7Left click: corner 1"
+      - "&7Right click: corner 2"
+      - "&7Then /mystic structure save <name>"
+    given: "&aYou got the wand. Build your structure, put a chest where the loot chest should appear, select it and save."
+  editor:
+    title: "&5Structures"
+    name-on: "&a{name}"
+    name-off: "&8{name} &c(off)"
+    builtin: "&7Built-in shape"
+    custom: "&bYour structure"
+    size: "&7{blocks} blocks, {w}×{d}×{h}"
+    weight: "&7Weight: &e{weight} &7= &e{chance}% &7of spawns"
+    theme: "&7Theme: &e{theme}"
+    help:
+      - "&8Left/Right: &7weight +1 / -1 (Shift: 5)"
+      - "&8Key 1: &7on / off   &8Key 2: &7theme"
+      - "&8F: &7preview here (40 s)"
+    help-custom:
+      - "&8Left/Right: &7weight +1 / -1 (Shift: 5)"
+      - "&8Key 1: &7on / off   &8F: &7preview here"
+      - "&8Q: &7delete (press twice)"
+    help-armed:
+      - "&c&lPress Q again to delete"
+
+mode:
+  roulette: "roulette"
+  full_chest: "full chest"
+  instant: "instant"
+  pick: "mystery cards"
+  random: "random"
+
+bossbar:
+  title: "&d✦ &r{tier} &8| &e{time} &8| &f{x} {y} {z} &8| &7{mode}"

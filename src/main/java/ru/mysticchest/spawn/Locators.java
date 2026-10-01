@@ -141,21 +141,31 @@ public final class Locators {
 
     private interface Pick { int[] next(); }
 
-    private void attempt(final World w, final SpawnProfile p, final Callback cb, final int n, final Pick pick) {
-        if (n >= ATTEMPTS) { cb.done(null); return; }
+    private void attempt(World w, SpawnProfile p, Callback cb, int n, Pick pick) {
+        boolean flat = p.preferFlat > 0 && ThreadLocalRandom.current().nextInt(100) < p.preferFlat;
+        attempt(w, p, cb, n, pick, flat);
+    }
+
+    /**
+     * flat = look for a clearing (flat, treeless ground) first. Because the bias is a probability, only most
+     * spawns land in clearings - the rest stay fully random. If no clearing is found in time, anything goes.
+     */
+    private void attempt(final World w, final SpawnProfile p, final Callback cb, final int n, final Pick pick, final boolean flat) {
+        if (n >= ATTEMPTS * (flat ? 2 : 1)) { cb.done(null); return; }
+        final boolean needFlat = flat && n < ATTEMPTS;
         final int[] xz = pick.next();
         final int cx = xz[0] >> 4, cz = xz[1] >> 4;
-        if (!w.getWorldBorder().isInside(new Location(w, xz[0], 64, xz[1]))) { attempt(w, p, cb, n + 1, pick); return; }
+        if (!w.getWorldBorder().isInside(new Location(w, xz[0], 64, xz[1]))) { attempt(w, p, cb, n + 1, pick, flat); return; }
         withChunk(w, cx, cz, new Runnable() {
             public void run() {
                 Location l = surface(w, xz[0], xz[1], p);
-                if (l != null) cb.done(l); else attempt(w, p, cb, n + 1, pick);
+                if (l != null && (!needFlat || isClearing(w, l, p))) cb.done(l); else attempt(w, p, cb, n + 1, pick, flat);
             }
         });
     }
 
     /** Runs the task once the chunk is loaded: async on Paper 1.13+, a single sync load elsewhere. */
-    private void withChunk(final World w, int cx, int cz, final Runnable then) {
+    public void withChunk(final World w, int cx, int cz, final Runnable then) {
         if (w.isChunkLoaded(cx, cz)) { then.run(); return; }
         try {
             Object fut = World.class.getMethod("getChunkAtAsync", int.class, int.class).invoke(w, cx, cz);
@@ -168,6 +178,23 @@ public final class Locators {
             w.getChunkAt(cx, cz);
             then.run();
         }
+    }
+
+    /** Flat, open ground: every sampled column within the radius has the same height (+- tolerance) and no trees. */
+    private boolean isClearing(World w, Location c, SpawnProfile p) {
+        int r = p.flatRadius, tol = p.flatTolerance;
+        for (int dx = -r; dx <= r; dx += Math.max(1, r / 2)) {
+            for (int dz = -r; dz <= r; dz += Math.max(1, r / 2)) {
+                int x = c.getBlockX() + dx, z = c.getBlockZ() + dz;
+                if (!w.isChunkLoaded(x >> 4, z >> 4)) continue;       // can't judge: don't punish the spot
+                int y = w.getHighestBlockYAt(x, z);
+                while (y < w.getMaxHeight() - 2 && !air(w.getBlockAt(x, y, z))) y++;
+                String top = w.getBlockAt(x, y - 1, z).getType().name();
+                if (top.contains("LEAVES") || top.contains("LOG") || w.getBlockAt(x, y - 1, z).isLiquid()) return false;
+                if (Math.abs(y - c.getBlockY()) > tol) return false;
+            }
+        }
+        return true;
     }
 
     private static boolean air(Block b) { return b.getType().name().endsWith("AIR"); }
@@ -186,7 +213,7 @@ public final class Locators {
     }
 
     /** World#getMinHeight exists only on 1.16.5+ (negative build limits arrived in 1.18). */
-    private static int minHeight(World w) {
+    public static int minHeight(World w) {
         try { return (Integer) World.class.getMethod("getMinHeight").invoke(w); } catch (Exception e) { return 0; }
     }
 }

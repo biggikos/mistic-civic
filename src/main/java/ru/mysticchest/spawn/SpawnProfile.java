@@ -14,10 +14,11 @@ public final class SpawnProfile {
     public enum Trigger { INTERVAL, TIMES, ONLINE_THRESHOLD }
 
     public final String name;
+    public final Cfg structure;
     public final boolean enabled;
     public final Mode mode;
     public final Trigger trigger;
-    public final int intervalMinutes;
+    public final int intervalMinutes, jitterPercent;
     public final List<LocalTime> times = new ArrayList<LocalTime>();
     public final int minPlayers, maxActive, thresholdPlayers, thresholdCooldownMinutes;
     public final List<String> worlds;
@@ -25,6 +26,7 @@ public final class SpawnProfile {
     public final Announce announce;
     // random-world
     public final int radius, minDistanceFromSpawn;
+    public final int preferFlat, flatTolerance, flatRadius;
     public final List<String> avoidGround;
     // near-player
     public final int nearMin, nearMax;
@@ -37,11 +39,13 @@ public final class SpawnProfile {
 
     public SpawnProfile(String name, Cfg c) {
         this.name = name;
+        this.structure = c.sub("structure");
         enabled = c.bool("enabled", true);
         mode = c.enumOf("mode", Mode.class, Mode.RANDOM_WORLD);
         Cfg tr = c.sub("trigger");
         trigger = tr.enumOf("type", Trigger.class, Trigger.INTERVAL);
-        intervalMinutes = tr.integer("minutes", 30, 1, 525600);
+        intervalMinutes = tr.integer("minutes", 45, 1, 525600);
+        jitterPercent = tr.integer("jitter-percent", 30, 0, 90);
         for (String s : tr.strings("times")) {
             try { times.add(LocalTime.parse(s.length() == 4 ? "0" + s : s)); }
             catch (Exception e) { /* bad time is reported by the service */ }
@@ -59,6 +63,9 @@ public final class SpawnProfile {
         minDistanceFromSpawn = rw.integer("min-distance-from-spawn", 50, 0, 29999984);
         List<String> ag = rw.strings("avoid-ground");
         avoidGround = ag.isEmpty() ? java.util.Arrays.asList("WATER", "LAVA", "LEAVES", "ICE", "CACTUS", "MAGMA") : ag;
+        preferFlat = c.integer("prefer-flat", 70, 0, 100);
+        flatTolerance = c.integer("flat-tolerance", 1, 0, 10);
+        flatRadius = c.integer("flat-radius", 3, 1, 8);
         Cfg np = c.sub("near-player");
         nearMin = np.integer("min-distance", 40, 1, 10000);
         nearMax = Math.max(nearMin + 1, np.integer("max-distance", 150, 2, 10000));

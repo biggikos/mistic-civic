@@ -14,6 +14,9 @@
   - 📦 **Full chest**: a chest full of loot, take what you like
   - ⚡ **Instant**: straight to the inventory
   - 🃏 **Pick**: mystery cards, choose your prize
+- **Structures**: chests appear inside a golden pyramid, temple, obelisk, ring of stones or gate that builds itself block by block, then collapses and restores the terrain. Save **your own** buildings with a selection wand.
+- **Full announcements**: chest type, rarest loot inside, coordinates, structure, countdown, a sound for every player and a **boss bar**.
+- **RANDOM mode**: every opening is a surprise (roulette, mystery cards, full chest or instant).
 - **Four ways to spawn chests**, several profiles at once:
   - random place in the world, next to a random player, fixed points, or an **airdrop** falling from the sky
   - every N minutes, at fixed clock times, or when enough players are online

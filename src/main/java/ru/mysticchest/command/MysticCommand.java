@@ -27,7 +27,7 @@ import java.util.Map;
 
 public final class MysticCommand implements TabExecutor {
     private static final List<String> ROOT = Arrays.asList("shop", "preview", "list", "give", "spawn", "reload",
-            "perf", "loot", "point", "economy", "compass", "help");
+            "perf", "loot", "point", "economy", "compass", "structure", "chests", "help");
     private static final List<String> LOOT = Arrays.asList("add", "addcmd", "cmd", "weight", "remove", "list", "edit", "clear");
 
     private final MysticChestPlugin plugin;
@@ -87,6 +87,8 @@ public final class MysticCommand implements TabExecutor {
             case "spawn": return spawn(s, a);
             case "perf": return perf(s);
             case "economy": return economy(s, a);
+            case "structure": return structure(s, a);
+            case "chests": return chests(s);
             case "compass": {
                 if (!need(s, "mysticchest.compass")) return true;
                 Player p = player(s);
@@ -130,7 +132,7 @@ public final class MysticCommand implements TabExecutor {
         if (where.equalsIgnoreCase("here")) {
             Player p = player(s);
             if (p == null) return true;
-            if (!plugin.spawner().spawnHere(t, p.getLocation())) plugin.lang().send(s, "spawn.failed");
+            if (!plugin.spawner().spawnHere(t, p.getLocation(), a.length > 3 ? a[3] : null, a.length > 4 ? a[4] : null)) plugin.lang().send(s, "spawn.failed");
             return true;
         }
         SpawnProfile prof = plugin.spawner().profiles().get(where);
@@ -207,6 +209,98 @@ public final class MysticCommand implements TabExecutor {
             plugin.lang().send(s, "economy.hint");
         }
         return true;
+    }
+
+    // ---- chests / structures ---------------------------------------------
+
+    private static final String[] DIRS = {"e", "se", "s", "sw", "w", "nw", "n", "ne"};
+
+    private boolean chests(CommandSender s) {
+        if (!need(s, "mysticchest.chests")) return true;
+        java.util.List<ru.mysticchest.chest.ChestManager.Active> list = plugin.chests().snapshot();
+        boolean coords = s.hasPermission("mysticchest.chests.coords");
+        Player p = s instanceof Player ? (Player) s : null;
+        int shown = 0;
+        plugin.lang().send(s, "chests.header", "count", String.valueOf(list.size()));
+        for (ru.mysticchest.chest.ChestManager.Active a : list) {
+            String where;
+            if (coords) where = a.loc.getWorld().getName() + " " + a.loc.getBlockX() + " " + a.loc.getBlockY() + " " + a.loc.getBlockZ();
+            else if (p != null && p.getWorld() == a.loc.getWorld()) {
+                double dx = a.loc.getX() - p.getLocation().getX(), dz = a.loc.getZ() - p.getLocation().getZ();
+                int dir = (int) Math.round(Math.toDegrees(Math.atan2(dz, dx)) / 45.0);
+                where = "~" + (Math.round(Math.sqrt(dx * dx + dz * dz) / 50.0) * 50) + " " + plugin.lang().get(s, "chests.blocks") + ", "
+                        + plugin.lang().get(s, "dir." + DIRS[((dir % 8) + 8) % 8]);
+            } else where = a.loc.getWorld().getName();
+            s.sendMessage(plugin.lang().get(s, "chests.line", "tier", a.tier.name(plugin.lang().code(s)),
+                    "time", plugin.lang().time(s, plugin.chests().secondsLeft(a)), "where", where));
+            if (++shown >= 25) break;
+        }
+        return true;
+    }
+
+    private boolean structure(CommandSender s, String[] a) {
+        if (!need(s, "mysticchest.admin.structure")) return true;
+        String sub = a.length > 1 ? a[1].toLowerCase(Locale.ROOT) : "list";
+        ru.mysticchest.structure.StructureService sv = plugin.structures();
+        switch (sub) {
+            case "wand": {
+                Player p = player(s);
+                if (p == null) return true;
+                plugin.rewards().give(p, sv.wand().item(p));
+                plugin.lang().send(p, "structure.wand.given");
+                return true;
+            }
+            case "pos1": case "pos2": {
+                Player p = player(s);
+                if (p != null) sv.wand().set(p, sub.equals("pos1") ? 0 : 1, p.getLocation().getBlock().getRelative(0, -1, 0));
+                return true;
+            }
+            case "save": {
+                Player p = player(s);
+                if (p == null) return true;
+                if (a.length < 3 || !ru.mysticchest.structure.StructureCatalog.validName(a[2].toLowerCase(Locale.ROOT))) { plugin.lang().send(s, "structure.bad-name"); return true; }
+                org.bukkit.block.Block[] sel = sv.wand().get(p);
+                if (sel == null || sel[0] == null || sel[1] == null) { plugin.lang().send(s, "structure.no-selection"); return true; }
+                String[] err = new String[1];
+                ru.mysticchest.structure.Template t = ru.mysticchest.structure.Template.capture(a[2].toLowerCase(Locale.ROOT), sel[0], sel[1], err);
+                if (t == null) { plugin.lang().send(s, "structure.err." + err[0]); return true; }
+                plugin.io().writeNow(new java.io.File(sv.catalog().folder(), t.name + ".yml"), t.serialize());
+                sv.catalog().add(t);
+                plugin.lang().send(s, "structure.saved", "name", t.name, "blocks", String.valueOf(t.blocks()),
+                        "w", String.valueOf(t.width()), "d", String.valueOf(t.depth()), "h", String.valueOf(t.height));
+                return true;
+            }
+            case "delete":
+                if (a.length < 3) { plugin.lang().send(s, "structure.usage"); return true; }
+                plugin.lang().send(s, sv.catalog().remove(a[2]) ? "structure.deleted" : "structure.unknown", "name", a[2]);
+                return true;
+            case "edit": {
+                Player p = player(s);
+                if (p != null) ru.mysticchest.gui.StructureEditorGui.open(plugin, p);
+                return true;
+            }
+            case "preview": {
+                Player p = player(s);
+                if (p == null) return true;
+                if (a.length < 3) { plugin.lang().send(s, "structure.usage"); return true; }
+                sv.preview(p, a[2], a.length > 3 ? a[3] : null);
+                return true;
+            }
+            case "reload":
+                sv.catalog().load();
+                plugin.lang().send(s, "reloaded");
+                return true;
+            default: {
+                plugin.lang().send(s, "structure.list-header");
+                for (ru.mysticchest.structure.StructureCatalog.Entry e : sv.catalog().all()) {
+                    s.sendMessage(plugin.lang().get(s, "structure.list-line", "name", e.id,
+                            "kind", plugin.lang().get(s, e.custom() ? "structure.editor.custom" : "structure.editor.builtin"),
+                            "weight", String.valueOf(e.weight), "chance", String.format(Locale.ROOT, "%.1f", sv.catalog().chance(e)),
+                            "on", ru.mysticchest.util.Text.color(e.enabled ? "&aon" : "&coff")));
+                }
+                return true;
+            }
+        }
     }
 
     // ---- loot ----------------------------------------------------------
@@ -386,6 +480,10 @@ public final class MysticCommand implements TabExecutor {
             if ((sub.equals("give") && a.length == 3) || (sub.equals("preview") && a.length == 2)
                     || (sub.equals("spawn") && a.length == 2)) tiers(out);
             else if (sub.equals("spawn") && a.length == 3) { out.add("here"); out.addAll(plugin.spawner().profiles().keySet()); }
+            else if (sub.equals("spawn") && a.length == 4) { for (ru.mysticchest.structure.StructureCatalog.Entry en : plugin.structures().catalog().all()) out.add(en.id); }
+            else if (sub.equals("structure") && a.length == 2) out.addAll(Arrays.asList("wand", "pos1", "pos2", "save", "delete", "edit", "list", "preview", "reload"));
+            else if (sub.equals("structure") && (a.length == 3) && (a[1].equalsIgnoreCase("preview") || a[1].equalsIgnoreCase("delete"))) { for (ru.mysticchest.structure.StructureCatalog.Entry en : plugin.structures().catalog().all()) out.add(en.id); }
+            else if (sub.equals("spawn") && a.length == 5) { for (ru.mysticchest.structure.Theme th : ru.mysticchest.structure.Theme.values()) out.add(th.name().toLowerCase()); }
             else if (sub.equals("loot")) {
                 if (a.length == 2) out.addAll(LOOT);
                 else if (a.length == 3) tiers(out);
@@ -405,6 +503,8 @@ public final class MysticCommand implements TabExecutor {
         switch (sub) {
             case "give": case "spawn": case "reload": case "perf": case "point": case "economy": return s.hasPermission("mysticchest.admin");
             case "loot": return s.hasPermission("mysticchest.admin.loot");
+            case "structure": return s.hasPermission("mysticchest.admin.structure");
+            case "chests": return s.hasPermission("mysticchest.chests");
             case "shop": return s.hasPermission("mysticchest.shop");
             case "compass": return s.hasPermission("mysticchest.compass");
             case "preview": return s.hasPermission("mysticchest.preview");

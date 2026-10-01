@@ -24,6 +24,28 @@ public final class Tier {
     /** Colour used by the aura and fireworks: tiers.yml effects.color, else the first colour code of the name. */
     public final org.bukkit.Color color;
     public final String auraStyle, auraParticle;
+    public final Cfg structure;
+    private LootPool highlightsOf;
+    private String highlights = "";
+
+    /** Names of the rarest rewards (up to 3): "what is inside" for announcements. Cached per loot pool. */
+    public String highlights() {
+        if (highlightsOf != pool) {
+            highlightsOf = pool;
+            java.util.List<LootEntry> l = new java.util.ArrayList<LootEntry>(pool.all.all());
+            java.util.Collections.sort(l, new java.util.Comparator<LootEntry>() {
+                public int compare(LootEntry a, LootEntry b) { return Double.compare(a.chance, b.chance); }
+            });
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < l.size() && i < 3; i++) {
+                if (i > 0) sb.append(", ");
+                sb.append(ru.mysticchest.util.Items.name(l.get(i).item));
+            }
+            highlights = sb.toString();
+        }
+        return highlights;
+    }
+
     public LootPool pool = new LootPool(new java.util.ArrayList<LootEntry>(), 0);
 
     public Tier(String id, Cfg c) {
@@ -68,6 +90,7 @@ public final class Tier {
         maxPurchases = lim.has("max-purchases-per-day") ? lim.integer("max-purchases-per-day", 0, 0, 1000000) : -1;
         ttl = c.has("ttl-seconds") ? c.integer("ttl-seconds", 300, 5, 31536000) : -1;
         pityAfter = c.sub("pity").integer("after", 0, 0, 100000);
+        this.structure = c.sub("structure");
         Cfg fx = c.sub("effects");
         this.color = fx.has("color") ? ru.mysticchest.util.Colors.parse(fx.str("color", ""), ru.mysticchest.util.Colors.fromName(anyName, org.bukkit.Color.WHITE))
                 : ru.mysticchest.util.Colors.fromName(anyName, org.bukkit.Color.WHITE);

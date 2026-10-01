@@ -72,20 +72,84 @@ item:
     - "&7Нажмите ПКМ, чтобы открыть"
 
 announce:
+  structure-line: "&7Место: &f{name}"
   spawned:
-    exact: "&d✦ &r{tier} &fпоявился на &e{x} {y} {z} &7({world})&f!"
-    region: "&d✦ &r{tier} &fпоявился в районе &e{x} {z} &7({world})&f!"
-    hint: "&d✦ &r{tier} &fпоявился примерно в &e{distance} блоках &fна &e{dir}&f!"
+    exact:
+      - "&8&m                                           "
+      - "&d✦ &lПОЯВИЛСЯ МИСТИК! &r{tier}"
+      - "&7Тип: &f{mode}  &8|  &7Внутри: &f{loot}"
+      - "&7Координаты: &e{x} {y} {z} &7({world})"
+      - "{structure}"
+      - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "&8&m                                           "
+    region:
+      - "&8&m                                           "
+      - "&d✦ &lПОЯВИЛСЯ МИСТИК! &r{tier}"
+      - "&7Тип: &f{mode}  &8|  &7Внутри: &f{loot}"
+      - "&7Район: &e~{x} {z} &7({world})"
+      - "{structure}"
+      - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "&8&m                                           "
+    hint:
+      - "&8&m                                           "
+      - "&d✦ &lПОЯВИЛСЯ МИСТИК! &r{tier}"
+      - "&7Тип: &f{mode}  &8|  &7Внутри: &f{loot}"
+      - "&7Примерно в &e{distance} блоках &7на &e{dir}"
+      - "{structure}"
+      - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "&8&m                                           "
   airdrop:
-    exact: "&d✈ &fАирдроп с &r{tier} &fпадает на &e{x} {z} &7({world}) &f- приземлится через &e{seconds}с&f!"
-    region: "&d✈ &fАирдроп с &r{tier} &fпадает в районе &e{x} {z} &7({world})&f!"
-    hint: "&d✈ &fАирдроп с &r{tier} &fпадает примерно в &e{distance} блоках &fна &e{dir}&f!"
+    exact:
+      - "&8&m                                           "
+      - "&d✈ &lАИРДРОП В ПУТИ! &r{tier}"
+      - "&7Приземлится через &e{seconds}с &8|  &7Тип: &f{mode}  &8|  &7Внутри: &f{loot}"
+      - "&7Координаты: &e{x} {y} {z} &7({world})"
+      - "{structure}"
+      - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "&8&m                                           "
+    region:
+      - "&8&m                                           "
+      - "&d✈ &lАИРДРОП В ПУТИ! &r{tier}"
+      - "&7Приземлится через &e{seconds}с &8|  &7Тип: &f{mode}  &8|  &7Внутри: &f{loot}"
+      - "&7Район: &e~{x} {z} &7({world})"
+      - "{structure}"
+      - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "&8&m                                           "
+    hint:
+      - "&8&m                                           "
+      - "&d✈ &lАИРДРОП В ПУТИ! &r{tier}"
+      - "&7Приземлится через &e{seconds}с &8|  &7Тип: &f{mode}  &8|  &7Внутри: &f{loot}"
+      - "&7Примерно в &e{distance} блоках &7на &e{dir}"
+      - "{structure}"
+      - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "&8&m                                           "
   landed:
-    exact: "&d✦ &fАирдроп &r{tier} &fприземлился на &e{x} {y} {z}&f!"
-    region: "&d✦ &fАирдроп &r{tier} &fприземлился в районе &e{x} {z}&f!"
-    hint: "&d✦ &fАирдроп &r{tier} &fприземлился примерно в &e{distance} блоках &fна &e{dir}&f!"
+    exact:
+      - "&8&m                                           "
+      - "&d✦ &lАИРДРОП ПРИЗЕМЛИЛСЯ! &r{tier}"
+      - "&7Тип: &f{mode}  &8|  &7Внутри: &f{loot}"
+      - "&7Координаты: &e{x} {y} {z} &7({world})"
+      - "{structure}"
+      - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "&8&m                                           "
+    region:
+      - "&8&m                                           "
+      - "&d✦ &lАИРДРОП ПРИЗЕМЛИЛСЯ! &r{tier}"
+      - "&7Тип: &f{mode}  &8|  &7Внутри: &f{loot}"
+      - "&7Район: &e~{x} {z} &7({world})"
+      - "{structure}"
+      - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "&8&m                                           "
+    hint:
+      - "&8&m                                           "
+      - "&d✦ &lАИРДРОП ПРИЗЕМЛИЛСЯ! &r{tier}"
+      - "&7Тип: &f{mode}  &8|  &7Внутри: &f{loot}"
+      - "&7Примерно в &e{distance} блоках &7на &e{dir}"
+      - "{structure}"
+      - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "&8&m                                           "
   expired: "&7Мистический сундук &r{tier}&7 исчез."
-  opened: "&e{player} &fоткрыл &r{tier}&f!"
+  opened: "&e{player} &fоткрыл &r{tier} &7({mode})&f!"
   rare: "&6★ &e{player} &fвыиграл &e{amount}x {item} &fиз &r{tier}&f!"
 
 dir:
@@ -221,3 +285,70 @@ compass:
   given: "&aВы получили компас сундуков. Нажмите ПКМ, чтобы найти ближайший сундук."
   none: "&7Сейчас в этом мире нет стоящих сундуков."
   found: "&d✦ &fБлижайший сундук: &r{tier}&f, примерно в &e{distance} блоках &fна &e{dir}&f. Компас указывает на него."
+
+hologram:
+  timer: "&7Исчезнет через &e{time}"
+
+chests:
+  header: "&5Стоящие мистические сундуки: &e{count}"
+  line: " &d✦ &r{tier} &7- &e{time} &7- {where}"
+  blocks: "блоков"
+
+structure:
+  name:
+    pyramid: "Золотая пирамида"
+    temple: "Древний храм"
+    obelisk: "Светящийся обелиск"
+    henge: "Круг стоячих камней"
+    gate: "Врата на постаменте"
+  usage: "&e/mystic structure <wand|pos1|pos2|save <имя>|delete <имя>|list|edit|preview <имя> [тема]|reload>"
+  bad-name: "&cИмя: 1-32 символа, a-z 0-9 _ -"
+  no-selection: "&cСначала выделите два угла (палка: ЛКМ / ПКМ, или /mystic structure pos1, pos2)."
+  unknown: "&cТакой структуры нет: &e{name}"
+  cannot-build: "&cЗдесь нельзя построить (склон, вода или чужие постройки)."
+  previewing: "&7Строю &e{name} &7здесь, исчезнет через 40 секунд."
+  corner: "&7Угол &e{n} &7на &f{x} {y} {z} &7(выделено {size})"
+  saved: "&aСтруктура &e{name} &aсохранена ({blocks} блоков, {w}×{d}×{h}). Она уже в ротации: /mystic structure edit"
+  deleted: "&aСтруктура &e{name} &aудалена."
+  list-header: "&5Структуры:"
+  list-line: " &e{name} &7({kind}) вес {weight} = {chance}% &8| {on}"
+  err:
+    too-big: "&cВыделение слишком большое (макс. 48×64×48 и 80 000 блоков)."
+    no-chest: "&cПоставьте СУНДУК внутри выделения там, где должен появляться мистик, и сохраните снова."
+    empty: "&cВ выделении почти нет блоков."
+  wand:
+    name: "&6Палка структур"
+    lore:
+      - "&7ЛКМ: угол 1"
+      - "&7ПКМ: угол 2"
+      - "&7Затем /mystic structure save <имя>"
+    given: "&aВы получили палку. Постройте структуру, поставьте сундук там, где должен быть мистик, выделите и сохраните."
+  editor:
+    title: "&5Структуры"
+    name-on: "&a{name}"
+    name-off: "&8{name} &c(выкл)"
+    builtin: "&7Встроенная форма"
+    custom: "&bВаша структура"
+    size: "&7{blocks} блоков, {w}×{d}×{h}"
+    weight: "&7Вес: &e{weight} &7= &e{chance}% &7спавнов"
+    theme: "&7Тема: &e{theme}"
+    help:
+      - "&8ЛКМ/ПКМ: &7вес +1 / -1 (Shift: 5)"
+      - "&8Клавиша 1: &7вкл / выкл   &8Клавиша 2: &7тема"
+      - "&8F: &7показать здесь (40 с)"
+    help-custom:
+      - "&8ЛКМ/ПКМ: &7вес +1 / -1 (Shift: 5)"
+      - "&8Клавиша 1: &7вкл / выкл   &8F: &7показать здесь"
+      - "&8Q: &7удалить (нажать дважды)"
+    help-armed:
+      - "&c&lНажмите Q ещё раз, чтобы удалить"
+
+mode:
+  roulette: "рулетка"
+  full_chest: "полный сундук"
+  instant: "мгновенно"
+  pick: "тайные карты"
+  random: "случайный"
+
+bossbar:
+  title: "&d✦ &r{tier} &8| &e{time} &8| &f{x} {y} {z} &8| &7{mode}"

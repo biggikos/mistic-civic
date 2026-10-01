@@ -19,7 +19,7 @@
 language: en
 
 ## Used to upgrade this file when the plugin updates. Do not change it.
-config-version: 2
+config-version: 4
 
 ## Extra console output for troubleshooting.
 debug: false
@@ -30,6 +30,7 @@ debug: false
 ##   FULL_CHEST - a chest GUI full of loot, the player takes what they want
 ##   INSTANT    - everything goes straight to the inventory, no GUI
 ##   PICK       - mystery cards: pick N face-down cards (see "pick")
+##   RANDOM     - a random one of the above every time (see "random-mode")
 default-open-mode: ROULETTE
 
 ## What a right click with the chest item does.
@@ -87,7 +88,7 @@ cooldowns:
   ## Chest placed by a player: only they can open it for this many seconds.
   claim-seconds: 0
   ## Minimum seconds between two automatic spawns on the whole server.
-  spawn-seconds: 0
+  spawn-seconds: 600
 
 ## ═══ LIMITS ═════════════════════════════════════════════════════════════════
 ## Players with  mysticchest.bypass.limits  ignore the per-player limits.
@@ -107,6 +108,8 @@ world-chest:
     enabled: true
     ## {tier} = coloured tier name.
     text: "{tier}"
+    ## A second line under the name counts down the time left before the chest disappears.
+    countdown: true
   ## What happens with chunk unload etc. is handled automatically (chest is removed).
 
 ## ═══ PROTECTION ═════════════════════════════════════════════════════════════
@@ -121,6 +124,7 @@ protection:
 roulette:
   ## SINGLE = the middle slot flips through items.
   ## SCROLL = a belt of items slides by (CS:GO style).
+  ## RANDOM = SINGLE or SCROLL by coin flip for every spin.
   style: SCROLL
   ## Length of one spin in ticks (20 ticks = 1 second).
   ticks: 60
@@ -174,7 +178,9 @@ spawn:
       mode: RANDOM_WORLD
       trigger:
         type: INTERVAL
-        minutes: 30
+        minutes: 45
+        ## Random +- spread so chests never come on a clock: 45 min +-30% = 31..58 minutes.
+        jitter-percent: 30
       ## Spawn only while at least this many players are online.
       min-players: 1
       worlds: [world]
@@ -187,6 +193,11 @@ spawn:
       announce: EXACT
       ## Max chests of THIS profile standing at once.
       max-active: 3
+      ## prefer-flat: percent of spawns that look for a CLEARING first (flat ground, no trees) - good for
+      ## structures. The rest are fully random, and if no clearing is found the spawn falls back to any ground.
+      prefer-flat: 70
+      flat-tolerance: 1       # max height difference inside the checked area
+      flat-radius: 3          # half-size of the checked area (blocks)
       random-world:
         radius: 1500
         min-distance-from-spawn: 50
@@ -314,6 +325,44 @@ effects:
     flicker: true
     trail: true
 
+## ═══ STRUCTURES ═══════════════════════════════════════════════════════════
+## Chests can appear inside a small building: a stepped pyramid with a golden cap, an open temple,
+## an obelisk, a ring of standing stones, or a gate. It is built layer by layer in front of the players
+## (that is the show), the chest waits at the top / on the altar, and when the chest is opened or times
+## out the building collapses after a short delay and the ORIGINAL terrain is put back.
+## Terrain is saved to data/structures/ while a structure stands, so even a server crash is undone on the next start.
+##
+## Which structures are in the rotation, with weights, is edited in game: /mystic structure edit
+## (stored in structures.yml). Besides the five built-in shapes (pyramid, temple, obelisk, henge, gate)
+## you can build and SAVE YOUR OWN: get the wand with /mystic structure wand, select the building with
+## left/right click, put a chest where the loot chest should appear, then /mystic structure save <name>.
+## Saved structures keep their exact blocks, are rotated randomly (rotate: true) and leave the terrain
+## around them untouched.
+## theme:  AUTO (from the biome) | DESERT | STONE | NETHER | END | FROST | OCEAN
+## chance: percent of spawns that get a structure (the rest are a plain chest)
+## decay:  0..1  how "ancient" it looks: chance that decorative blocks are missing
+## Sites that are steep, in water or contain player-made blocks (chests, doors, beds, signs...) are skipped
+## and the chest simply appears without a structure.
+## Override per spawn profile  (structure: {chance: 100, shapes: [PYRAMID]})  and per tier in tiers.yml
+##   (structure: {shape: gate, theme: END}).   shape/shapes take names from /mystic structure list.  Try it by hand:  /mystic spawn rich here pyramid desert
+structures:
+  enabled: true
+  chance: 70
+  theme: AUTO
+  ## Random 90 degree turn of your own saved structures.
+  rotate: true
+  decay: 0.08
+  ## Blocks placed per tick while building (40 = about 1-2 seconds for a pyramid).
+  build-speed: 40
+  ## Collapse top-down instead of vanishing at once; delay before it starts after the chest is gone.
+  collapse: true
+  collapse-delay-seconds: 20
+  ## Players cannot break the structure or blast it with TNT while it stands.
+  protect: true
+  ## Highest allowed height difference of the ground under the structure.
+  max-slope: 4
+  sound: BLOCK_STONE_PLACE
+
 ## ═══ CHEST COMPASS ══════════════════════════════════════════════════════════
 ## /mystic compass gives an item; right click points it at the nearest standing chest.
 compass:
@@ -329,6 +378,10 @@ announce:
     type: CHAT
     radius: -1
     world-only: false
+    ## Played to EVERY recipient (not positional), so everybody notices. Empty = silent.
+    sound: BLOCK_NOTE_BLOCK_PLING
+    volume: 1.0
+    pitch: 1.2
   on-open:
     type: CHAT
     radius: -1
@@ -337,9 +390,37 @@ announce:
     type: CHAT
     radius: -1
     world-only: false
+    sound: ENTITY_PLAYER_LEVELUP
+    volume: 0.8
+    pitch: 1.0
 
 ## PlaceholderAPI (if installed) gets %mysticchest_cooldown_<tier>%, %mysticchest_cooldown_formatted_<tier>%,
 ## %mysticchest_opens_today%, %mysticchest_pity_<tier>% and %mysticchest_active_chests%.
+
+## ═══ BOSS BAR ═════════════════════════════════════════════════════════════
+## One boss bar per standing chest: tier, time left, coordinates and open type. It drains as the time
+## runs out. viewers: ALL | WORLD (players in the chest's world) | RADIUS (within "radius" blocks).
+## color: AUTO (tier colour) or PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE.  style: SOLID, SEGMENTED_6/10/12/20.
+## The text is in lang/<language>.yml (bossbar.title), in the server language.
+bossbar:
+  enabled: true
+  viewers: WORLD
+  radius: 500
+  color: AUTO
+  style: SOLID
+
+## ═══ RANDOM OPEN MODE ═════════════════════════════════════════════════════
+## Set  open-mode: RANDOM  (here as default-open-mode, or in a tier) and every chest opens in a random way:
+## roulette, full chest, mystery cards or instantly, with these weights.
+## reveal-at-spawn: true  - the way is rolled when the chest appears and announced ("Type: mystery cards");
+##                  false - rolled when somebody opens it (announced as "random").
+random-mode:
+  reveal-at-spawn: true
+  weights:
+    ROULETTE: 40
+    FULL_CHEST: 25
+    PICK: 25
+    INSTANT: 10
 
 ## ═══ GUI ════════════════════════════════════════════════════════════════════
 gui:

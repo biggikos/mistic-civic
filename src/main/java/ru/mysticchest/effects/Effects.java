@@ -24,31 +24,73 @@ public final class Effects {
     };
 
     private final MysticChestPlugin plugin;
-    private final Map<String, Sound> sounds = new HashMap<String, Sound>();
     private final Map<String, Particle> particles = new HashMap<String, Particle>();
     private final Map<String, Template> templates = new HashMap<String, Template>();
 
     public Effects(MysticChestPlugin plugin) { this.plugin = plugin; }
 
-    public void clear() { sounds.clear(); particles.clear(); templates.clear(); }
+    /** A sound only this player hears (announcements, boss bar pings). */
+    public void soundTo(Player p, String name, float vol, float pitch) {
+        playSound(p, p.getLocation(), name, vol, pitch);
+    }
+
+    /** One-off sound at a location for nearby players (structure building). */
+    public void soundAt(String name, Location loc, float vol, float pitch) {
+        if (name == null || name.isEmpty() || loc.getWorld() == null) return;
+        double max = plugin.settings().viewDistance;
+        for (Player p : loc.getWorld().getPlayers()) if (p.getLocation().distanceSquared(loc) <= max * max) playSound(p, loc, name, vol, pitch);
+    }
+
+    public void clear() { snds.clear(); particles.clear(); templates.clear(); }
 
     /** Resolves every configured sound/particle once so the first opener doesn't pay for XSeries class loading. */
     public void warmUp(Settings s) {
-        for (Settings.Effect fx : new Settings.Effect[]{s.fxOpen, s.fxTick, s.fxWin, s.fxRare, s.fxSpawn}) {
-            if (!fx.sound.isEmpty()) sound(fx.sound);
+        for (Settings.Effect fx : new Settings.Effect[]{s.fxOpen, s.fxTick, s.fxWin, s.fxRare, s.fxSpawn, s.fxExpire}) {
+            if (!fx.sound.isEmpty()) snd(fx.sound);
             if (!fx.particle.isEmpty()) particle(fx.particle);
         }
     }
 
-    private Sound sound(String name) {
-        if (sounds.containsKey(name)) return sounds.get(name);
+    /** A resolved sound: the Sound object when we can get one, else a namespaced key ("block.chest.open"). */
+    private static final class Snd {
+        final Sound sound;
+        final String key;
+        Snd(Sound s, String k) { sound = s; key = k; }
+    }
+
+    private final Map<String, Snd> snds = new HashMap<String, Snd>();
+
+    /**
+     * XSeries cannot build Sound objects on 1.21.3+ (Sound stopped being an enum), so there are three tries:
+     * XSeries, Sound.valueOf by reflection, and finally the raw key. Names like "minecraft:block.chest.open" always work.
+     */
+    private Snd snd(String name) {
+        Snd r = snds.get(name);
+        if (r != null) return r;
         Sound s = null;
         try {
             java.util.Optional<XSound> x = XSound.matchXSound(name);
             if (x.isPresent()) s = x.get().parseSound();
         } catch (Throwable ignored) {}
-        sounds.put(name, s);
-        return s;
+        if (s == null) {
+            try { s = (Sound) Sound.class.getMethod("valueOf", String.class).invoke(null, name.toUpperCase()); } catch (Throwable ignored) {}
+        }
+        String key = null;
+        if (s == null && (name.contains(".") || name.contains(":"))) key = name.toLowerCase();
+        r = new Snd(s, key);
+        snds.put(name, r);
+        if (s == null && key == null) plugin.getLogger().warning("Sound '" + name + "' is not available on this server version (check effects/announce settings).");
+        return r;
+    }
+
+    @SuppressWarnings("deprecation")
+    public void playSound(Player p, Location at, String name, float vol, float pitch) {
+        if (name == null || name.isEmpty()) return;
+        Snd r = snd(name);
+        try {
+            if (r.sound != null) p.playSound(at, r.sound, vol, pitch);
+            else if (r.key != null) p.playSound(at, r.key, vol, pitch);
+        } catch (Throwable ignored) {}
     }
 
     public Particle particle(String name) {
@@ -118,8 +160,7 @@ public final class Effects {
 
     private void sound(Settings.Effect fx, Player p, Location at) {
         if (fx.sound.isEmpty()) return;
-        Sound s = sound(fx.sound);
-        if (s != null) p.playSound(at, s, fx.volume, fx.pitch);
+        playSound(p, at, fx.sound, fx.volume, fx.pitch);
     }
 
     private void particles(Settings.Effect fx, Location loc) {

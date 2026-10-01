@@ -6,6 +6,8 @@
 - [Tiers](#tiers)
 - [How chests are opened](#how-chests-are-opened)
 - [Spawning chests](#spawning-chests)
+- [Announcements, boss bar, timers](#announcements-boss-bar-timers)
+- [Structures](#structures)
 - [Cooldowns, limits, pity](#cooldowns-limits-pity)
 - [Rewards (loot)](#rewards-loot)
 - [Economy](#economy)
@@ -89,6 +91,7 @@ Anything omitted falls back to `config.yml`.
 | `ROULETTE` | animated spin. `roulette.style: SCROLL` slides a belt of items under a pointer, `SINGLE` flips the middle slot. A tier with several rolls spins once per reward. Closing the window early hands out the remaining prizes immediately; nothing is ever lost. |
 | `FULL_CHEST` | a chest GUI (`full-chest.rows`, 1–6) with all rewards. The player takes what they like; the rest goes to the inventory on close. |
 | `INSTANT` | rewards go straight to the inventory, no window. |
+| `RANDOM` | a random one of the four above on every opening, weighted by `random-mode.weights`. With `reveal-at-spawn: true` the way is rolled when the chest appears and announced ("Type: mystery cards"). `roulette.style: RANDOM` also flips SINGLE/SCROLL per spin. |
 | `PICK` | `pick.cards` face-down cards, the player picks `pick.picks`. Afterwards the others are shown dimmed. If the player idles for 60 s, the picks are made automatically. |
 
 What a click does:
@@ -140,9 +143,44 @@ spawn:
 
 **Announce**: `EXACT` (coordinates), `REGION` (rounded to 100 blocks), `HINT` (distance and direction from each player), `NONE`.
 
-Chunks with chests are kept loaded while the chest exists (Paper/Spigot 1.13+; on older servers the unload is vetoed). After a crash the next start removes leftover chest blocks and holograms.
+Chunks with chests (and structures) are kept loaded while the chest exists (Paper/Spigot 1.13+; on older servers the unload is vetoed). After a crash the next start removes leftover chest blocks and holograms.
 
 Force a profile now: `/mystic spawn <tier> <profile>`; place at your feet: `/mystic spawn <tier> here`.
+
+## Announcements, boss bar, timers
+
+When a chest appears, every recipient (see `announce.on-spawn`: type, radius, world-only) gets, in their own language:
+
+```
+✦ MYSTIC CHEST APPEARED! Rich chest
+Type: mystery cards | Inside: Crusher kit, Netherite Ingot, Enchanted Golden Apple
+Coordinates: 2000 -59 2000 (world)
+Place: Ring of standing stones
+It disappears in 4m 59s. Use /mystic compass to find it!
+```
+
+- **Type** is how it opens (roulette, full chest, mystery cards, instant, random); **Inside** lists the three rarest rewards of the tier.
+- `announce: EXACT | REGION | HINT | NONE` in the spawn profile controls the location line (coordinates, rough area, or distance and direction).
+- `announce.on-spawn.sound` is played to **every** recipient (not at the chest), so nobody misses it.
+- Texts are lists in `lang/*.yml` (`announce.spawned.exact`, …); empty lines (for example no structure) are dropped.
+- **Boss bar** (`bossbar:`): one bar per standing chest with tier, time left, coordinates and open type; it drains as the time runs out. `viewers: ALL | WORLD | RADIUS`, `color: AUTO` (tier colour), `style`.
+- **Hologram timer**: a second line under the chest name counts down (`world-chest.hologram.countdown`).
+- **`/mystic chests`** lists standing chests with their time left (coordinates only with `mysticchest.chests.coords`).
+- **Spawn rhythm**: `trigger: {type: INTERVAL, minutes: 45, jitter-percent: 30}` makes gaps irregular (31–58 minutes); `cooldowns.spawn-seconds: 600` is a hard minimum between any two automatic spawns; `max-active` caps chests per profile; `TIMES` and `ONLINE_THRESHOLD` triggers give fixed or population-based events.
+- **Clearings**: `prefer-flat: 70` makes 70% of spawns look for flat, treeless ground first.
+
+## Structures
+
+Chests can appear inside a building: built-in `pyramid`, `temple`, `obelisk`, `henge`, `gate`, plus your own. It rises layer by layer, the chest waits on top or on the altar, and after the chest is opened or times out the building collapses and the original terrain returns (also after a crash). `structures:` in `config.yml` sets the chance, theme (`AUTO` from the biome, or DESERT, STONE, NETHER, END, FROST, OCEAN), ruin level (`decay`), build speed and protection.
+
+**Your own structures**
+
+1. `/mystic structure wand`, then left/right click two opposite corners around your building.
+2. Put a **chest** inside the selection where the mystic chest should appear.
+3. `/mystic structure save <name>`. The chest is detected automatically, air is not stored, the lowest layer sits on the ground, a foundation fills gaps below it.
+4. `/mystic structure edit` opens the catalog: weights with live chance %, on/off, fixed theme, preview (`F`), delete (`Q` twice). `/mystic structure preview <name>` builds it in front of you for 40 seconds.
+
+Saved structures keep their exact blocks, are rotated randomly (`rotate: true`) and do not clear the terrain around them (only trees and grass). Sites that are steep, in water or contain player-made blocks (chests, doors, beds, signs…) are skipped and a plain chest appears instead. Per spawn profile or tier you can force a structure: `structure: {shape: gate, theme: end, chance: 100}`.
 
 ## Cooldowns, limits, pity
 
@@ -252,7 +290,7 @@ Check what the plugin found: `/mystic economy`, and your balance of a currency: 
 
 ## Effects and announcements
 
-`effects.open | tick | win | rare | spawn`: `sound` (version-independent names like `ENTITY_PLAYER_LEVELUP`), `volume`, `pitch`, `particle`, `count`, and for players `title`, `subtitle`, `actionbar` (placeholders `{player}`, `{item}`, `{tier}`). Empty means off. Particles and sounds only reach players within `performance.effects-view-distance`.
+`effects.open | tick | win | rare | spawn | expire`: `sound` (names like `ENTITY_PLAYER_LEVELUP` or a namespaced key such as `minecraft:block.bell.use`; both work on every version), `volume`, `pitch`, `particle`, `count`, and for players `title`, `subtitle`, `actionbar` (placeholders `{player}`, `{item}`, `{tier}`). Empty means off. Particles and sounds only reach players within `performance.effects-view-distance`.
 
 `announce.on-spawn | on-open | on-rare`: `type` (`CHAT`, `TITLE`, `ACTIONBAR`, `NONE`), `radius` (`-1` = everyone), `world-only`. Messages are sent in each player's own language. Rewards below `rare-below-percent` or marked `broadcast: true` use `on-rare`.
 
@@ -276,6 +314,8 @@ Check what the plugin found: `/mystic economy`, and your balance of a currency: 
 | `/mystic list`, `/mystic help` | – |
 | using chests | `mysticchest.use` (everyone) |
 | `/mystic compass` | `mysticchest.compass` (everyone) |
+| `/mystic chests` | `mysticchest.chests` (everyone); coordinates: `mysticchest.chests.coords` (op) |
+| `/mystic structure …` | `mysticchest.admin.structure` (op) |
 | `/mystic give`, `spawn`, `reload`, `perf`, `point`, `economy` | `mysticchest.admin` (op) |
 | `/mystic loot …` and the editor | `mysticchest.admin.loot` (op) |
 | ignore cooldowns and claim locks | `mysticchest.bypass.cooldown` (nobody) |

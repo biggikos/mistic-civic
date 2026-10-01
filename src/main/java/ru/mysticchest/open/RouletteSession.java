@@ -47,7 +47,8 @@ final class RouletteSession implements GuiHolder, Animator.Animation {
         this.t = t;
         this.rewards = rewards;
         Settings s = plugin.settings();
-        this.scroll = s.rouletteStyle == Settings.Style.SCROLL;
+        this.scroll = s.rouletteStyle == Settings.Style.SCROLL
+                || (s.rouletteStyle == Settings.Style.RANDOM && java.util.concurrent.ThreadLocalRandom.current().nextBoolean());
         this.flips = schedule(s.rouletteTicks);
         this.inv = Bukkit.createInventory(this, 27,
                 Text.title(plugin.lang().get(p, "gui.roulette.title", "tier", t.name(plugin.lang().code(p)))));

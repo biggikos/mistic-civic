@@ -91,7 +91,7 @@ public final class WorldListener implements Listener {
         String[] deny = plugin.open().check(p, a.tier);
         if (deny != null) { sendDeny(p, deny); return; }
         if (!plugin.chests().remove(a, true)) return;     // first opener wins
-        plugin.open().open(p, a.tier);
+        plugin.open().open(p, a.tier, a.mode);
     }
 
     private void sendDeny(Player p, String[] deny) {
@@ -115,7 +115,7 @@ public final class WorldListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onBreak(BlockBreakEvent e) {
-        if (plugin.settings().protBreak && plugin.chests().isActive(e.getBlock())) e.setCancelled(true);
+        if (plugin.settings().protBreak && (plugin.chests().isActive(e.getBlock()) || plugin.structures().protects(e.getBlock()))) e.setCancelled(true);
     }
 
     @EventHandler
@@ -129,8 +129,8 @@ public final class WorldListener implements Listener {
     }
 
     private void strip(Iterator<Block> it) {
-        if (plugin.chests().count() == 0) return;
-        while (it.hasNext()) if (plugin.chests().isActive(it.next())) it.remove();
+        if (plugin.chests().count() == 0 && plugin.structures().count() == 0) return;
+        while (it.hasNext()) { Block b = it.next(); if (plugin.chests().isActive(b) || plugin.structures().protects(b)) it.remove(); }
     }
 
     @EventHandler

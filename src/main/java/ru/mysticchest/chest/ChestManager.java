@@ -46,7 +46,13 @@ public final class ChestManager {
         public final UUID owner;
         public final long claimUntil;
         public final Material block;
-        ArmorStand holo;
+        public ru.mysticchest.structure.Structure structure;
+        /** Concrete open mode, rolled at spawn (RANDOM tiers) so it can be announced; null = decided when opened. */
+        public ru.mysticchest.open.OpenType mode;
+        public String structureId;
+        public org.bukkit.boss.BossBar bar;
+        ArmorStand holo, holo2;
+        long expiresAt;
         Scheduler.Handle ttl;
 
         Active(long key, Location loc, Tier tier, String profile, UUID owner, long claimUntil, Material block) {
@@ -174,7 +180,9 @@ public final class ChestManager {
 
     private void startAura() {
         Settings st = plugin.settings();
-        if (auraRunning || !st.auraEnabled || st.auraStyle == Settings.AuraStyle.NONE) return;
+        boolean aura = st.auraEnabled && st.auraStyle != Settings.AuraStyle.NONE;
+        boolean timers = (st.holoEnabled && st.holoCountdown && !st.lowResource) || st.bossEnabled;
+        if (auraRunning || !(aura || timers)) return;
         auraRunning = true;
         plugin.animator().add(new ru.mysticchest.effects.Aura(plugin));
     }
@@ -206,7 +214,9 @@ public final class ChestManager {
         return n;
     }
 
-    public boolean place(Location loc, final Tier t, String profile, UUID owner) {
+    public boolean place(Location loc, final Tier t, String profile, UUID owner) { return place(loc, t, profile, owner, null); }
+
+    public boolean place(Location loc, final Tier t, String profile, UUID owner, ru.mysticchest.structure.Structure structure) {
         if (total >= plugin.settings().maxActiveWorldChests) return false;
         Block b = loc.getBlock();
         if (!b.getType().name().endsWith("AIR")) return false;
@@ -217,14 +227,11 @@ public final class ChestManager {
                 claim > 0 ? System.currentTimeMillis() + claim * 1000L : 0L, mat);
         if (plugin.settings().holoEnabled && !plugin.settings().lowResource) {
             String txt = t.holoText != null ? t.holoText : plugin.settings().holoText;
-            ArmorStand h = loc.getWorld().spawn(loc.clone().add(0.5, 0.2, 0.5), ArmorStand.class);
-            h.setVisible(false);
-            h.setGravity(false);
-            h.setMarker(true);
-            h.setCustomName(Text.color(txt.replace("{tier}", t.name(plugin.lang().code(Bukkit.getConsoleSender())))));
-            h.setCustomNameVisible(true);
-            a.holo = h;
+            // name line sits above the block (the block is 1.0 high), the timer line right under it
+            a.holo = stand(loc.clone().add(0.5, 1.3, 0.5), Text.color(txt.replace("{tier}", t.name(plugin.lang().code(Bukkit.getConsoleSender())))));
+            if (plugin.settings().holoCountdown) a.holo2 = stand(loc.clone().add(0.5, 1.0, 0.5), "");
         }
+        a.expiresAt = System.currentTimeMillis() + t.ttlSeconds(plugin.settings()) * 1000L;
         a.ttl = plugin.scheduler().later(t.ttlSeconds(plugin.settings()) * 1000L, new Runnable() {
             public void run() {
                 if (remove(a, true)) {
@@ -235,13 +242,40 @@ public final class ChestManager {
         });
         Map<Long, Active> m = byWorld.get(b.getWorld());
         if (m == null) { m = new HashMap<Long, Active>(); byWorld.put(b.getWorld(), m); }
+        a.structure = structure;
+        ru.mysticchest.open.OpenType base = t.openMode(plugin.settings());
+        a.mode = base != ru.mysticchest.open.OpenType.RANDOM ? base : (plugin.settings().randomReveal ? plugin.open().pickMode(t) : ru.mysticchest.open.OpenType.RANDOM);
         m.put(a.key, a);
         total++;
         hold(b.getWorld(), b.getX() >> 4, b.getZ() >> 4);
         startAura();
+        plugin.bossBars().add(a);
         save();
         return true;
     }
+
+    private ArmorStand stand(Location at, String text) {
+        ArmorStand h = at.getWorld().spawn(at, ArmorStand.class);
+        h.setVisible(false);
+        h.setGravity(false);
+        h.setMarker(true);
+        h.setCustomName(text);
+        h.setCustomNameVisible(!text.isEmpty());
+        return h;
+    }
+
+    /** Called about once a second by the ticker: refreshes the countdown under the chest name. */
+    public void updateTimers() {
+        long now = System.currentTimeMillis();
+        for (Active a : all()) {
+            if (a.holo2 == null || !a.holo2.isValid()) continue;
+            long left = Math.max(0, (a.expiresAt - now + 999) / 1000);
+            a.holo2.setCustomName(plugin.lang().get("hologram.timer", "time", plugin.lang().time(Bukkit.getConsoleSender(), left)));
+            a.holo2.setCustomNameVisible(true);
+        }
+    }
+
+    public long secondsLeft(Active a) { return Math.max(0, (a.expiresAt - System.currentTimeMillis() + 999) / 1000); }
 
     private Material blockMaterial(Tier t) {
         ItemStack ic = icon(t);
@@ -258,8 +292,11 @@ public final class ChestManager {
         if (a.holo != null) {
             if (a.holo.isValid()) a.holo.remove(); else purgeHolograms(a.loc);   // stale reference = chunk was unloaded
         }
+        if (a.holo2 != null && a.holo2.isValid()) a.holo2.remove();
+        plugin.bossBars().remove(a);
         if (clearBlock && a.loc.getBlock().getType() == a.block) a.loc.getBlock().setType(Material.AIR);
         release(a.loc.getWorld(), a.loc.getBlockX() >> 4, a.loc.getBlockZ() >> 4);
+        if (a.structure != null) plugin.structures().scheduleRestore(a.structure);
         save();
         return true;
     }

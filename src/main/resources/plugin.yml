@@ -23,6 +23,15 @@ permissions:
   mysticchest.compass:
     description: Get and use the chest compass
     default: true
+  mysticchest.chests:
+    description: /mystic chests (timers of standing chests)
+    default: true
+  mysticchest.chests.coords:
+    description: See exact coordinates in /mystic chests
+    default: op
+  mysticchest.admin.structure:
+    description: Save, edit, preview and delete structures
+    default: op
   mysticchest.admin:
     description: give, spawn, reload, perf, point
     default: op

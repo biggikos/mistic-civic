@@ -115,6 +115,16 @@ public final class Lang {
         return t;
     }
 
+    public boolean has(CommandSender s, String key) {
+        Bundle b = bundle(s);
+        return b.yml.contains(key) || english.yml.contains(key);
+    }
+
+    public boolean isList(CommandSender s, String key) {
+        Bundle b = bundle(s);
+        return b.yml.isList(key) || (!b.yml.contains(key) && english.yml.isList(key));
+    }
+
     public String get(CommandSender s, String key, String... kv) { return template(bundle(s), key).apply(kv); }
     public String get(String key, String... kv) { return template(fixed, key).apply(kv); }
 

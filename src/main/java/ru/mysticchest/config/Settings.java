@@ -10,12 +10,17 @@ public final class Settings {
     public enum ClickAir { OPEN, NONE }
     public enum ClickBlock { PLACE, OPEN, NONE }
     public enum Scope { PLAYER, PLAYER_TIER, GLOBAL }
-    public enum Style { SINGLE, SCROLL }
+    public enum Style { SINGLE, SCROLL, RANDOM }
+    public enum Viewers { ALL, WORLD, RADIUS }
     public enum AnnounceType { CHAT, TITLE, ACTIONBAR, NONE }
 
     public static final class Announce {
         public final AnnounceType type; public final int radius; public final boolean worldOnly;
+        public final String sound; public final float volume, pitch;
         Announce(Cfg c) {
+            sound = c.str("sound", "");
+            volume = (float) c.decimal("volume", 1.0, 0, 10);
+            pitch = (float) c.decimal("pitch", 1.0, 0, 2);
             type = c.enumOf("type", AnnounceType.class, AnnounceType.CHAT);
             radius = c.integer("radius", -1, -1, 100000);
             worldOnly = c.bool("world-only", false);
@@ -56,6 +61,7 @@ public final class Settings {
     public final int ttlSeconds;
     public final boolean holoEnabled;
     public final String holoText;
+    public final boolean holoCountdown;
 
     public final boolean protBreak, protExplosions, protPistons, respectRegions;
 
@@ -84,6 +90,19 @@ public final class Settings {
     public final Effect fxExpire;
     public final boolean compassEnabled;
     public final int compassCooldown;
+
+    public final java.util.Map<OpenType, Integer> randomModes = new java.util.LinkedHashMap<OpenType, Integer>();
+    public final boolean randomReveal;
+    public final boolean bossEnabled, bossAutoColor;
+    public final Viewers bossViewers;
+    public final int bossRadius;
+    public final String bossStyle, bossColor;
+
+    public final boolean structEnabled, structCollapse, structProtect;
+    public final int structChance, structSpeed, structCollapseDelay, structMaxSlope;
+    public final double structDecay;
+    public final String structTheme, structSound;
+    public final boolean structRotate;
 
     public final boolean previewEnabled;
     public final String filler;
@@ -114,6 +133,7 @@ public final class Settings {
         ttlSeconds = wc.integer("ttl-seconds", 300, 5, 31536000);
         holoEnabled = wc.sub("hologram").bool("enabled", true);
         holoText = wc.sub("hologram").str("text", "{tier}");
+        holoCountdown = wc.sub("hologram").bool("countdown", true);
 
         Cfg pr = c.sub("protection");
         protBreak = pr.bool("prevent-break", true);
@@ -180,6 +200,36 @@ public final class Settings {
         Cfg cp = c.sub("compass");
         compassEnabled = cp.bool("enabled", true);
         compassCooldown = cp.integer("cooldown-seconds", 3, 0, 3600);
+        Cfg rm = c.sub("random-mode");
+        randomReveal = rm.bool("reveal-at-spawn", true);
+        Cfg rw = rm.sub("weights");
+        for (String k : rw.keys()) {
+            OpenType t = null;
+            try { t = OpenType.valueOf(k.trim().toUpperCase()); } catch (IllegalArgumentException e) {
+                log.warning("[config.yml.random-mode.weights] unknown mode '" + k + "' (use ROULETTE, FULL_CHEST, PICK, INSTANT)");
+            }
+            if (t != null && t != OpenType.RANDOM) randomModes.put(t, rw.integer(k, 1, 0, 100000));
+        }
+        if (randomModes.isEmpty()) { randomModes.put(OpenType.ROULETTE, 40); randomModes.put(OpenType.FULL_CHEST, 25); randomModes.put(OpenType.PICK, 25); randomModes.put(OpenType.INSTANT, 10); }
+        Cfg bb = c.sub("bossbar");
+        bossEnabled = bb.bool("enabled", true) && !lowResource;
+        bossViewers = bb.enumOf("viewers", Viewers.class, Viewers.WORLD);
+        bossRadius = bb.integer("radius", 500, 1, 100000);
+        bossStyle = bb.str("style", "SOLID");
+        bossColor = bb.str("color", "AUTO");
+        bossAutoColor = bossColor.equalsIgnoreCase("AUTO");
+        Cfg sc = c.sub("structures");
+        structEnabled = sc.bool("enabled", true);
+        structChance = sc.integer("chance", 70, 0, 100);
+        structRotate = sc.bool("rotate", true);
+        structTheme = sc.str("theme", "AUTO");
+        structDecay = sc.decimal("decay", 0.08, 0, 1);
+        structSpeed = sc.integer("build-speed", 40, 1, 2000);
+        structCollapse = sc.bool("collapse", true);
+        structCollapseDelay = sc.integer("collapse-delay-seconds", 20, 0, 3600);
+        structProtect = sc.bool("protect", true);
+        structMaxSlope = sc.integer("max-slope", 4, 0, 30);
+        structSound = sc.str("sound", "BLOCK_STONE_PLACE");
         previewEnabled = c.sub("gui").bool("preview-enabled", true);
         filler = c.sub("gui").str("filler", "GRAY_STAINED_GLASS_PANE");
     }

@@ -13,6 +13,8 @@ import ru.mysticchest.config.Settings;
 import ru.mysticchest.cooldown.CooldownManager;
 import ru.mysticchest.core.Animator;
 import ru.mysticchest.core.Scheduler;
+import ru.mysticchest.structure.Structure;
+import ru.mysticchest.structure.StructureService;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -74,7 +76,9 @@ public final class SpawnService {
             return;
         }
         if (p.trigger == SpawnProfile.Trigger.INTERVAL) {
-            delay = p.intervalMinutes * 60000L;
+            // jitter makes the gaps irregular: 45 min +- 30% is anything from 31 to 58 minutes
+            double f = 1 + (ThreadLocalRandom.current().nextDouble() * 2 - 1) * p.jitterPercent / 100.0;
+            delay = Math.max(60000L, (long) (p.intervalMinutes * 60000L * f));
         } else {
             if (p.times.isEmpty()) {
                 plugin.getLogger().warning("[spawn.profiles." + p.name + "] trigger TIMES has no valid times (use \"HH:mm\"); profile disabled.");
@@ -132,20 +136,51 @@ public final class SpawnService {
 
     private void fail(CommandSender who) { if (who != null) plugin.lang().send(who, "spawn.failed"); }
 
-    private void land(SpawnProfile p, Tier tier, Location loc, String key) {
-        if (!plugin.chests().place(loc, tier, p.name, null)) { debug(p.name + ": cannot place at " + loc); return; }
-        if (plugin.settings().cdSpawn > 0) plugin.cooldowns().start(CooldownManager.GLOBAL, "spawn", plugin.settings().cdSpawn);
-        announce(p.announce, loc, tier, key, new String[0]);
-        plugin.effects().playAt(plugin.settings().fxSpawn, loc);
-        if (plugin.settings().fwOnSpawn) plugin.fireworks().launch(loc.clone().add(0.5, 0, 0.5), tier.color);
+    private void land(final SpawnProfile p, final Tier tier, final Location loc, final String key) {
+        StructureService.Spec spec = plugin.structures().resolve(p.structure, tier.structure, null, null, loc);
+        if (spec == null) { finishLand(p, tier, loc, null, key); return; }
+        plugin.structures().build(spec, loc, new StructureService.Callback() {
+            public void done(Structure st) { finishLand(p, tier, st == null ? loc : st.chest, st, key); }
+        });
     }
 
-    /** Manual placement from /mystic spawn (exact coordinates, ignores conditions). */
-    public boolean spawnHere(Tier tier, Location loc) {
-        if (!plugin.chests().place(loc.getBlock().getLocation(), tier, "manual", null)) return false;
-        announce(SpawnProfile.Announce.EXACT, loc, tier, "announce.spawned", new String[0]);
+    /** modeid / structid / ttlsec placeholders for the announcement of a chest that was just placed. */
+    private String[] details(Location loc, Tier tier, Structure st) {
+        ru.mysticchest.chest.ChestManager.Active a = plugin.chests().at(loc.getBlock());
+        return new String[]{"modeid", a != null && a.mode != null ? a.mode.name() : tier.openMode(plugin.settings()).name(),
+                "structid", st == null || st.name == null ? "" : st.name,
+                "ttlsec", String.valueOf(tier.ttlSeconds(plugin.settings()))};
+    }
+
+    private void finishLand(SpawnProfile p, Tier tier, Location loc, Structure st, String key) {
+        if (!plugin.chests().place(loc, tier, p.name, null, st)) {
+            debug(p.name + ": cannot place at " + loc);
+            if (st != null) plugin.structures().scheduleRestore(st);
+            return;
+        }
+        if (plugin.settings().cdSpawn > 0) plugin.cooldowns().start(CooldownManager.GLOBAL, "spawn", plugin.settings().cdSpawn);
+        announce(p.announce, loc, tier, key, details(loc, tier, st));
         plugin.effects().playAt(plugin.settings().fxSpawn, loc);
         if (plugin.settings().fwOnSpawn) plugin.fireworks().launch(loc.clone().add(0.5, 0, 0.5), tier.color);
+        plugin.getLogger().info("Spawned " + org.bukkit.ChatColor.stripColor(tier.name("en")) + " at " + loc.getWorld().getName() + " " + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + " (" + p.name + ")");
+    }
+
+    /** Manual placement from /mystic spawn (exact coordinates, ignores conditions). shape/theme may be null. */
+    public boolean spawnHere(final Tier tier, final Location loc, String shape, String theme) {
+        StructureService.Spec spec = plugin.structures().resolve(null, tier.structure, shape, theme, loc);
+        if (spec == null) return placeManual(tier, loc.getBlock().getLocation(), null);
+        final Location here = loc.getBlock().getLocation();
+        plugin.structures().build(spec, here, new StructureService.Callback() {
+            public void done(Structure st) { placeManual(tier, st == null ? here : st.chest, st); }
+        });
+        return true;
+    }
+
+    private boolean placeManual(Tier tier, Location at, Structure st) {
+        if (!plugin.chests().place(at, tier, "manual", null, st)) { if (st != null) plugin.structures().scheduleRestore(st); return false; }
+        announce(SpawnProfile.Announce.EXACT, at, tier, "announce.spawned", details(at, tier, st));
+        plugin.effects().playAt(plugin.settings().fxSpawn, at);
+        if (plugin.settings().fwOnSpawn) plugin.fireworks().launch(at.clone().add(0.5, 0, 0.5), tier.color);
         return true;
     }
 

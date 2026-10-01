@@ -1,10 +1,8 @@
 package ru.mysticchest.effects;
 
-import com.cryptomorin.xseries.XSound;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import ru.mysticchest.MysticChestPlugin;
@@ -34,8 +32,13 @@ public final class Aura implements Animator.Animation {
     public boolean tick() {
         Settings s = plugin.settings();
         List<ChestManager.Active> chests = plugin.chests().snapshot();
-        if (chests.isEmpty() || !s.auraEnabled) { plugin.chests().auraStopped(); return false; }
-        if (++tick % s.auraInterval != 0) return true;
+        if (chests.isEmpty()) { plugin.chests().auraStopped(); return false; }
+        tick++;
+        if (tick % 20 == 0) {
+            if (s.holoEnabled && s.holoCountdown) plugin.chests().updateTimers();
+            if (s.bossEnabled) plugin.bossBars().update(chests);
+        }
+        if (!s.auraEnabled || s.auraStyle == Settings.AuraStyle.NONE || tick % s.auraInterval != 0) return true;
         phase++;
         boolean chime = !s.auraSound.isEmpty() && System.currentTimeMillis() >= nextSound;
         if (chime) nextSound = System.currentTimeMillis() + s.auraSoundInterval * 1000L;
@@ -50,10 +53,7 @@ public final class Aura implements Animator.Animation {
             for (Player p : w.getPlayers()) {
                 if (p.getLocation().distanceSquared(base) > view2) continue;
                 draw(p, pt, base, style, a.tier.color, s);
-                if (chime) {
-                    Sound snd = sound(s.auraSound);
-                    if (snd != null) p.playSound(base, snd, s.auraVolume, s.auraPitch);
-                }
+                if (chime) plugin.effects().playSound(p, base, s.auraSound, s.auraVolume, s.auraPitch);
             }
         }
         return true;
@@ -97,13 +97,6 @@ public final class Aura implements Animator.Animation {
             if (DUST && (pt.name().equals("REDSTONE") || pt.name().equals("DUST"))) Dust.spawn(p, pt, l, 1, color);
             else p.spawnParticle(pt, l, 1, 0, 0, 0, 0);
         } catch (Throwable ignored) {}
-    }
-
-    private Sound sound(String name) {
-        try {
-            java.util.Optional<XSound> x = XSound.matchXSound(name);
-            return x.isPresent() ? x.get().parseSound() : null;
-        } catch (Throwable t) { return null; }
     }
 
     public void abort() { plugin.chests().auraStopped(); }

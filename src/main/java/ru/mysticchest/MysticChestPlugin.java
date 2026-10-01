@@ -52,6 +52,8 @@ public final class MysticChestPlugin extends JavaPlugin {
     private ChatPrompt prompts;
     private ru.mysticchest.effects.Fireworks fireworks;
     private ru.mysticchest.chest.Compass compass;
+    private ru.mysticchest.effects.BossBars bossBars;
+    private ru.mysticchest.structure.StructureService structures;
     private Economies economies;
 
     @Override
@@ -76,11 +78,14 @@ public final class MysticChestPlugin extends JavaPlugin {
         economies = new Economies(this);
         fireworks = new ru.mysticchest.effects.Fireworks(this);
         compass = new ru.mysticchest.chest.Compass(this);
+        bossBars = new ru.mysticchest.effects.BossBars(this);
+        structures = new ru.mysticchest.structure.StructureService(this);
 
         cfg = configs.load("config.yml", true);
         settings = new Settings(cfg, getLogger());
         io.configure(settings.asyncIo, settings.saveInterval);
         chests.cleanupLeftovers();
+        structures.cleanupLeftovers();
         cooldowns.load();
         reloadAll();
 
@@ -95,6 +100,7 @@ public final class MysticChestPlugin extends JavaPlugin {
             }
         }
         getServer().getPluginManager().registerEvents(fireworks, this);
+        getServer().getPluginManager().registerEvents(structures.wand(), this);
         getServer().getPluginManager().registerEvents(new GuiListener(this), this);
         getServer().getPluginManager().registerEvents(new ru.mysticchest.chest.WorldListener(this), this);
     }
@@ -105,6 +111,7 @@ public final class MysticChestPlugin extends JavaPlugin {
         if (animator != null) animator.shutdown();
         if (prompts != null) prompts.clear();
         if (chests != null) chests.removeAll();
+        if (structures != null) structures.shutdown();
         if (scheduler != null) scheduler.shutdown();
         if (io != null) io.shutdown();
     }
@@ -121,6 +128,7 @@ public final class MysticChestPlugin extends JavaPlugin {
         economies.reload(cfg.getConfigurationSection("economy"));
         tiers.load();
         locators.loadPoints();
+        structures.catalog().load();
         spawner.reload();
         guiCache.clear();
         getLogger().info("Loaded " + tiers.all().size() + " tiers, language=" + settings.language
@@ -181,5 +189,7 @@ public final class MysticChestPlugin extends JavaPlugin {
     public ChatPrompt prompts() { return prompts; }
     public ru.mysticchest.effects.Fireworks fireworks() { return fireworks; }
     public ru.mysticchest.chest.Compass compass() { return compass; }
+    public ru.mysticchest.effects.BossBars bossBars() { return bossBars; }
+    public ru.mysticchest.structure.StructureService structures() { return structures; }
     public Economies economies() { return economies; }
 }
