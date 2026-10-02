@@ -156,7 +156,7 @@ When a chest appears, every recipient (see `announce.on-spawn`: type, radius, wo
 
 ```
 ✦ MYSTIC CHEST APPEARED! Rich chest
-Type: mystery cards | Inside: Crusher kit, Netherite Ingot, Enchanted Golden Apple
+Type: mystery cards | Wakes up in: 4m
 Coordinates: 2000 -59 2000 (world)
 Place: Ring of standing stones
 It disappears in 4m 59s. Use /mystic compass to find it!
@@ -166,7 +166,7 @@ It disappears in 4m 59s. Use /mystic compass to find it!
 
 **Per-event settings** (`announce:` in `config.yml`, one block each for `on-spawn`, `on-open`, `on-rare`, `on-expire`, `on-hunt`, `on-guards`): `enabled`, `channels` (any of CHAT, TITLE, ACTIONBAR), `radius`, `world-only`, `tiers` (only these tiers), `permission`, `mutable`, `sound` (+ `volume`, `pitch`), `animated`, `line-delay-ticks`, `line-sound`, `title-animation` (SHIMMER, FADE, NONE) and `buttons`. Titles come from `announce.titles.<event>` in the lang file. `navigation:` sets the arrow's duration, refresh rate and arrival radius.
 
-- **Type** is how it opens (roulette, full chest, mystery cards, instant, random); **Inside** lists the three rarest rewards of the tier.
+- **Type** is how it opens (roulette, full chest, mystery cards, instant, random); **Wakes up in** is the activation timer (see below). The spawn card no longer lists the loot.
 - `announce: EXACT | REGION | HINT | NONE` in the spawn profile controls the location line (coordinates, rough area, or distance and direction).
 - `announce.on-spawn.sound` is played to **every** recipient (not at the chest), so nobody misses it.
 - Texts are lists in `lang/*.yml` (`announce.spawned.exact`, …); empty lines (for example no structure) are dropped.
