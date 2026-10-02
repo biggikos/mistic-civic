@@ -69,6 +69,7 @@ public final class MysticChestPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        startMetrics();
         configs = new ConfigManager(this);
         scheduler = new Scheduler(this);
         animator = new Animator(this);
@@ -206,6 +207,21 @@ public final class MysticChestPlugin extends JavaPlugin {
         cooldowns.start(id, key, t.cooldownBuy(settings));
         cooldowns.addBuy(id);
         lang.send(p, "shop.bought", "tier", t.name(lang.code(p)));
+    }
+
+    /** Anonymous usage statistics (bStats). Servers can opt out in plugins/bStats/config.yml. */
+    private void startMetrics() {
+        try {
+            org.bstats.bukkit.Metrics m = new org.bstats.bukkit.Metrics(this, 34450);
+            m.addCustomChart(new org.bstats.charts.SimplePie("language", new java.util.concurrent.Callable<String>() {
+                public String call() { return settings == null ? "unknown" : String.valueOf(getConfig().getString("language", "auto")); }
+            }));
+            m.addCustomChart(new org.bstats.charts.SimplePie("structures", new java.util.concurrent.Callable<String>() {
+                public String call() { return settings != null && settings.structEnabled ? "enabled" : "disabled"; }
+            }));
+        } catch (Throwable t) {
+            getLogger().fine("bStats unavailable: " + t);
+        }
     }
 
     public void invalidateGuis() { guiCache.clear(); }

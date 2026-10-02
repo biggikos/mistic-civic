@@ -20,6 +20,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
     compileOnly("me.clip:placeholderapi:2.11.6")
     implementation("com.github.cryptomorin:XSeries:13.7.1")
+    implementation("org.bstats:bstats-bukkit:3.2.1")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -39,6 +40,8 @@ tasks.processResources {
 tasks.shadowJar {
     archiveClassifier.set("")
     relocate("com.cryptomorin.xseries", "ru.mysticchest.libs.xseries")
+    // bStats lives in our own package so it never clashes with other plugins that ship it
+    relocate("org.bstats", "ru.mysticchest.libs.bstats")
     minimize()
 }
 

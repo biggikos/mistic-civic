@@ -93,3 +93,7 @@ Requires a JDK; compiles to Java 8 bytecode against Spigot API 1.16.5. [XSeries]
 ## License
 
 Custom license, see [LICENSE](LICENSE). In short: free to use on your servers, **no modification, no commercial distribution, and any distribution must credit the author**. Editing the generated config, language and loot files is of course fine.
+
+## Privacy
+
+MysticChest sends anonymous usage statistics through [bStats](https://bstats.org) (server count, versions, plugin language). Nothing about players is collected. Turn it off for all plugins with `enabled: false` in `plugins/bStats/config.yml`.
