@@ -161,6 +161,10 @@ Place: Ring of standing stones
 It disappears in 4m 59s. Use /mystic compass to find it!
 ```
 
+**Animated and clickable.** Multi-line announcements appear line by line like a typewriter, each with a rising tick; the title shimmers through colours; a row of buttons ends the message: **[➤ Track]** (an arrow and the distance in the action bar - `/mystic track`), **[Coords]** (copy the coordinates), **[✦ Compass]**, **[✖ Mute]**. Track, Coords and Compass only exist when the spawn profile announces `EXACT` (with `REGION` or `HINT` the place stays secret). `/mystic mute` hides announcements for that player. The same `[[label|action|hover]]` syntax (`run:`, `suggest:`, `copy:`, `url:`) works in **any** line of the lang files, and `/mystic help`, `/mystic list`, `/mystic chests`, `/mystic top` (stat chips, period switch) and `/mystic structure list` are clickable.
+
+**Per-event settings** (`announce:` in `config.yml`, one block each for `on-spawn`, `on-open`, `on-rare`, `on-expire`, `on-hunt`, `on-guards`): `enabled`, `channels` (any of CHAT, TITLE, ACTIONBAR), `radius`, `world-only`, `tiers` (only these tiers), `permission`, `mutable`, `sound` (+ `volume`, `pitch`), `animated`, `line-delay-ticks`, `line-sound`, `title-animation` (SHIMMER, FADE, NONE) and `buttons`. Titles come from `announce.titles.<event>` in the lang file. `navigation:` sets the arrow's duration, refresh rate and arrival radius.
+
 - **Type** is how it opens (roulette, full chest, mystery cards, instant, random); **Inside** lists the three rarest rewards of the tier.
 - `announce: EXACT | REGION | HINT | NONE` in the spawn profile controls the location line (coordinates, rough area, or distance and direction).
 - `announce.on-spawn.sound` is played to **every** recipient (not at the chest), so nobody misses it.
@@ -350,7 +354,8 @@ Check what the plugin found: `/mystic economy`, and your balance of a currency: 
 | `/mystic list`, `/mystic help` | – |
 | using chests | `mysticchest.use` (everyone) |
 | `/mystic compass` | `mysticchest.compass` (everyone) |
-| `/mystic chests` | `mysticchest.chests` (everyone); coordinates: `mysticchest.chests.coords` (op) |
+| `/mystic chests`, `/mystic track [id]` | `mysticchest.chests` (everyone); coordinates: `mysticchest.chests.coords` (op) |
+| `/mystic mute` | everyone |
 | `/mystic structure …` | `mysticchest.admin.structure` (op) |
 | `/mystic top`, `/mystic stats` | `mysticchest.top` (everyone) |
 | `/mystic board …` | `mysticchest.admin` (op) |

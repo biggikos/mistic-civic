@@ -27,7 +27,7 @@ import java.util.Map;
 
 public final class MysticCommand implements TabExecutor {
     private static final List<String> ROOT = Arrays.asList("shop", "preview", "list", "give", "spawn", "reload",
-            "perf", "loot", "point", "economy", "compass", "structure", "chests", "top", "stats", "board", "help");
+            "perf", "loot", "point", "economy", "compass", "structure", "chests", "top", "stats", "board", "track", "mute", "help");
     private static final List<String> LOOT = Arrays.asList("add", "addcmd", "cmd", "weight", "remove", "list", "edit", "clear");
 
     private final MysticChestPlugin plugin;
@@ -56,7 +56,7 @@ public final class MysticCommand implements TabExecutor {
 
     public boolean onCommand(CommandSender s, Command c, String label, String[] a) {
         if (a.length == 0 || a[0].equalsIgnoreCase("help")) {
-            for (String l : plugin.lang().list(s, s.hasPermission("mysticchest.admin") ? "help.admin" : "help.player")) s.sendMessage(l);
+            for (String l : plugin.lang().list(s, s.hasPermission("mysticchest.admin") ? "help.admin" : "help.player")) send(s, l);
             return true;
         }
         switch (a[0].toLowerCase(Locale.ROOT)) {
@@ -76,7 +76,7 @@ public final class MysticCommand implements TabExecutor {
                 return true;
             }
             case "list":
-                for (Tier t : plugin.tiers().all()) s.sendMessage(" - " + t.id + "  " + tn(s, t));
+                for (Tier t : plugin.tiers().all()) send(s, " [[&8-|run:/mystic preview " + t.id + "|&7Preview rewards]] [[&f" + t.id + "|run:/mystic preview " + t.id + "|&7Click: rewards and chances]] " + tn(s, t));
                 return true;
             case "reload":
                 if (!need(s, "mysticchest.admin")) return true;
@@ -89,6 +89,8 @@ public final class MysticCommand implements TabExecutor {
             case "economy": return economy(s, a);
             case "structure": return structure(s, a);
             case "chests": return chests(s);
+            case "track": return track(s, a);
+            case "mute": return mute(s);
             case "top": return top(s, a);
             case "stats": return stats(s, a);
             case "board": return board(s, a);
@@ -214,6 +216,34 @@ public final class MysticCommand implements TabExecutor {
         return true;
     }
 
+    private void send(CommandSender s, String line) {
+        if (s instanceof Player) ru.mysticchest.util.Chat.send((Player) s, ru.mysticchest.util.Text.color(line));
+        else s.sendMessage(org.bukkit.ChatColor.stripColor(ru.mysticchest.util.Text.color(line.replaceAll("\\[\\[([^|\\]]*)[^\\]]*\\]\\]", "$1"))));
+    }
+
+    private boolean track(CommandSender s, String[] a) {
+        if (!need(s, "mysticchest.chests")) return true;
+        Player p = player(s);
+        if (p == null) return true;
+        ru.mysticchest.chest.ChestManager.Active chest = null;
+        if (a.length > 1) {
+            try { chest = plugin.chests().byId(Integer.parseInt(a[1])); } catch (NumberFormatException ignored) {}
+        }
+        if (chest == null) chest = plugin.chests().nearest(p.getLocation());
+        if (chest == null) { plugin.lang().send(s, "nav.none"); return true; }
+        if (a.length > 1 && !plugin.settings().onSpawn.enabled) { plugin.lang().send(s, "nav.none"); return true; }
+        if (!plugin.tracker().start(p, chest)) { plugin.lang().send(s, "nav.none"); return true; }
+        plugin.lang().send(s, "nav.started", "tier", chest.tier.name(plugin.lang().code(s)));
+        return true;
+    }
+
+    private boolean mute(CommandSender s) {
+        Player p = player(s);
+        if (p == null) return true;
+        plugin.lang().send(s, plugin.prefs().toggleMute(p.getUniqueId()) ? "mute.hidden" : "mute.shown");
+        return true;
+    }
+
     // ---- leaderboard / stats / boards ------------------------------------
 
     private static boolean knownStat(String st) {
@@ -229,6 +259,12 @@ public final class MysticCommand implements TabExecutor {
         java.util.List<ru.mysticchest.stats.StatsService.Row> rows = plugin.stats().top(stat, all, n);
         plugin.lang().send(s, "top.header", "stat", plugin.lang().get(s, "stat." + stat),
                 "period", all ? plugin.lang().get(s, "top.all-time") : plugin.stats().periodKey());
+        StringBuilder chips = new StringBuilder();
+        for (String st : ru.mysticchest.stats.StatsService.STATS) {
+            chips.append(st.equals(stat) ? "&a&l" : "&7").append("[[").append(st.equals(stat) ? "&a&l" : "&e").append("[").append(plugin.lang().get(s, "stat." + st)).append("]|run:/mystic top ").append(st).append(all ? " all" : "").append("|&7").append(plugin.lang().get(s, "top.show", "stat", plugin.lang().get(s, "stat." + st))).append("]] ");
+        }
+        chips.append("&8| [[&b[").append(plugin.lang().get(s, all ? "top.nav-period" : "top.nav-all")).append("]|run:/mystic top ").append(stat).append(all ? "" : " all").append("|&7").append(plugin.lang().get(s, "top.switch")).append("]]");
+        send(s, chips.toString());
         if (rows.isEmpty()) s.sendMessage(plugin.lang().get(s, "top.empty"));
         int i = 1;
         for (ru.mysticchest.stats.StatsService.Row r : rows) {
@@ -289,8 +325,9 @@ public final class MysticCommand implements TabExecutor {
                 where = "~" + (Math.round(Math.sqrt(dx * dx + dz * dz) / 50.0) * 50) + " " + plugin.lang().get(s, "chests.blocks") + ", "
                         + plugin.lang().get(s, "dir." + DIRS[((dir % 8) + 8) % 8]);
             } else where = a.loc.getWorld().getName();
-            s.sendMessage(plugin.lang().get(s, "chests.line", "tier", a.tier.name(plugin.lang().code(s)),
-                    "time", plugin.lang().time(s, plugin.chests().secondsLeft(a)), "where", where));
+            send(s, plugin.lang().get(s, "chests.line", "tier", a.tier.name(plugin.lang().code(s)),
+                    "time", plugin.lang().time(s, plugin.chests().secondsLeft(a)), "where", where,
+                    "track", coords || p == null ? plugin.lang().get(s, "button.track-small", "id", String.valueOf(a.id)) : plugin.lang().get(s, "button.track-small", "id", String.valueOf(a.id))));
             if (++shown >= 25) break;
         }
         return true;
@@ -351,7 +388,7 @@ public final class MysticCommand implements TabExecutor {
             default: {
                 plugin.lang().send(s, "structure.list-header");
                 for (ru.mysticchest.structure.StructureCatalog.Entry e : sv.catalog().all()) {
-                    s.sendMessage(plugin.lang().get(s, "structure.list-line", "name", e.id,
+                    send(s, plugin.lang().get(s, "structure.list-line", "name", "[[&e" + e.id + "|run:/mystic structure preview " + e.id + "|&7Preview here for 40 seconds]]",
                             "kind", plugin.lang().get(s, e.custom() ? "structure.editor.custom" : "structure.editor.builtin"),
                             "weight", String.valueOf(e.weight), "chance", String.format(Locale.ROOT, "%.1f", sv.catalog().chance(e)),
                             "on", ru.mysticchest.util.Text.color(e.enabled ? "&aon" : "&coff")));
@@ -567,7 +604,8 @@ public final class MysticCommand implements TabExecutor {
             case "give": case "spawn": case "reload": case "perf": case "point": case "economy": return s.hasPermission("mysticchest.admin");
             case "loot": return s.hasPermission("mysticchest.admin.loot");
             case "structure": return s.hasPermission("mysticchest.admin.structure");
-            case "chests": return s.hasPermission("mysticchest.chests");
+            case "chests": case "track": return s.hasPermission("mysticchest.chests");
+            case "mute": return true;
             case "top": case "stats": return s.hasPermission("mysticchest.top");
             case "board": return s.hasPermission("mysticchest.admin");
             case "shop": return s.hasPermission("mysticchest.shop");

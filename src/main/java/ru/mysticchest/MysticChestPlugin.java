@@ -58,6 +58,8 @@ public final class MysticChestPlugin extends JavaPlugin {
     private ru.mysticchest.duel.Captures captures;
     private ru.mysticchest.stats.StatsService stats;
     private ru.mysticchest.stats.BoardService boards;
+    private ru.mysticchest.stats.Prefs prefs;
+    private ru.mysticchest.effects.Tracker tracker;
     private ru.mysticchest.core.Scheduler.Handle periodTimer;
     private ru.mysticchest.structure.StructureService structures;
     private Economies economies;
@@ -90,6 +92,8 @@ public final class MysticChestPlugin extends JavaPlugin {
         captures = new ru.mysticchest.duel.Captures(this);
         stats = new ru.mysticchest.stats.StatsService(this);
         boards = new ru.mysticchest.stats.BoardService(this);
+        prefs = new ru.mysticchest.stats.Prefs(this);
+        tracker = new ru.mysticchest.effects.Tracker(this);
         structures = new ru.mysticchest.structure.StructureService(this);
 
         cfg = configs.load("config.yml", true);
@@ -146,6 +150,7 @@ public final class MysticChestPlugin extends JavaPlugin {
         locators.loadPoints();
         structures.catalog().load();
         stats.load();
+        prefs.load();
         boards.load();
         schedulePeriodCheck();
         spawner.reload();
@@ -221,6 +226,8 @@ public final class MysticChestPlugin extends JavaPlugin {
     public ru.mysticchest.duel.Captures captures() { return captures; }
     public ru.mysticchest.stats.StatsService stats() { return stats; }
     public ru.mysticchest.stats.BoardService boards() { return boards; }
+    public ru.mysticchest.stats.Prefs prefs() { return prefs; }
+    public ru.mysticchest.effects.Tracker tracker() { return tracker; }
     public ru.mysticchest.structure.StructureService structures() { return structures; }
     public Economies economies() { return economies; }
 }

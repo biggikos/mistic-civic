@@ -47,22 +47,22 @@ usage:
 
 help:
   player:
-    - "&5&lMystic chests"
-    - "&e/mystic shop &7- buy chests"
-    - "&e/mystic preview <tier> &7- see rewards and chances"
-    - "&e/mystic list &7- all chest tiers"
+    - "&5&lMystic chests &8- &7click a command"
+    - "[[&e/mystic shop|run:/mystic shop|&7Open the shop]] &7- buy chests"
+    - "[[&e/mystic chests|run:/mystic chests|&7Standing chests and timers]] &7- where are they?"
+    - "[[&e/mystic track|run:/mystic track|&7Arrow to the nearest chest]] &7- arrow to the nearest"
+    - "[[&e/mystic top|run:/mystic top|&7Leaderboard]] &7- leaderboard, [[&e/mystic stats|run:/mystic stats|&7Your numbers]] &7- yours"
+    - "[[&e/mystic compass|run:/mystic compass|&7Get a chest compass]] &7- compass, [[&e/mystic mute|run:/mystic mute|&7Toggle announcements]] &7- mute"
+    - "[[&e/mystic list|run:/mystic list|&7All tiers]] &7- tiers (click a tier to preview)"
   admin:
-    - "&5&lMystic chests &7(admin)"
-    - "&e/mystic shop, preview <tier>, list"
-    - "&e/mystic give <player> <tier> [amount]"
-    - "&e/mystic spawn <tier> [here|<profile>] &7- place / run a profile"
-    - "&e/mystic loot add <tier> [weight] [--keep] [--hand] &7- add your inventory to the rewards"
-    - "&e/mystic loot addcmd <tier> <weight> <command> &7- command reward (icon = held item)"
-    - "&e/mystic loot cmd|weight|remove|list|edit|clear <tier> ..."
-    - "&e/mystic point add|remove|list &7- fixed spawn points"
-    - "&e/mystic reload, perf"
+    - "&5&lMystic chests &7(admin) &8- &7click a command"
+    - "[[&e/mystic shop|run:/mystic shop]], [[&e/mystic list|run:/mystic list]], [[&e/mystic chests|run:/mystic chests]], [[&e/mystic top|run:/mystic top]], [[&e/mystic perf|run:/mystic perf]]"
+    - "[[&e/mystic give <player> <tier> [n]|suggest:/mystic give |&7Give chest items]]"
+    - "[[&e/mystic spawn <tier> [here|profile] [shape] [theme]|suggest:/mystic spawn |&7Place / run a profile]]"
+    - "[[&e/mystic loot ...|suggest:/mystic loot |&7add, addcmd, cmd, weight, remove, list, edit, clear]] &7- your inventory into rewards"
+    - "[[&e/mystic structure ...|suggest:/mystic structure |&7wand, pos1, pos2, save, edit, preview, list, delete]]"
+    - "[[&e/mystic point|suggest:/mystic point |&7add, remove, list]], [[&e/mystic board|suggest:/mystic board |&7create, remove, list]], [[&e/mystic economy|run:/mystic economy]], [[&e/mystic reload|run:/mystic reload]]"
 
-## ═══ shop ═══
 shop:
   economy-disabled: "&cNo economy is connected - purchases are disabled."
   not-enough: "&cNot enough funds! You need &e{price} {currency}&c."
@@ -78,6 +78,22 @@ item:
 
 ## ═══ announcements (use {tier}, {player} ...) ═══
 announce:
+  titles:
+    spawned:
+      title: "&d✦ &lMYSTIC CHEST &d✦"
+      subtitle: "{tier} &7- &f{mode}"
+    airdrop:
+      title: "&d✈ &lAIRDROP &d✈"
+      subtitle: "{tier} &7- lands in &e{seconds}s"
+    landed:
+      title: "&d✦ &lAIRDROP LANDED &d✦"
+      subtitle: "{tier}"
+    opened:
+      title: "&e&lOPENED"
+      subtitle: "&f{player} &7- {tier}"
+    rare:
+      title: "&6&l★ RARE ★"
+      subtitle: "&f{player} &7won &e{item}"
   structure-line: "&7Place: &f{name}"
   spawned:
     exact:
@@ -87,6 +103,7 @@ announce:
       - "&7Coordinates: &e{x} {y} {z} &7({world})"
       - "{structure}"
       - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "{buttons}"
       - "&8&m                                           "
     region:
       - "&8&m                                           "
@@ -95,6 +112,7 @@ announce:
       - "&7Area: &e~{x} {z} &7({world})"
       - "{structure}"
       - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "{buttons}"
       - "&8&m                                           "
     hint:
       - "&8&m                                           "
@@ -103,6 +121,7 @@ announce:
       - "&7About &e{distance} blocks &7to the &e{dir}"
       - "{structure}"
       - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "{buttons}"
       - "&8&m                                           "
   airdrop:
     exact:
@@ -112,6 +131,7 @@ announce:
       - "&7Coordinates: &e{x} {y} {z} &7({world})"
       - "{structure}"
       - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "{buttons}"
       - "&8&m                                           "
     region:
       - "&8&m                                           "
@@ -120,6 +140,7 @@ announce:
       - "&7Area: &e~{x} {z} &7({world})"
       - "{structure}"
       - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "{buttons}"
       - "&8&m                                           "
     hint:
       - "&8&m                                           "
@@ -128,6 +149,7 @@ announce:
       - "&7About &e{distance} blocks &7to the &e{dir}"
       - "{structure}"
       - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "{buttons}"
       - "&8&m                                           "
   landed:
     exact:
@@ -137,6 +159,7 @@ announce:
       - "&7Coordinates: &e{x} {y} {z} &7({world})"
       - "{structure}"
       - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "{buttons}"
       - "&8&m                                           "
     region:
       - "&8&m                                           "
@@ -145,6 +168,7 @@ announce:
       - "&7Area: &e~{x} {z} &7({world})"
       - "{structure}"
       - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "{buttons}"
       - "&8&m                                           "
     hint:
       - "&8&m                                           "
@@ -153,6 +177,7 @@ announce:
       - "&7About &e{distance} blocks &7to the &e{dir}"
       - "{structure}"
       - "&7It disappears in &e{ttl}&7. Use &e/mystic compass &7to find it!"
+      - "{buttons}"
       - "&8&m                                           "
   expired: "&7A mystic chest &r{tier}&7 disappeared."
   opened: "&e{player} &fopened &r{tier} &7({mode})&f!"
@@ -300,7 +325,7 @@ hologram:
 
 chests:
   header: "&5Standing mystic chests: &e{count}"
-  line: " &d✦ &r{tier} &7- &e{time} &7- {where}"
+  line: " &d✦ &r{tier} &7- &e{time} &7- {where} {track}"
   blocks: "blocks"
 
 structure:
@@ -375,6 +400,10 @@ stat:
   bosses: "Bosses defeated"
   captures: "Captures"
 top:
+  show: "Show {stat}"
+  nav-all: "All time"
+  nav-period: "This period"
+  switch: "Switch between this period and all time"
   header: "&5Top: &e{stat} &7({period})"
   line: " &e#{rank} &f{name} &7- &e{value}"
   empty: "&7Nobody yet."
@@ -414,3 +443,23 @@ duel:
   won: "&6★ &e{player} &fcaptured the chest!"
   bar: "&a{player} capturing &8| &f{percent}%"
   bar-contested: "&c{player} CONTESTED! &8| &f{percent}%"
+
+## ═══ buttons (clickable), navigation, mute ═══
+## Buttons: [[label|action|hover]]  action = run:/cmd  suggest:/cmd  copy:text  url:https://...
+## You can use the same syntax in ANY line of this file (help, announcements, lists...).
+button:
+  track: "[[&a&l[➤ Track]|run:/mystic track {id}|&7Arrow and distance in the action bar\\n&8Click to start]]"
+  track-small: "[[&a[➤]|run:/mystic track {id}|&7Track this chest]]"
+  copy: "[[&b[Coords]|copy:{x} {y} {z}|&7Click to copy &f{x} {y} {z}]]"
+  compass: "[[&e[✦ Compass]|run:/mystic compass|&7Get a chest compass]]"
+  mute: "[[&8[✖ Mute]|run:/mystic mute|&7Hide these announcements\\n&8Click again later to show them]]"
+  chests: "[[&d[☰ Chests]|run:/mystic chests|&7All standing chests with timers]]"
+nav:
+  started: "&a➤ Tracking &r{tier}&a. Follow the arrow in the action bar."
+  bar: "{arrow} &f{distance}m &8| &7{tier} &8| &e{time}"
+  arrived: "&a✔ You have arrived at &r{tier}&a!"
+  ended: "&7Tracking ended."
+  none: "&7There is nothing to track right now."
+mute:
+  hidden: "&7Chest announcements &chidden&7. Use &e/mystic mute &7to show them again."
+  shown: "&7Chest announcements &ashown&7 again."

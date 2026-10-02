@@ -142,7 +142,7 @@ public final class GuardService implements Listener {
         }
         groups.put(a, grp);
         if (g.bool("announce", true)) {
-            plugin.announcer().send(plugin.settings().onSpawn, a.loc, "guards.appeared", t, "level", Text.color(grp.levelName),
+            plugin.announcer().send(plugin.settings().onGuards, a.loc, "guards.appeared", t, "level", Text.color(grp.levelName),
                     "count", String.valueOf(grp.total), "bossname", Text.color(boss == null ? "" : boss.getString("name", "")));
         }
     }

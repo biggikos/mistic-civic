@@ -44,20 +44,21 @@ usage:
 
 help:
   player:
-    - "&5&lМистические сундуки"
-    - "&e/mystic shop &7- купить сундуки"
-    - "&e/mystic preview <тир> &7- награды и шансы"
-    - "&e/mystic list &7- все сундуки"
+    - "&5&lМистические сундуки &8- &7нажимайте на команды"
+    - "[[&e/mystic shop|run:/mystic shop|&7Открыть магазин]] &7- купить сундуки"
+    - "[[&e/mystic chests|run:/mystic chests|&7Стоящие сундуки и таймеры]] &7- где они?"
+    - "[[&e/mystic track|run:/mystic track|&7Стрелка к ближайшему сундуку]] &7- стрелка к ближайшему"
+    - "[[&e/mystic top|run:/mystic top|&7Таблица лидеров]] &7- лидеры, [[&e/mystic stats|run:/mystic stats|&7Ваши цифры]] &7- ваша статистика"
+    - "[[&e/mystic compass|run:/mystic compass|&7Получить компас сундуков]] &7- компас, [[&e/mystic mute|run:/mystic mute|&7Объявления вкл/выкл]] &7- скрыть"
+    - "[[&e/mystic list|run:/mystic list|&7Все тиры]] &7- тиры (нажмите на тир, чтобы посмотреть награды)"
   admin:
-    - "&5&lМистические сундуки &7(админ)"
-    - "&e/mystic shop, preview <тир>, list"
-    - "&e/mystic give <игрок> <тир> [кол-во]"
-    - "&e/mystic spawn <тир> [here|<профиль>] &7- поставить / запустить профиль"
-    - "&e/mystic loot add <тир> [вес] [--keep] [--hand] &7- добавить инвентарь в награды"
-    - "&e/mystic loot addcmd <тир> <вес> <команда> &7- награда-команда (иконка = предмет в руке)"
-    - "&e/mystic loot cmd|weight|remove|list|edit|clear <тир> ..."
-    - "&e/mystic point add|remove|list &7- точки спавна"
-    - "&e/mystic reload, perf"
+    - "&5&lМистические сундуки &7(админ) &8- &7нажимайте на команды"
+    - "[[&e/mystic shop|run:/mystic shop]], [[&e/mystic list|run:/mystic list]], [[&e/mystic chests|run:/mystic chests]], [[&e/mystic top|run:/mystic top]], [[&e/mystic perf|run:/mystic perf]]"
+    - "[[&e/mystic give <игрок> <тир> [n]|suggest:/mystic give |&7Выдать сундук]]"
+    - "[[&e/mystic spawn <тир> [here|профиль] [форма] [тема]|suggest:/mystic spawn |&7Поставить / запустить профиль]]"
+    - "[[&e/mystic loot ...|suggest:/mystic loot |&7add, addcmd, cmd, weight, remove, list, edit, clear]] &7- инвентарь в награды"
+    - "[[&e/mystic structure ...|suggest:/mystic structure |&7wand, pos1, pos2, save, edit, preview, list, delete]]"
+    - "[[&e/mystic point|suggest:/mystic point |&7add, remove, list]], [[&e/mystic board|suggest:/mystic board |&7create, remove, list]], [[&e/mystic economy|run:/mystic economy]], [[&e/mystic reload|run:/mystic reload]]"
 
 shop:
   economy-disabled: "&cЭкономика не подключена - покупка недоступна."
@@ -72,6 +73,22 @@ item:
     - "&7Нажмите ПКМ, чтобы открыть"
 
 announce:
+  titles:
+    spawned:
+      title: "&d✦ &lМИСТИК &d✦"
+      subtitle: "{tier} &7- &f{mode}"
+    airdrop:
+      title: "&d✈ &lАИРДРОП &d✈"
+      subtitle: "{tier} &7- приземлится через &e{seconds}с"
+    landed:
+      title: "&d✦ &lАИРДРОП ПРИЗЕМЛИЛСЯ &d✦"
+      subtitle: "{tier}"
+    opened:
+      title: "&e&lОТКРЫТ"
+      subtitle: "&f{player} &7- {tier}"
+    rare:
+      title: "&6&l★ РЕДКОЕ ★"
+      subtitle: "&f{player} &7выиграл &e{item}"
   structure-line: "&7Место: &f{name}"
   spawned:
     exact:
@@ -81,6 +98,7 @@ announce:
       - "&7Координаты: &e{x} {y} {z} &7({world})"
       - "{structure}"
       - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "{buttons}"
       - "&8&m                                           "
     region:
       - "&8&m                                           "
@@ -89,6 +107,7 @@ announce:
       - "&7Район: &e~{x} {z} &7({world})"
       - "{structure}"
       - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "{buttons}"
       - "&8&m                                           "
     hint:
       - "&8&m                                           "
@@ -97,6 +116,7 @@ announce:
       - "&7Примерно в &e{distance} блоках &7на &e{dir}"
       - "{structure}"
       - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "{buttons}"
       - "&8&m                                           "
   airdrop:
     exact:
@@ -106,6 +126,7 @@ announce:
       - "&7Координаты: &e{x} {y} {z} &7({world})"
       - "{structure}"
       - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "{buttons}"
       - "&8&m                                           "
     region:
       - "&8&m                                           "
@@ -114,6 +135,7 @@ announce:
       - "&7Район: &e~{x} {z} &7({world})"
       - "{structure}"
       - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "{buttons}"
       - "&8&m                                           "
     hint:
       - "&8&m                                           "
@@ -122,6 +144,7 @@ announce:
       - "&7Примерно в &e{distance} блоках &7на &e{dir}"
       - "{structure}"
       - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "{buttons}"
       - "&8&m                                           "
   landed:
     exact:
@@ -131,6 +154,7 @@ announce:
       - "&7Координаты: &e{x} {y} {z} &7({world})"
       - "{structure}"
       - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "{buttons}"
       - "&8&m                                           "
     region:
       - "&8&m                                           "
@@ -139,6 +163,7 @@ announce:
       - "&7Район: &e~{x} {z} &7({world})"
       - "{structure}"
       - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "{buttons}"
       - "&8&m                                           "
     hint:
       - "&8&m                                           "
@@ -147,6 +172,7 @@ announce:
       - "&7Примерно в &e{distance} блоках &7на &e{dir}"
       - "{structure}"
       - "&7Исчезнет через &e{ttl}&7. Найти поможет &e/mystic compass&7!"
+      - "{buttons}"
       - "&8&m                                           "
   expired: "&7Мистический сундук &r{tier}&7 исчез."
   opened: "&e{player} &fоткрыл &r{tier} &7({mode})&f!"
@@ -291,7 +317,7 @@ hologram:
 
 chests:
   header: "&5Стоящие мистические сундуки: &e{count}"
-  line: " &d✦ &r{tier} &7- &e{time} &7- {where}"
+  line: " &d✦ &r{tier} &7- &e{time} &7- {where} {track}"
   blocks: "блоков"
 
 structure:
@@ -366,6 +392,10 @@ stat:
   bosses: "Побеждено боссов"
   captures: "Захватов"
 top:
+  show: "Показать: {stat}"
+  nav-all: "За всё время"
+  nav-period: "Этот период"
+  switch: "Переключить период и всё время"
   header: "&5Топ: &e{stat} &7({period})"
   line: " &e#{rank} &f{name} &7- &e{value}"
   empty: "&7Пока никого."
@@ -405,3 +435,23 @@ duel:
   won: "&6★ &e{player} &fзахватил сундук!"
   bar: "&a{player} захватывает &8| &f{percent}%"
   bar-contested: "&c{player} ОСПАРИВАЕТСЯ! &8| &f{percent}%"
+
+## ═══ кнопки, навигация, mute ═══
+## Кнопки: [[текст|действие|подсказка]]  действие = run:/cmd  suggest:/cmd  copy:текст  url:https://...
+## Тот же синтаксис работает в ЛЮБОЙ строке этого файла (help, объявления, списки...).
+button:
+  track: "[[&a&l[➤ Вести]|run:/mystic track {id}|&7Стрелка и расстояние в экшн-баре\\n&8Нажмите, чтобы начать]]"
+  track-small: "[[&a[➤]|run:/mystic track {id}|&7Вести к этому сундуку]]"
+  copy: "[[&b[Коорд.]|copy:{x} {y} {z}|&7Нажмите, чтобы скопировать &f{x} {y} {z}]]"
+  compass: "[[&e[✦ Компас]|run:/mystic compass|&7Получить компас сундуков]]"
+  mute: "[[&8[✖ Скрыть]|run:/mystic mute|&7Скрыть эти объявления\\n&8Нажмите ещё раз позже, чтобы вернуть]]"
+  chests: "[[&d[☰ Сундуки]|run:/mystic chests|&7Все стоящие сундуки с таймерами]]"
+nav:
+  started: "&a➤ Веду к &r{tier}&a. Идите по стрелке в экшн-баре."
+  bar: "{arrow} &f{distance}м &8| &7{tier} &8| &e{time}"
+  arrived: "&a✔ Вы пришли к &r{tier}&a!"
+  ended: "&7Навигация завершена."
+  none: "&7Сейчас нечего отслеживать."
+mute:
+  hidden: "&7Объявления о сундуках &cскрыты&7. &e/mystic mute &7вернёт их."
+  shown: "&7Объявления о сундуках снова &aпоказываются&7."

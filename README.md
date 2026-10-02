@@ -13,6 +13,7 @@ One jar, **Minecraft 1.12.2 → 1.21.x**, English and Russian.
 - **Seven tiers** out of the box: Poor, Solid, Rich, Elite, Crusher (donate), Admin, Aristocratic. Add as many as you want.
 - **Four ways to open** a chest, per tier: `ROULETTE` (single flip or CS:GO-style scroll), `FULL_CHEST`, `INSTANT`, `PICK` (mystery cards).
 - **Structures** around chests: nine shapes (pyramid, temple, obelisk, stone ring, gate, spiral tower, arena, crystals, rune circle), each rolled with its own size and ruin level, in the biome's theme or a surprise one. They rise block by block, collapse afterwards and **restore the terrain**. Save **your own** with a wand and manage them in a GUI.
+- **Animated, clickable announcements**: a typewriter effect, a shimmering title and buttons (track with an action-bar arrow, copy coordinates, compass, mute), configurable per event with channels, tier and permission filters.
 - **Announcements that say everything**: type of the chest, rarest loot inside, coordinates, structure, time left, a sound for everyone, a **boss bar** and a countdown hologram.
 - **Hunt, guards, capture, atmosphere**: be first to a chest for a bonus, fight guard mobs and bosses of your own design, capture contested chests in a duel, and feel a local midnight storm around an elite chest.
 - **Leaderboard and achievements**: top lists, hologram boards, period rewards and configurable achievements.

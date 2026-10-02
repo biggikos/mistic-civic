@@ -189,26 +189,28 @@ public final class SpawnService {
     /** key + ".exact" / ".region" / ".hint" are language keys. */
     private void announce(SpawnProfile.Announce mode, Location loc, Tier tier, String key, String[] extra) {
         Settings.Announce a = plugin.settings().onSpawn;
-        if (mode == SpawnProfile.Announce.NONE || a.type == Settings.AnnounceType.NONE) return;
+        if (mode == SpawnProfile.Announce.NONE || !a.enabled) return;
         String w = loc.getWorld().getName();
+        ru.mysticchest.chest.ChestManager.Active act = plugin.chests().at(loc.getBlock());
+        String[] base = concat(extra, "world", w, "exact", mode == SpawnProfile.Announce.EXACT ? "true" : "false",
+                "chestid", act == null ? "" : String.valueOf(act.id));
         if (mode == SpawnProfile.Announce.EXACT) {
-            plugin.announcer().send(a, loc, key + ".exact", tier, concat(extra, "x", String.valueOf(loc.getBlockX()),
-                    "y", String.valueOf(loc.getBlockY()), "z", String.valueOf(loc.getBlockZ()), "world", w));
+            plugin.announcer().send(a, loc, key + ".exact", tier, concat(base, "x", String.valueOf(loc.getBlockX()),
+                    "y", String.valueOf(loc.getBlockY()), "z", String.valueOf(loc.getBlockZ())));
         } else if (mode == SpawnProfile.Announce.REGION) {
             int x = Math.round(loc.getBlockX() / 100f) * 100, z = Math.round(loc.getBlockZ() / 100f) * 100;
-            plugin.announcer().send(a, loc, key + ".region", tier, concat(extra, "x", String.valueOf(x),
-                    "z", String.valueOf(z), "world", w));
+            plugin.announcer().send(a, loc, key + ".region", tier, concat(base, "x", String.valueOf(x), "z", String.valueOf(z)));
         } else {
-            for (Player p : plugin.getServer().getOnlinePlayers()) {
-                if (!plugin.announcer().inRange(a, loc, p) || p.getWorld() != loc.getWorld()) continue;
-                double dx = loc.getX() - p.getLocation().getX(), dz = loc.getZ() - p.getLocation().getZ();
-                int dist = (int) Math.round(Math.sqrt(dx * dx + dz * dz) / 50.0) * 50;
-                int dir = (int) Math.round(Math.toDegrees(Math.atan2(dz, dx)) / 45.0);
-                String d = plugin.lang().get(p, "dir." + DIRS[((dir % 8) + 8) % 8]);
-                String[] kv = concat(extra, "distance", String.valueOf(dist), "dir", d, "world", w,
-                        "tier", tier.name(plugin.lang().code(p)));
-                plugin.announcer().deliver(a, p, plugin.lang().get(p, key + ".hint", kv));
-            }
+            final Location at = loc;
+            plugin.announcer().sendEach(a, loc, key + ".hint", tier, base, new ru.mysticchest.effects.Announcer.Extra() {
+                public String[] kv(Player p) {
+                    if (p.getWorld() != at.getWorld()) return new String[]{"distance", "?", "dir", "?"};
+                    double dx = at.getX() - p.getLocation().getX(), dz = at.getZ() - p.getLocation().getZ();
+                    int dist = (int) Math.round(Math.sqrt(dx * dx + dz * dz) / 50.0) * 50;
+                    int dir = (int) Math.round(Math.toDegrees(Math.atan2(dz, dx)) / 45.0);
+                    return new String[]{"distance", String.valueOf(dist), "dir", plugin.lang().get(p, "dir." + DIRS[((dir % 8) + 8) % 8])};
+                }
+            });
         }
     }
 

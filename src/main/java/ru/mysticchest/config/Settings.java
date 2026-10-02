@@ -12,18 +12,51 @@ public final class Settings {
     public enum Scope { PLAYER, PLAYER_TIER, GLOBAL }
     public enum Style { SINGLE, SCROLL, RANDOM }
     public enum Viewers { ALL, WORLD, RADIUS }
-    public enum AnnounceType { CHAT, TITLE, ACTIONBAR, NONE }
 
+    public enum Channel { CHAT, TITLE, ACTIONBAR }
+    public enum TitleAnim { SHIMMER, FADE, NONE }
+
+    /** One announcement event (on-spawn, on-open, ...): where, to whom, how it looks and which buttons it has. */
     public static final class Announce {
-        public final AnnounceType type; public final int radius; public final boolean worldOnly;
-        public final String sound; public final float volume, pitch;
+        public final boolean enabled;
+        public final java.util.Set<Channel> channels = java.util.EnumSet.noneOf(Channel.class);
+        public final int radius;
+        public final boolean worldOnly, mutable, animated;
+        public final java.util.List<String> tiers, buttons;
+        public final String permission, sound, tickSound;
+        public final float volume, pitch, tickVolume;
+        public final int lineDelay;
+        public final TitleAnim titleAnim;
+
         Announce(Cfg c) {
+            // old configs had a single "type: CHAT|TITLE|ACTIONBAR|NONE"
+            boolean on = true;
+            java.util.List<String> ch = c.strings("channels");
+            if (ch.isEmpty()) {
+                String t = c.str("type", "CHAT").toUpperCase();
+                if (t.equals("NONE")) on = false; else ch.add(t);
+            }
+            for (String s : ch) {
+                try { channels.add(Channel.valueOf(s.trim().toUpperCase())); } catch (IllegalArgumentException e) { /* reported below */ }
+            }
+            if (channels.isEmpty()) on = false;
+            enabled = on && c.bool("enabled", true);
+            radius = c.integer("radius", -1, -1, 100000);
+            worldOnly = c.bool("world-only", false);
+            mutable = c.bool("mutable", true);
+            animated = c.bool("animated", true);
+            lineDelay = c.integer("line-delay-ticks", 5, 1, 40);
+            tickSound = c.str("line-sound", "BLOCK_NOTE_BLOCK_HAT");
+            tickVolume = (float) c.decimal("line-sound-volume", 0.5, 0, 10);
+            tiers = new java.util.ArrayList<String>();
+            for (String t : c.strings("tiers")) tiers.add(t.toLowerCase());
+            buttons = new java.util.ArrayList<String>();
+            for (String b : c.strings("buttons")) buttons.add(b.toUpperCase());
+            permission = c.str("permission", "");
             sound = c.str("sound", "");
             volume = (float) c.decimal("volume", 1.0, 0, 10);
             pitch = (float) c.decimal("pitch", 1.0, 0, 2);
-            type = c.enumOf("type", AnnounceType.class, AnnounceType.CHAT);
-            radius = c.integer("radius", -1, -1, 100000);
-            worldOnly = c.bool("world-only", false);
+            titleAnim = c.enumOf("title-animation", TitleAnim.class, TitleAnim.SHIMMER);
         }
     }
 
@@ -75,7 +108,7 @@ public final class Settings {
     public final boolean showChances, mergeIdentical;
     public final double rareBelow;
 
-    public final Announce onSpawn, onOpen, onRare;
+    public final Announce onSpawn, onOpen, onRare, onExpire, onHunt, onGuards;
     public final Effect fxOpen, fxTick, fxWin, fxRare, fxSpawn;
 
     public enum AuraStyle { NONE, RING, PILLAR, SPIRAL }
@@ -180,6 +213,9 @@ public final class Settings {
         onSpawn = new Announce(an.sub("on-spawn"));
         onOpen = new Announce(an.sub("on-open"));
         onRare = new Announce(an.sub("on-rare"));
+        onExpire = new Announce(an.sub("on-expire"));
+        onHunt = new Announce(an.sub("on-hunt"));
+        onGuards = new Announce(an.sub("on-guards"));
         Cfg fx = c.sub("effects");
         int cap = lowResource ? 0 : particleLimit;
         fxOpen = new Effect(fx.sub("open"), cap);

@@ -48,6 +48,7 @@ public final class ChestManager {
         public final Material block;
         public ru.mysticchest.structure.Structure structure;
         /** Concrete open mode, rolled at spawn (RANDOM tiers) so it can be announced; null = decided when opened. */
+        public final int id = ++counter;
         public ru.mysticchest.open.OpenType mode;
         public String structureId;
         public org.bukkit.boss.BossBar bar;
@@ -61,6 +62,7 @@ public final class ChestManager {
         }
     }
 
+    private static int counter;
     private final MysticChestPlugin plugin;
     private final Map<World, Map<Long, Active>> byWorld = new HashMap<World, Map<Long, Active>>();
     private int total;
@@ -174,6 +176,11 @@ public final class ChestManager {
 
     public List<Active> snapshot() { return all(); }
 
+    public Active byId(int id) {
+        for (Map<Long, Active> m : byWorld.values()) for (Active a : m.values()) if (a.id == id) return a;
+        return null;
+    }
+
     private boolean auraRunning;
 
     public void auraStopped() { auraRunning = false; }
@@ -236,7 +243,7 @@ public final class ChestManager {
             public void run() {
                 if (remove(a, true)) {
                     plugin.effects().playAt(plugin.settings().fxExpire, a.loc);
-                    plugin.announcer().send(plugin.settings().onSpawn, a.loc, "announce.expired", a.tier);
+                    plugin.announcer().send(plugin.settings().onExpire, a.loc, "announce.expired", a.tier);
                 }
             }
         });

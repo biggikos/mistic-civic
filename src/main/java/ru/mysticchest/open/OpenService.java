@@ -84,7 +84,7 @@ public final class OpenService {
             String cmd = c.replace("{player}", p.getName());
             org.bukkit.Bukkit.dispatchCommand(org.bukkit.Bukkit.getConsoleSender(), cmd.startsWith("/") ? cmd.substring(1) : cmd);
         }
-        if (h.bool("announce", true)) plugin.announcer().send(s.onOpen, p.getLocation(), "hunt.fast", a.tier, "player", p.getName(), "ttlsec", String.valueOf(age));
+        if (h.bool("announce", true)) plugin.announcer().send(s.onHunt, p.getLocation(), "hunt.fast", a.tier, "player", p.getName(), "ttlsec", String.valueOf(age));
     }
 
     public void open(Player p, Tier t, OpenType fixed, int extraRolls) {

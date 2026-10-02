@@ -19,7 +19,7 @@
 language: en
 
 ## Used to upgrade this file when the plugin updates. Do not change it.
-config-version: 7
+config-version: 8
 
 ## Extra console output for troubleshooting.
 debug: false
@@ -552,32 +552,103 @@ compass:
   cooldown-seconds: 3
 
 ## ═══ ANNOUNCEMENTS ══════════════════════════════════════════════════════════
-## type:   CHAT | TITLE | ACTIONBAR | NONE
-## radius: only players within N blocks hear it (-1 = everyone)
-## world-only: only players in the same world
+## Every event has its own block with the same options. The texts live in lang/<language>.yml.
+##
+##   enabled:       switch the whole event off
+##   channels:      any of CHAT, TITLE, ACTIONBAR (you can combine them)
+##   radius:        only players within N blocks (-1 = everyone)       world-only: only the chest's world
+##   tiers:         [elite, crusher]  = only announce these tiers (empty = all)
+##   permission:    only players who have it hear it ("" = everybody)
+##   mutable:       players can hide it with /mystic mute (or the [Mute] button)
+##   sound:         played to EVERY recipient (not positional), volume, pitch
+##   animated:      multi-line messages appear line by line like a typewriter, with a rising tick sound
+##   line-delay-ticks / line-sound / line-sound-volume   speed and sound of that typewriter
+##   title-animation: SHIMMER (letters cycle through colours) | FADE (plain) | NONE
+##   buttons:       clickable buttons under the message: TRACK (arrow + distance), COPY (copy coordinates),
+##                  COMPASS, MUTE, CHESTS. TRACK/COPY/COMPASS only appear when the exact place is public
+##                  (spawn profile announce: EXACT). Button texts: lang file, section "button".
+## Titles come from "announce.titles.<event>" in the lang file (the chat lines are used if missing).
 announce:
   on-spawn:
-    type: CHAT
+    enabled: true
+    channels: [CHAT, TITLE]
     radius: -1
     world-only: false
-    ## Played to EVERY recipient (not positional), so everybody notices. Empty = silent.
+    tiers: []
+    permission: ""
+    mutable: true
     sound: BLOCK_NOTE_BLOCK_PLING
     volume: 1.0
     pitch: 1.2
+    animated: true
+    line-delay-ticks: 5
+    line-sound: BLOCK_NOTE_BLOCK_HAT
+    line-sound-volume: 0.5
+    title-animation: SHIMMER
+    buttons: [TRACK, COPY, COMPASS, MUTE]
   on-open:
-    type: CHAT
+    enabled: true
+    channels: [CHAT]
     radius: -1
     world-only: false
+    tiers: []
+    mutable: true
+    sound: ""
+    animated: false
+    buttons: []
   on-rare:
-    type: CHAT
+    enabled: true
+    channels: [CHAT]
     radius: -1
     world-only: false
+    tiers: []
+    mutable: true
     sound: ENTITY_PLAYER_LEVELUP
     volume: 0.8
     pitch: 1.0
+    animated: false
+    buttons: []
+  on-expire:
+    enabled: true
+    channels: [CHAT]
+    radius: -1
+    world-only: true
+    tiers: []
+    mutable: true
+    sound: ""
+    animated: false
+    buttons: []
+  on-hunt:
+    enabled: true
+    channels: [CHAT]
+    radius: -1
+    world-only: false
+    mutable: true
+    sound: ENTITY_EXPERIENCE_ORB_PICKUP
+    volume: 0.8
+    animated: false
+    buttons: []
+  on-guards:
+    enabled: true
+    channels: [CHAT, ACTIONBAR]
+    radius: -1
+    world-only: false
+    mutable: true
+    sound: ENTITY_WITHER_SPAWN
+    volume: 0.35
+    pitch: 1.6
+    animated: true
+    line-delay-ticks: 8
+    buttons: [TRACK, MUTE]
 
-## PlaceholderAPI (if installed) gets %mysticchest_cooldown_<tier>%, %mysticchest_cooldown_formatted_<tier>%,
-## %mysticchest_opens_today%, %mysticchest_pity_<tier>% and %mysticchest_active_chests%.
+## ═══ NAVIGATION (/mystic track and the [Track] button) ═════════════════════
+## An arrow and the distance in the action bar point to a chest relative to where you look, and the
+## compass target is set. It stops when you arrive, the chest disappears or the time is up.
+navigation:
+  enabled: true
+  duration-seconds: 180
+  update-ticks: 8
+  arrive-radius: 4
 
 ## ═══ BOSS BAR ═════════════════════════════════════════════════════════════
 ## One boss bar per standing chest: tier, time left, coordinates and open type. It drains as the time
