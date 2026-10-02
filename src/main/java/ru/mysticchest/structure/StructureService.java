@@ -188,6 +188,8 @@ public final class StructureService {
         });
     }
 
+    private static boolean isLiquid(Placer p) { return p instanceof Mat && ((Mat) p).liquid(); }
+
     /** Things that are removed or built over: foliage and plants, never the ground itself. */
     private static boolean soft(String n) {
         if (n.endsWith("LEAVES") || n.endsWith("_LOG") || n.equals("LOG") || n.equals("LOG_2") || n.endsWith("_STEM") && !n.startsWith("STRIPPED")) return true;
@@ -267,6 +269,8 @@ public final class StructureService {
         java.util.Collections.sort(order, new java.util.Comparator<Integer>() {
             public int compare(Integer a, Integer b) {
                 int[] pa = rel.get(a), pb = rel.get(b);
+                boolean la = isLiquid(bp.placers.get(a)), lb = isLiquid(bp.placers.get(b));
+                if (la != lb) return la ? 1 : -1;               // lava and water last: they only flow once everything around them stands
                 if (pa[1] != pb[1]) return pa[1] < pb[1] ? -1 : 1;
                 double da = Math.hypot(pa[0], pa[2]), db = Math.hypot(pb[0], pb[2]);
                 return da < db ? -1 : (da > db ? 1 : 0);

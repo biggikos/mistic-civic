@@ -68,6 +68,7 @@ public final class Captures {
         int detect = d.integer("detect-radius", 16, 2, 200);
         if (!always && others(p, a, detect) == 0) return false;     // nobody to fight: just open it
         c = new Cap(a, p);
+        glow(p, d, false);
         try {
             c.bar = Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID);
             c.bar.setProgress(0);
@@ -97,6 +98,7 @@ public final class Captures {
                     || cp.getLocation().distanceSquared(a.loc) > zone * zone) { end(c, "duel.failed"); continue; }
             int enemies = others(cp, a, zone);
             boolean contested = enemies > 0;
+            glow(cp, d, contested);
             if (contested) c.progress = Math.max(0, c.progress - d.decimal("decay-per-second", 2.0, 0, 100));
             else c.progress += 1;
             double frac = Math.min(1, c.progress / need);
@@ -123,7 +125,15 @@ public final class Captures {
         }
     }
 
+    /** Coloured outline of the capturer (duel.glow / glow-color / glow-contested-color). */
+    private void glow(Player p, Layered d, boolean contested) {
+        if (!d.bool("glow", true)) return;
+        ru.mysticchest.effects.Glow.on(p, contested ? d.str("glow-contested-color", "RED") : d.str("glow-color", "GOLD"));
+    }
+
     private void dispose(Cap c) {
+        Player p = Bukkit.getPlayer(c.capturer);
+        if (p != null) ru.mysticchest.effects.Glow.off(p); else ru.mysticchest.effects.Glow.off(c.capturer);
         if (c.bar != null) { try { c.bar.removeAll(); } catch (Throwable ignored) {} c.bar = null; }
     }
 

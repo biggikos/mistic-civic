@@ -53,6 +53,14 @@ public final class StructureEditorGui implements GuiHolder {
             case COLOSSEUM: return "SMOOTH_SANDSTONE";
             case CRYSTALS: return "AMETHYST_BLOCK";
             case RUNES: return "CHISELED_STONE_BRICKS";
+            case RUINED_PORTAL: return "CRYING_OBSIDIAN";
+            case VOLCANO: return "MAGMA_BLOCK";
+            case SHIPWRECK: return "DARK_OAK_PLANKS";
+            case DRAGON_BONES: return "BONE_BLOCK";
+            case CASTLE_RUIN: return "COBBLESTONE_WALL";
+            case WITCH_HUT: return "CAULDRON";
+            case GRAVEYARD: return "SOUL_SAND";
+            case NETHER_OUTPOST: return "NETHER_BRICKS";
             default: return "PRISMARINE_BRICKS";
         }
     }

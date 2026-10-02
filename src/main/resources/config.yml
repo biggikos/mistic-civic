@@ -497,6 +497,12 @@ guards:
   radius: 7
   leash: 20
   announce: true
+  ## Coloured glowing outline of the guards (visible through walls, so players can find them).
+  ## glow-color / boss-glow-color: any chat colour name (RED, GOLD, DARK_PURPLE, AQUA ...). A level or a single mob can
+  ## override all three keys:  {type: ZOMBIE, glow: false}   or   level:  {glow-color: GOLD, mobs: [...]}
+  glow: true
+  glow-color: GRAY
+  boss-glow-color: RED
   levels:
     patrol:
       weight: 60
@@ -554,6 +560,11 @@ duel:
   zone-radius: 5
   detect-radius: 16           # "other players are around" and who sees the bar
   decay-per-second: 2.0       # how fast an enemy in the zone drains the progress
+  ## Coloured glowing outline of the capturer (everybody can see who holds the chest). The colour switches
+  ## while an enemy stands in the zone. Any chat colour name; glow: false turns it off.
+  glow: true
+  glow-color: GOLD
+  glow-contested-color: RED
 
 ## ═══ LEADERBOARD, STATS & ACHIEVEMENTS ═════════════════════════════════════
 ## Counted per player: opens, rares, hunts (first openers), guards, bosses, captures.

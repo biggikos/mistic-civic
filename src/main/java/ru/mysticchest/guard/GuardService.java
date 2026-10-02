@@ -118,7 +118,7 @@ public final class GuardService implements Listener {
             int count = Math.max(1, Math.min(30, spec.getInt("count", 1)));
             for (int i = 0; i < count; i++) {
                 LivingEntity e = spawnMob(spec, grp.center, radius, a);
-                if (e != null) { grp.alive.add(e.getUniqueId()); byEntity.put(e.getUniqueId(), a); }
+                if (e != null) { grp.alive.add(e.getUniqueId()); byEntity.put(e.getUniqueId(), a); glow(e, g, level, spec, false); }
             }
         }
         ConfigurationSection boss = level.getConfigurationSection("boss");
@@ -129,6 +129,7 @@ public final class GuardService implements Listener {
                 grp.bossCfg = boss;
                 grp.alive.add(e.getUniqueId());
                 byEntity.put(e.getUniqueId(), a);
+                glow(e, g, level, boss, true);
                 ConfigurationSection bb = boss.getConfigurationSection("bossbar");
                 if (boss.getBoolean("bossbar", true) || bb != null) {
                     BarColor col = BarColor.RED;
@@ -152,6 +153,22 @@ public final class GuardService implements Listener {
             plugin.announcer().send(plugin.settings().onGuards, a.loc, "guards.appeared", t, "level", Text.color(grp.levelName),
                     "count", String.valueOf(grp.total), "bossname", Text.color(boss == null ? "" : boss.getString("name", "")));
         }
+    }
+
+    /**
+     * Outline of a guard: guards.glow (true/false) and glow-color / boss-glow-color, overridable on a level and on a mob
+     * (a mob wins over its level, a level over guards:, a tier's guards: over the global one).
+     */
+    private void glow(LivingEntity e, Layered g, ConfigurationSection level, ConfigurationSection mob, boolean boss) {
+        boolean on = g.bool("glow", true);
+        String color = boss ? g.str("boss-glow-color", "RED") : g.str("glow-color", "GRAY");
+        for (ConfigurationSection s : new ConfigurationSection[]{level, mob}) {
+            if (s == null) continue;
+            if (s.isSet("glow")) on = s.getBoolean("glow");
+            if (boss && s.isSet("boss-glow-color")) color = s.getString("boss-glow-color");
+            if (s.isSet("glow-color")) color = s.getString("glow-color");
+        }
+        if (on) ru.mysticchest.effects.Glow.on(e, color);
     }
 
     private static World w0(ChestManager.Active a) { return a.loc.getWorld(); }
@@ -232,6 +249,7 @@ public final class GuardService implements Listener {
         if (g == null) return;
         for (UUID id : g.alive) {
             byEntity.remove(id);
+            ru.mysticchest.effects.Glow.off(id);
             Entity e = Bukkit.getEntity(id);
             if (e != null) e.remove();
         }
@@ -251,7 +269,7 @@ public final class GuardService implements Listener {
             Group g = groups.get(a);
             for (UUID id : new ArrayList<UUID>(g.alive)) {
                 Entity ent = Bukkit.getEntity(id);
-                if (ent == null || !ent.isValid()) { byEntity.remove(id); g.alive.remove(id); }
+                if (ent == null || !ent.isValid()) { byEntity.remove(id); g.alive.remove(id); ru.mysticchest.effects.Glow.off(id); }
             }
             if (g.alive.isEmpty()) { groups.remove(a); if (g.bar != null) { try { g.bar.removeAll(); } catch (Throwable ignored) {} } }
         }
@@ -296,6 +314,7 @@ public final class GuardService implements Listener {
         Group g = groups.get(a);
         if (g == null) return;
         g.alive.remove(id);
+        ru.mysticchest.effects.Glow.off(id);
         Player killer = e.getEntity().getKiller();
         boolean boss = id.equals(g.boss);
         if (!plugin.settings().root.sub("guards").bool("drop-gear", false)) { /* gear drop chances are 0 already */ }

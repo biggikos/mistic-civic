@@ -34,12 +34,20 @@ public final class Mat implements Placer {
         for (String n : names) {
             java.util.Optional<XMaterial> x = XMaterial.matchXMaterial(n);
             if (x.isPresent() && x.get().isSupported()) {
-                ItemStack it = x.get().parseItem();
-                if (it != null && it.getType().isBlock()) return new Mat(it.getType(), (byte) it.getDurability());
+                // parseMaterial, not parseItem: lava, fire and the like only exist as a block, their "item" is a bucket or nothing
+                Material m = x.get().parseMaterial();
+                if (m == null || !m.isBlock()) continue;
+                byte data = 0;
+                if (LEGACY) {                                   // only 1.12 keeps the variant in a data byte; parseItem throws for blocks that are no item
+                    try { ItemStack it = x.get().parseItem(); if (it != null && it.getType() == m) data = (byte) it.getDurability(); } catch (Throwable ignored) {}
+                }
+                return new Mat(m, data);
             }
         }
         return new Mat(Material.STONE, (byte) 0);
     }
+
+    public boolean liquid() { String n = type.name(); return n.contains("LAVA") || n.contains("WATER"); }
 
     public void apply(Block b) { place(b); }
 

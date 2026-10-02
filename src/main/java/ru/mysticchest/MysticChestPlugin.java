@@ -136,6 +136,7 @@ public final class MysticChestPlugin extends JavaPlugin {
         if (guards != null) guards.shutdown();
         if (atmosphere != null) atmosphere.clearAll();
         if (captures != null) captures.shutdown();
+        ru.mysticchest.effects.Glow.clearAll();
         if (beacon != null) beacon.shutdown();
         if (chests != null) chests.removeAll();
         if (structures != null) structures.shutdown();

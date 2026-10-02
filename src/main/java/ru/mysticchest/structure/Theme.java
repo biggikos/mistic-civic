@@ -20,7 +20,41 @@ public enum Theme {
         names = new String[][]{{base, "STONE_BRICKS"}, {accent, base}, {trim, base}, {light, "GLOWSTONE"}};
     }
 
+    private static final Mat[] FIXED = new Mat[Canvas.Slot.values().length];
+
+    private static Mat fixed(Canvas.Slot s) {
+        Mat m = FIXED[s.ordinal()];
+        if (m != null) return m;
+        switch (s) {
+            case LAVA: m = Mat.of("LAVA"); break;
+            case OBSIDIAN: m = Mat.of("OBSIDIAN"); break;
+            case CRYING: m = Mat.of("CRYING_OBSIDIAN", "OBSIDIAN"); break;
+            case ROCK: m = Mat.of("BLACKSTONE", "COBBLESTONE", "STONE"); break;
+            case MAGMA: m = Mat.of("MAGMA_BLOCK", "NETHERRACK", "COBBLESTONE"); break;
+            case ASH: m = Mat.of("COARSE_DIRT", "DIRT"); break;
+            case NETHERRACK: m = Mat.of("NETHERRACK", "COBBLESTONE"); break;
+            case FIRE: m = Mat.of("FIRE"); break;
+            case WOOD: m = Mat.of("SPRUCE_PLANKS", "OAK_PLANKS"); break;
+            case DARKWOOD: m = Mat.of("DARK_OAK_PLANKS", "SPRUCE_PLANKS", "OAK_PLANKS"); break;
+            case LOG: m = Mat.of("DARK_OAK_LOG", "SPRUCE_LOG", "OAK_LOG"); break;
+            case FENCE: m = Mat.of("DARK_OAK_FENCE", "SPRUCE_FENCE", "OAK_FENCE"); break;
+            case BONE: m = Mat.of("BONE_BLOCK", "QUARTZ_BLOCK"); break;
+            case WEB: m = Mat.of("COBWEB", "WEB"); break;
+            case SOUL: m = Mat.of("SOUL_SAND"); break;
+            case GOLD: m = Mat.of("GOLD_BLOCK"); break;
+            case DIRT: m = Mat.of("COARSE_DIRT", "DIRT"); break;
+            case NBRICK: m = Mat.of("NETHER_BRICKS", "NETHER_BRICK", "NETHERRACK"); break;
+            case NRED: m = Mat.of("RED_NETHER_BRICKS", "NETHER_BRICKS", "NETHER_BRICK"); break;
+            case NFENCE: m = Mat.of("NETHER_BRICK_FENCE", "NETHER_FENCE", "IRON_BARS"); break;
+            case CAULDRON: m = Mat.of("CAULDRON", "IRON_BLOCK"); break;
+            default: m = Mat.of("STONE");
+        }
+        FIXED[s.ordinal()] = m;
+        return m;
+    }
+
     public Mat mat(Canvas.Slot s) {
+        if (s.ordinal() >= Canvas.Slot.LAVA.ordinal()) return fixed(s);
         if (cache == null) {
             Mat[] c = new Mat[4];
             for (int i = 0; i < 4; i++) c[i] = Mat.of(names[i]);

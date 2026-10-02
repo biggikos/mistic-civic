@@ -34,7 +34,7 @@ final class Blueprint {
             b.add(Canvas.kx(e.getKey()), Canvas.ky(e.getKey()), Canvas.kz(e.getKey()), theme.mat(e.getValue()));
         }
         // foundation columns only under solid floor blocks, and always the theme's base material
-        Placer base = theme.mat(Canvas.Slot.BASE);
+        Placer base = theme.mat(cv.foundation);
         b.defaultFoundation = base;
         for (Long k : new ArrayList<Long>(b.foundation.keySet())) b.foundation.put(k, base);
         b.minX = cv.minX(); b.maxX = cv.maxX(); b.minZ = cv.minZ(); b.maxZ = cv.maxZ(); b.height = cv.height();

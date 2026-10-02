@@ -6,12 +6,19 @@ import java.util.Random;
 
 /** A structure drawn in relative coordinates (x/z around the centre, y = 0 is the ground plane). No Bukkit here. */
 public final class Canvas {
-    public enum Slot { AIR, BASE, ACCENT, TRIM, LIGHT, IRON, CORE }
+    public enum Slot {
+        AIR, BASE, ACCENT, TRIM, LIGHT, IRON, CORE,
+        /** Fixed materials that do not follow the theme (natural and special structures). */
+        LAVA, OBSIDIAN, CRYING, ROCK, MAGMA, ASH, NETHERRACK, FIRE, WOOD, DARKWOOD, LOG, FENCE, BONE, WEB, SOUL, GOLD, DIRT,
+        NBRICK, NRED, NFENCE, CAULDRON
+    }
 
     private final Map<Long, Slot> cells = new LinkedHashMap<Long, Slot>();
     public final Random rnd;
     public final double decay;
     public int chestX, chestY, chestZ;
+    /** What fills the gap under the floor (columns under every y = 0 block). */
+    public Slot foundation = Slot.BASE;
     /** More chests in the same structure (the beacon platform has four). */
     public final java.util.List<int[]> extraChests = new java.util.ArrayList<int[]>();
     private int minX = 0, maxX = 0, minZ = 0, maxZ = 0, maxY = 0;
@@ -76,6 +83,7 @@ public final class Canvas {
     public int minZ() { return minZ; }
     public int maxZ() { return maxZ; }
     public int height() { return maxY + 2; }
+    public boolean hasLiquid() { for (Slot s : cells.values()) if (s == Slot.LAVA) return true; return false; }
     public int count() {
         int n = 0;
         for (Slot s : cells.values()) if (s != Slot.AIR) n++;
