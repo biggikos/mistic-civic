@@ -315,6 +315,10 @@ public final class ChestManager {
         if (structure != null) structure.refs++;
         ru.mysticchest.open.OpenType base = t.openMode(plugin.settings());
         a.mode = base != ru.mysticchest.open.OpenType.RANDOM ? base : (plugin.settings().randomReveal ? plugin.open().pickMode(t) : ru.mysticchest.open.OpenType.RANDOM);
+        if (structure != null) {      // a structure can fix the way its chests open (the volcano erupts its loot)
+            ru.mysticchest.structure.StructureCatalog.Entry se = plugin.structures().catalog().get(structure.name);
+            if (se != null && se.mode != null) a.mode = se.mode;
+        }
         m.put(a.key, a);
         total++;
         cache = null;
@@ -374,6 +378,7 @@ public final class ChestManager {
         plugin.guards().cleanup(a);
         plugin.captures().cancelFor(a);
         plugin.open().forgetPinata(a);
+        plugin.open().forgetShared(a);
         if (clearBlock && a.loc.getBlock().getType() == a.block) a.loc.getBlock().setType(Material.AIR);
         release(a.loc.getWorld(), a.loc.getBlockX() >> 4, a.loc.getBlockZ() >> 4);
         if (a.structure != null && --a.structure.refs <= 0) plugin.structures().scheduleRestore(a.structure);

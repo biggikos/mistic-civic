@@ -5,6 +5,7 @@
 First public release.
 
 - Mystic chests: eight tiers, shop, roulette / full chest / mystery cards / instant / volcano / pinata, in-game loot editor.
+- **SHARED open mode by default** (FunTime style): the chest stays and everybody loots the same chest. Structures can fix their own open mode (the volcano erupts its loot).
 - **Activation timer**: chests sleep before they can be opened (per tier, can be switched off).
 - Seventeen structures including a real volcano with **eruptions**, a ruined nether portal, shipwreck, castle ruin and more; custom structures with sign markers, tags, filters, export/import.
 - Guards, bosses, capture duel, hunt bonus, local atmosphere, coloured glow outlines (config).

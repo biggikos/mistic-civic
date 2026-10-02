@@ -407,7 +407,7 @@ structure:
   import-builtin: "&c&e{name} &c- встроенная форма, выберите другое имя: /mystic structure import <файл> <новое имя>"
   import-bad: "&cНе удалось импортировать &e{file}&c: файл нечитаем, пуст, выходит за размеры или сохранён на другом поколении Minecraft (файлы 1.12 и 1.13+ несовместимы). Подробности в консоли."
   marks-found: "&7Найдено меток: &e{loot} &7доп. сундуков ([loot]), &e{guard} &7точек стражей ([guard]), &e{boss} &7точек босса ([boss]). Таблички из структуры убираются."
-  set-usage: "&e/mystic structure set <имя> <tags|tiers|biomes|worlds|rotate|debris|weight|theme|enabled> <значение>&7  (\"-\" очищает список; списки через запятую)"
+  set-usage: "&e/mystic structure set <имя> <tags|tiers|biomes|worlds|rotate|debris|weight|theme|enabled|mode> <значение>&7  (\"-\" очищает список; списки через запятую)"
   set-done: "&a{name}: &e{key} &a= &f{value}"
   info:
     header: "&5Структура &e{name} &7({kind})"
@@ -422,6 +422,7 @@ structure:
     worlds: "Только в мирах"
     rotate: "Случайный поворот"
     debris: "Множитель обломков"
+    mode: "Режим открытия"
     theme: "Тема"
   list-header: "&5Структуры:"
   list-line: " &e{name} &7({kind}) вес {weight} = {chance}% &8| {on}"
@@ -463,6 +464,7 @@ mode:
   pick: "тайные карты"
   volcano: "вулкан"
   pinata: "пиньята"
+  shared: "общий сундук (лут для всех)"
   random: "случайный"
 
 bossbar:

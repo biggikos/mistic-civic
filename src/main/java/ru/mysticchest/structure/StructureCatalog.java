@@ -36,6 +36,8 @@ public final class StructureCatalog {
         public final java.util.List<String> worlds = new ArrayList<String>();
         public Boolean rotate;          // null = the global setting
         public double debrisScale = 1.0;
+        /** How chests in this structure open (overrides the tier), e.g. VOLCANO for the volcano; null = the tier decides. */
+        public ru.mysticchest.open.OpenType mode;
 
         Entry(String id, Shape shape, Template template) { this.id = id; this.shape = shape; this.template = template; }
 
@@ -61,6 +63,7 @@ public final class StructureCatalog {
         for (Shape s : Shape.values()) {
             Entry e = new Entry(s.name().toLowerCase(Locale.ROOT), s, null);
             e.tags.addAll(Arrays.asList(s.tags()));
+            if (s == Shape.VOLCANO) e.mode = ru.mysticchest.open.OpenType.VOLCANO;
             if (s.special()) e.enabled = false;        // event-only shapes stay out of the random rotation
             entries.put(e.id, e);
         }
@@ -95,6 +98,7 @@ public final class StructureCatalog {
                     e.worlds.addAll(s.getStringList("worlds"));
                     if (s.isSet("rotate")) e.rotate = s.getBoolean("rotate");
                     e.debrisScale = Math.max(0, Math.min(5, s.getDouble("debris", 1.0)));
+                    if (s.isSet("mode")) e.mode = parseMode(s.getString("mode"));
                 }
             }
         } else {
@@ -117,15 +121,23 @@ public final class StructureCatalog {
                     if (!e.worlds.isEmpty()) y.set(p + ".worlds", e.worlds);
                     if (e.rotate != null) y.set(p + ".rotate", e.rotate);
                     if (e.debrisScale != 1.0) y.set(p + ".debris", e.debrisScale);
+                    y.set(p + ".mode", e.mode == null ? "TIER" : e.mode.name());
                 }
                 return "## Which structures mystic chests can appear in. Edit in game: /mystic structure edit\n"
                         + "## enabled: in the rotation or not    weight: bigger = picked more often\n"
                         + "## theme: AUTO (biome / config) or DESERT, STONE, NETHER, END, FROST, OCEAN (built-in shapes only)\n"
                         + "## tags: for shapes: [tag:nether] filters   tiers / biomes / worlds: where it may appear (empty = anywhere)\n"
                         + "## rotate: false = never turn it (custom ones)   debris: multiplier of the rubble around it\n"
+                        + "## mode: how chests in it open (SHARED, VOLCANO, PINATA, ROULETTE...), TIER = as the tier says\n"
                         + "## Easiest: /mystic structure set <name> <tags|tiers|biomes|worlds|rotate|debris|weight|theme> <value>\n" + y.saveToString();
             }
         });
+    }
+
+    /** TIER / AUTO / - = no override. */
+    public static ru.mysticchest.open.OpenType parseMode(String s) {
+        if (s == null) return null;
+        try { return ru.mysticchest.open.OpenType.valueOf(s.trim().toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return null; }
     }
 
     private static List<String> lower(List<String> in) {

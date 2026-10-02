@@ -87,6 +87,11 @@ Anything omitted falls back to `config.yml`.
 
 ## How chests are opened
 
+**SHARED (the default, like the mystic on FunTime).** When a world chest wakes up and someone opens it, it turns into a real chest full of loot. The chest **stays**: everybody can open it and grab what is left, all players see the same inventory live. It disappears when the last item is taken or when its time is up. The first opener gets the hunt bonus straight into the inventory and runs the command rewards. Cooldowns and daily limits count once per player per chest. A chest *item* opened in the hand opens as `FULL_CHEST`. Set `default-open-mode` (or `open-mode` on a tier) to another mode to go back to personal openings.
+
+**Structures can fix the mode**: `/mystic structure set <name> mode VOLCANO` (or `mode: VOLCANO` in `structures.yml`, `TIER` = no override). The built-in `volcano` erupts its loot by default: every reward is launched out of the chest as items for everyone to catch.
+
+
 `default-open-mode` and the tier's `open-mode`:
 
 | Mode | Behaviour |

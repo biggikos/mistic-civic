@@ -98,6 +98,7 @@ public final class WorldListener implements Listener {
             plugin.lang().send(p, "guards.locked", "count", String.valueOf(plugin.guards().left(a)));
             return;
         }
+        if (plugin.open().openedShared(p, a)) { plugin.open().openWorldChest(p, a); return; }   // back into the shared chest
         String[] deny = plugin.open().check(p, a.tier);
         if (deny != null) { sendDeny(p, deny); return; }
         if (plugin.captures().intercept(p, a)) return;

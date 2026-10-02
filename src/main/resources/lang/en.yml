@@ -415,7 +415,7 @@ structure:
   import-builtin: "&c&e{name} &cis a built-in shape, choose another name: /mystic structure import <file> <new name>"
   import-bad: "&cCannot import &e{file}&c: unreadable, no blocks, out of range, or saved on a different Minecraft generation (1.12 and 1.13+ files are not compatible). Details in the console."
   marks-found: "&7Markers found: &e{loot} &7extra chests ([loot]), &e{guard} &7guard points ([guard]), &e{boss} &7boss points ([boss]). Signs are removed from the structure."
-  set-usage: "&e/mystic structure set <name> <tags|tiers|biomes|worlds|rotate|debris|weight|theme|enabled> <value>&7  (\"-\" clears a list; lists: comma separated)"
+  set-usage: "&e/mystic structure set <name> <tags|tiers|biomes|worlds|rotate|debris|weight|theme|enabled|mode> <value>&7  (\"-\" clears a list; lists: comma separated)"
   set-done: "&a{name}: &e{key} &a= &f{value}"
   info:
     header: "&5Structure &e{name} &7({kind})"
@@ -430,6 +430,7 @@ structure:
     worlds: "Only in worlds"
     rotate: "Random turn"
     debris: "Rubble multiplier"
+    mode: "Chests open as"
     theme: "Theme"
   list-header: "&5Structures:"
   list-line: " &e{name} &7({kind}) weight {weight} = {chance}% &8| {on}"
@@ -471,6 +472,7 @@ mode:
   pick: "mystery cards"
   volcano: "volcano"
   pinata: "pinata"
+  shared: "open chest (loot for everyone)"
   random: "random"
 
 bossbar:

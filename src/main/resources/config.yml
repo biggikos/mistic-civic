@@ -44,8 +44,11 @@ debug: false
 ##   PICK       - mystery cards: pick N face-down cards (see "pick")
 ##   VOLCANO    - the chest ERUPTS: lava and flames, and every reward is launched as an item in a fountain
 ##   PINATA     - hit the standing chest (right click): a reward falls out of it with every hit
+##   SHARED     - (default, FunTime style) a standing chest turns into a real chest full of loot: it stays,
+##                anybody can open it and grab what is left, it disappears when empty or when time is up.
+##                A chest item opened in the hand opens as FULL_CHEST.
 ##   RANDOM     - a random one of the above every time (see "random-mode")
-default-open-mode: ROULETTE
+default-open-mode: SHARED
 
 ## What a right click with the chest item does.
 ##   click-air:   OPEN | NONE

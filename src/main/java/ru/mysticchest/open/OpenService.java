@@ -81,8 +81,57 @@ public final class OpenService {
         int extra;
     }
 
+    private final java.util.Map<ru.mysticchest.chest.ChestManager.Active, SharedChest> shared = new java.util.HashMap<ru.mysticchest.chest.ChestManager.Active, SharedChest>();
+
+    public void forgetShared(ru.mysticchest.chest.ChestManager.Active a) {
+        SharedChest s = shared.remove(a);
+        if (s != null) s.closeAll();
+    }
+
+    /** SHARED: the first opener fills the chest (hunt bonus, announcement), afterwards anybody opens the same loot. */
+    private void openShared(Player p, ru.mysticchest.chest.ChestManager.Active a) {
+        SharedChest sc = shared.get(a);
+        Settings s = plugin.settings();
+        if (sc == null) {
+            long start = System.nanoTime();
+            ru.mysticchest.config.Layered h = a.tier.layered("hunt", s);
+            long age = Math.max(0, (System.currentTimeMillis() - a.wokeAt()) / 1000);
+            boolean fast = h.bool("enabled", true) && age <= h.integer("window-seconds", 120, 0, 86400);
+            List<Reward> rewards = plugin.rewards().roll(p, a.tier, a.tier.rolls());
+            sc = new SharedChest(plugin, a, rewards, p);
+            shared.put(a, sc);
+            plugin.effects().playTier(s.fxOpen, p, a.tier);
+            plugin.announcer().send(s.onOpen, p.getLocation(), "announce.opened", a.tier, "player", p.getName(), "modeid", OpenType.SHARED.name());
+            if (fast) {
+                // the hunter's bonus goes straight to the first opener, the chest itself is for everybody
+                for (Reward r : plugin.rewards().roll(p, a.tier, h.integer("bonus-rolls", 1, 0, 50))) plugin.rewards().apply(p, a.tier, r, true, false);
+                plugin.stats().add(p, "hunts");
+                for (String c : h.strings("commands")) {
+                    String cmd = c.replace("{player}", p.getName());
+                    org.bukkit.Bukkit.dispatchCommand(org.bukkit.Bukkit.getConsoleSender(), cmd.startsWith("/") ? cmd.substring(1) : cmd);
+                }
+                if (h.bool("announce", true)) plugin.announcer().send(s.onHunt, p.getLocation(), "hunt.fast", a.tier, "player", p.getName(), "ttlsec", String.valueOf(age));
+            }
+            Metrics.open(start);
+        }
+        if (sc.opened.add(p.getUniqueId())) {
+            int cd = a.tier.cooldownOpen(s);
+            if (cd > 0 && !p.hasPermission("mysticchest.bypass.cooldown")) plugin.cooldowns().start(owner(p), key(a.tier), cd);
+            plugin.cooldowns().addOpen(p.getUniqueId());
+            plugin.stats().add(p, "opens");
+        }
+        sc.show(p);
+    }
+
+    /** true when this player already looted from that shared chest (re-opening is free of cooldowns and limits). */
+    public boolean openedShared(Player p, ru.mysticchest.chest.ChestManager.Active a) {
+        SharedChest sc = shared.get(a);
+        return sc != null && sc.opened.contains(p.getUniqueId());
+    }
+
     public void openWorldChest(Player p, ru.mysticchest.chest.ChestManager.Active a) {
         if (a.mode == OpenType.PINATA) { hitPinata(p, a); return; }
+        if (a.mode == OpenType.SHARED) { openShared(p, a); return; }
         if (!plugin.chests().remove(a, true)) return;     // first opener wins
         Settings s = plugin.settings();
         ru.mysticchest.config.Layered h = a.tier.layered("hunt", s);
@@ -111,6 +160,7 @@ public final class OpenService {
 
         OpenType type = fixed != null && fixed != OpenType.RANDOM ? fixed : pickMode(t);
         if (type == OpenType.PINATA && at == null) type = OpenType.VOLCANO;    // a pinata needs a standing chest
+        if (type == OpenType.SHARED) type = OpenType.FULL_CHEST;               // a chest item opened in the hand is personal
         if (type != OpenType.INSTANT && plugin.animator().size() >= s.maxAnimations) type = OpenType.FULL_CHEST;
         List<Reward> rewards = plugin.rewards().roll(p, t, (type == OpenType.PICK ? s.pickCards : t.rolls()) + extraRolls);
         plugin.effects().playTier(s.fxOpen, p, t);

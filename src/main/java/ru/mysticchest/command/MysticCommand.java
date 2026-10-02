@@ -448,10 +448,11 @@ public final class MysticCommand implements TabExecutor {
         structureRow(s, "rotate", e.rotate == null ? "global" : String.valueOf(e.rotate));
         structureRow(s, "debris", String.valueOf(e.debrisScale));
         structureRow(s, "theme", e.theme == null ? "AUTO" : e.theme);
+        structureRow(s, "mode", e.mode == null ? "TIER" : e.mode.name());
         return true;
     }
 
-    private static final List<String> SET_KEYS = Arrays.asList("tags", "tiers", "biomes", "worlds", "rotate", "debris", "weight", "theme", "enabled");
+    private static final List<String> SET_KEYS = Arrays.asList("tags", "tiers", "biomes", "worlds", "rotate", "debris", "weight", "theme", "enabled", "mode");
 
     /** /mystic structure set <name> <key> <value>: edits structures.yml without opening the file ("-" clears a list). */
     private boolean structureSet(CommandSender s, String[] a) {
@@ -477,6 +478,7 @@ public final class MysticCommand implements TabExecutor {
             else if (key.equals("debris")) e.debrisScale = Math.max(0, Math.min(5, Double.parseDouble(val)));
             else if (key.equals("weight")) e.weight = Math.max(0, Integer.parseInt(val));
             else if (key.equals("enabled")) e.enabled = val.equalsIgnoreCase("true") || val.equalsIgnoreCase("on") || val.equalsIgnoreCase("yes");
+            else if (key.equals("mode")) e.mode = ru.mysticchest.structure.StructureCatalog.parseMode(val);
             else if (key.equals("theme")) e.theme = val.equals("-") || val.equalsIgnoreCase("AUTO") ? null : val.toUpperCase(Locale.ROOT);
             else { plugin.lang().send(s, "structure.set-usage"); return true; }
         } catch (NumberFormatException ex) { plugin.lang().send(s, "structure.set-usage"); return true; }
