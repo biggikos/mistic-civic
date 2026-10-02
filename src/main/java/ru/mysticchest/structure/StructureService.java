@@ -407,6 +407,7 @@ public final class StructureService {
     }
 
     private void abort(World w, List<int[]> chunks, Callback cb, String why) {
+        plugin.diag().add("structure", "site rejected at " + w.getName() + " (" + why + "), the chest is placed without a structure");
         if (plugin.settings().debug) plugin.getLogger().info("[structure] site rejected: " + why);
         for (int[] c : chunks) plugin.chests().release(w, c[0], c[1]);
         cb.done(null);

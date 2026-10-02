@@ -109,7 +109,12 @@ public final class Template {
             for (String s : y.getStringList("palette")) t.palette.add(Snap.decode(s));
             for (String l : y.getStringList("blocks")) {
                 String[] p = l.split(" ");
-                t.cells.add(new int[]{Integer.parseInt(p[0]), Integer.parseInt(p[1]), Integer.parseInt(p[2]), Integer.parseInt(p[3])});
+                int[] c = {Integer.parseInt(p[0]), Integer.parseInt(p[1]), Integer.parseInt(p[2]), Integer.parseInt(p[3])};
+                // files can come from other servers (/mystic structure import): refuse anything outside the saveable size
+                if (c[3] < 0 || c[3] >= t.palette.size() || Math.abs(c[0]) > 48 || Math.abs(c[2]) > 48 || c[1] < 0 || c[1] > 64)
+                    throw new IllegalArgumentException("block out of range: " + l);
+                t.cells.add(c);
+                if (t.cells.size() > 80000) throw new IllegalArgumentException("too many blocks");
             }
             t.bounds();
             return t;

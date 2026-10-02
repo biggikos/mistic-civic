@@ -31,6 +31,10 @@ public final class SpawnService {
     private final Map<String, SpawnProfile> profiles = new LinkedHashMap<String, SpawnProfile>();
     private final List<Scheduler.Handle> handles = new ArrayList<Scheduler.Handle>();
     private final Map<String, Long> lastFire = new java.util.HashMap<String, Long>();
+    private final Map<String, Long> nextAt = new java.util.HashMap<String, Long>();
+
+    /** Epoch millis of the next scheduled attempt of a profile, 0 when unknown. */
+    public long nextAt(String profile) { Long v = nextAt.get(profile); return v == null ? 0 : v; }
 
     public SpawnService(MysticChestPlugin plugin, Locators locators) {
         this.plugin = plugin;
@@ -43,6 +47,7 @@ public final class SpawnService {
     public void reload() {
         stop();
         profiles.clear();
+        nextAt.clear();
         Cfg root = new Cfg(plugin.getConfig(), "config.yml", plugin.getLogger()).sub("spawn").sub("profiles");
         for (String name : root.keys()) {
             SpawnProfile p = new SpawnProfile(name, root.sub(name));
@@ -60,6 +65,7 @@ public final class SpawnService {
         long delay;
         if (p.trigger == SpawnProfile.Trigger.ONLINE_THRESHOLD) {
             // poll every 30 s (one queue entry); fire when enough players are online and the cooldown passed
+            nextAt.put(p.name, System.currentTimeMillis() + 30000L);
             handles.add(plugin.scheduler().later(30000L, new Runnable() {
                 public void run() {
                     try {
@@ -92,6 +98,7 @@ public final class SpawnService {
                 delay = Math.min(delay, java.time.Duration.between(now, at).toMillis());
             }
         }
+        nextAt.put(p.name, System.currentTimeMillis() + delay);
         handles.add(plugin.scheduler().later(delay, new Runnable() {
             public void run() {
                 try { SpawnService.this.run(p, null, null, false); } finally { schedule(p); }
@@ -113,7 +120,10 @@ public final class SpawnService {
         return null;
     }
 
-    private void debug(String m) { if (plugin.settings().debug) plugin.getLogger().info("[spawn] " + m); }
+    private void debug(String m) {
+        plugin.diag().add("spawn", m);
+        if (plugin.settings().debug) plugin.getLogger().info("[spawn] " + m);
+    }
 
     /** @param force true skips player/active/cooldown conditions (admin command). */
     public void run(final SpawnProfile p, Tier forced, final CommandSender who, boolean force) {
@@ -164,6 +174,8 @@ public final class SpawnService {
         announce(p.announce, loc, tier, key, details(loc, tier, st));
         plugin.effects().playAt(plugin.settings().fxSpawn, loc);
         if (plugin.settings().fwOnSpawn) plugin.fireworks().launch(loc.clone().add(0.5, 0, 0.5), tier.color);
+        plugin.diag().add("spawn", p.name + ": spawned " + org.bukkit.ChatColor.stripColor(tier.name("en")) + " at " + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ()
+                + (st == null ? "" : " (" + (st.name == null ? "structure" : st.name) + ")"));
         plugin.getLogger().info("Spawned " + org.bukkit.ChatColor.stripColor(tier.name("en")) + " at " + loc.getWorld().getName() + " " + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + " (" + p.name + ")");
     }
 

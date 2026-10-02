@@ -160,6 +160,7 @@ public final class BeaconEvent implements Listener {
         if (state != null) return false;
         Cfg c = cfg();
         if (!force && Bukkit.getOnlinePlayers().size() < c.integer("min-players", 1, 0, 1000)) {
+            plugin.diag().add("beacon", "not enough players online (min-players " + c.integer("min-players", 1, 0, 1000) + "), postponed");
             plugin.getLogger().info("[beacon] not enough players online, postponed.");
             scheduleNext();
             return false;
@@ -167,7 +168,7 @@ public final class BeaconEvent implements Listener {
         final SpawnProfile profile = new SpawnProfile("beacon", c);
         plugin.locators().locate(profile, SpawnProfile.Mode.RANDOM_WORLD, new ru.mysticchest.spawn.Locators.Callback() {
             public void done(Location loc) {
-                if (loc == null) { plugin.getLogger().warning("[beacon] no location found, postponed."); scheduleNext(); return; }
+                if (loc == null) { plugin.diag().add("beacon", "no location found, postponed"); plugin.getLogger().warning("[beacon] no location found, postponed."); scheduleNext(); return; }
                 build(loc);
             }
         });
@@ -179,7 +180,7 @@ public final class BeaconEvent implements Listener {
         if (spec == null) { scheduleNext(); return; }
         plugin.structures().build(spec, loc, new StructureService.Callback() {
             public void done(Structure st) {
-                if (st == null) { plugin.getLogger().warning("[beacon] could not build here, postponed."); scheduleNext(); return; }
+                if (st == null) { plugin.diag().add("beacon", "could not build here, postponed"); plugin.getLogger().warning("[beacon] could not build here, postponed."); scheduleNext(); return; }
                 begin(st);
             }
         });

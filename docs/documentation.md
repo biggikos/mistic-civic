@@ -191,6 +191,12 @@ Chests can appear inside a building: nine built-in shapes (`pyramid`, `temple`, 
 
 Saved structures keep their exact blocks, are rotated randomly (`rotate: true`) and do not clear the terrain around them (only trees and grass). Sites that are steep, in water or contain player-made blocks (chests, doors, beds, signs…) are skipped and a plain chest appears instead. Per spawn profile or tier you can force a structure: `structure: {shape: gate, theme: end, chance: 100}`.
 
+**Share structures between servers.** `/mystic structure export <name>` writes `plugins/MysticChest/exchange/<name>.yml`. Copy that file into the `exchange/` folder of another server and run `/mystic structure import <file> [new name] [overwrite]`. Files are checked on import (size limits, valid blocks); built-in names are protected, an existing name needs `overwrite`. Files saved on 1.12 and on 1.13+ are not compatible with each other.
+
+## Why didn't a chest appear? `/mystic debug`
+
+Shows, per spawn profile, when it fires next and what blocks it right now (disabled, too few players, `max-active` reached, global cooldown, no valid tier, no fixed points), then the last 15 decisions the plugin made (skipped spawns, rejected structure sites such as "too steep", postponed beacon events, successful spawns). `/mystic debug clear` empties the list. No `debug: true` needed.
+
 ## Events: beacon killer, death chest
 
 **Beacon killer** (`beacon-event:` in `config.yml`, off by default): announced ahead (boss bar countdown plus warnings at `warn-seconds`), it appears at a random spot as a platform with a real beacon on an iron pyramid and **four elite chests** around it. Inside `zone-radius` players get harsher potion effects at every **stage** (`stages`, freely editable) and **coins every second** - `start + growth × seconds spent inside`, at most `max` - paid to the economy (`currency`, or a `command`) when they leave the zone or it ends. Dying in the zone loses the unpaid coins (`lose-on-death`). Chests are looted like any other (capture, hunt), guards are not spawned. After `duration-seconds` everything collapses and the terrain returns; the top earners are announced. `trigger` is `INTERVAL` (with jitter) or `TIMES`. Run or stop one by hand: `/mystic event beacon start|stop|status` (a manual start ignores `min-players`).
@@ -367,7 +373,8 @@ Check what the plugin found: `/mystic economy`, and your balance of a currency: 
 | `/mystic compass` | `mysticchest.compass` (everyone) |
 | `/mystic chests`, `/mystic track [id]` | `mysticchest.chests` (everyone); coordinates: `mysticchest.chests.coords` (op) |
 | `/mystic mute` | everyone |
-| `/mystic structure …` | `mysticchest.admin.structure` (op) |
+| `/mystic structure …` (incl. `export`, `import`) | `mysticchest.admin.structure` (op) |
+| `/mystic debug [clear]` | `mysticchest.admin` (op) |
 | `/mystic event beacon start\|stop\|status` | `mysticchest.admin` (op) |
 | `/mystic top`, `/mystic stats` | `mysticchest.top` (everyone) |
 | `/mystic board …` | `mysticchest.admin` (op) |

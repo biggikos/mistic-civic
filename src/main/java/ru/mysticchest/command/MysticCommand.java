@@ -27,7 +27,7 @@ import java.util.Map;
 
 public final class MysticCommand implements TabExecutor {
     private static final List<String> ROOT = Arrays.asList("shop", "preview", "list", "give", "spawn", "reload",
-            "perf", "loot", "point", "economy", "compass", "structure", "chests", "top", "stats", "board", "track", "mute", "event", "help");
+            "perf", "loot", "point", "economy", "compass", "structure", "chests", "top", "stats", "board", "track", "mute", "event", "debug", "help");
     private static final List<String> LOOT = Arrays.asList("add", "addcmd", "cmd", "weight", "remove", "list", "edit", "clear");
 
     private final MysticChestPlugin plugin;
@@ -92,6 +92,7 @@ public final class MysticCommand implements TabExecutor {
             case "track": return track(s, a);
             case "mute": return mute(s);
             case "event": return event(s, a);
+            case "debug": return debug(s, a);
             case "top": return top(s, a);
             case "stats": return stats(s, a);
             case "board": return board(s, a);
@@ -402,6 +403,7 @@ public final class MysticCommand implements TabExecutor {
                 sv.catalog().load();
                 plugin.lang().send(s, "reloaded");
                 return true;
+            case "export": case "import": return exchange(s, a, sub.equals("export"));
             default: {
                 plugin.lang().send(s, "structure.list-header");
                 for (ru.mysticchest.structure.StructureCatalog.Entry e : sv.catalog().all()) {
@@ -413,6 +415,87 @@ public final class MysticCommand implements TabExecutor {
                 return true;
             }
         }
+    }
+
+    /** /mystic structure export <name> and import <file> [name] [overwrite]: share files through plugins/MysticChest/exchange/. */
+    private boolean exchange(CommandSender s, String[] a, boolean export) {
+        ru.mysticchest.structure.StructureCatalog cat = plugin.structures().catalog();
+        if (a.length < 3) { plugin.lang().send(s, "structure.usage"); return true; }
+        String src = a[2].toLowerCase(Locale.ROOT);
+        if (src.endsWith(".yml")) src = src.substring(0, src.length() - 4);
+        if (!ru.mysticchest.structure.StructureCatalog.validName(src)) { plugin.lang().send(s, "structure.bad-name"); return true; }
+        java.io.File dir = new java.io.File(plugin.getDataFolder(), "exchange");
+        if (export) {
+            ru.mysticchest.structure.StructureCatalog.Entry e = cat.get(src);
+            if (e == null || !e.custom()) { plugin.lang().send(s, "structure.unknown", "name", a[2]); return true; }
+            java.io.File out = new java.io.File(dir, src + ".yml");
+            dir.mkdirs();
+            plugin.io().writeNow(out, e.template.serialize());
+            plugin.lang().send(s, "structure.exported", "name", src, "path", "plugins/MysticChest/exchange/" + src + ".yml");
+            return true;
+        }
+        java.io.File in = new java.io.File(dir, src + ".yml");
+        String name = a.length > 3 ? a[3].toLowerCase(Locale.ROOT) : src;
+        if (!ru.mysticchest.structure.StructureCatalog.validName(name)) { plugin.lang().send(s, "structure.bad-name"); return true; }
+        if (!in.isFile()) { plugin.lang().send(s, "structure.import-missing", "file", src + ".yml"); return true; }
+        ru.mysticchest.structure.StructureCatalog.Entry old = cat.get(name);
+        boolean overwrite = a.length > 4 && a[4].equalsIgnoreCase("overwrite");
+        if (old != null && (!old.custom() || !overwrite)) {
+            plugin.lang().send(s, old.custom() ? "structure.import-exists" : "structure.import-builtin", "name", name);
+            return true;
+        }
+        ru.mysticchest.structure.Template t = ru.mysticchest.structure.Template.load(name, in, plugin.getLogger());
+        if (t == null || t.blocks() < 4) { plugin.lang().send(s, "structure.import-bad", "file", src + ".yml"); return true; }
+        plugin.io().writeNow(new java.io.File(cat.folder(), name + ".yml"), t.serialize());
+        cat.add(t);
+        plugin.lang().send(s, "structure.imported", "name", t.name, "blocks", String.valueOf(t.blocks()),
+                "w", String.valueOf(t.width()), "d", String.valueOf(t.depth()), "h", String.valueOf(t.height));
+        return true;
+    }
+
+    // ---- debug ---------------------------------------------------------
+
+    private static String span(long ms) {
+        long sec = Math.max(0, ms / 1000);
+        if (sec >= 3600) return (sec / 3600) + "h " + (sec % 3600 / 60) + "m";
+        if (sec >= 60) return (sec / 60) + "m " + (sec % 60) + "s";
+        return sec + "s";
+    }
+
+    /** /mystic debug [clear]: why chests do (not) appear - live conditions per profile plus the recent decisions. */
+    private boolean debug(CommandSender s, String[] a) {
+        if (!need(s, "mysticchest.admin")) return true;
+        if (a.length > 1 && a[1].equalsIgnoreCase("clear")) { plugin.diag().clear(); plugin.lang().send(s, "debug.cleared"); return true; }
+        long now = System.currentTimeMillis();
+        int online = org.bukkit.Bukkit.getOnlinePlayers().size();
+        long cd = plugin.settings().cdSpawn > 0 ? plugin.cooldowns().remaining(ru.mysticchest.cooldown.CooldownManager.GLOBAL, "spawn") : 0;
+        plugin.lang().send(s, "debug.header", "online", String.valueOf(online), "chests", String.valueOf(plugin.chests().count()),
+                "cooldown", cd > 0 ? span(cd) : "-");
+        for (ru.mysticchest.spawn.SpawnProfile p : plugin.spawner().profiles().values()) {
+            List<String> block = new ArrayList<String>();
+            if (!p.enabled) block.add(plugin.lang().get(s, "debug.b-disabled"));
+            else {
+                if (online < p.minPlayers) block.add(plugin.lang().get(s, "debug.b-players", "online", String.valueOf(online), "min", String.valueOf(p.minPlayers)));
+                int act = plugin.chests().countProfile(p.name);
+                if (act >= p.maxActive) block.add(plugin.lang().get(s, "debug.b-active", "n", String.valueOf(act), "max", String.valueOf(p.maxActive)));
+                if (cd > 0) block.add(plugin.lang().get(s, "debug.b-cooldown", "t", span(cd)));
+                boolean anyTier = false;
+                for (String id : p.tierWeights.keySet()) if (plugin.tiers().get(id) != null) anyTier = true;
+                if (!anyTier) block.add(plugin.lang().get(s, "debug.b-tiers"));
+                if (p.mode == ru.mysticchest.spawn.SpawnProfile.Mode.FIXED_POINTS && p.pointNames.isEmpty() && plugin.spawner().locators().points().isEmpty())
+                    block.add(plugin.lang().get(s, "debug.b-points"));
+            }
+            long next = plugin.spawner().nextAt(p.name);
+            plugin.lang().send(s, "debug.profile", "name", p.name, "trigger", p.trigger.name(), "mode", p.mode.name(),
+                    "next", !p.enabled ? "-" : next > now ? span(next - now) : "?",
+                    "state", block.isEmpty() ? plugin.lang().get(s, "debug.ready") : plugin.lang().get(s, "debug.blocked", "why", String.join("; ", block)),
+                    "active", String.valueOf(plugin.chests().countProfile(p.name)), "max", String.valueOf(p.maxActive));
+        }
+        List<ru.mysticchest.core.Diag.Note> notes = plugin.diag().last(15);
+        plugin.lang().send(s, notes.isEmpty() ? "debug.no-notes" : "debug.notes");
+        for (ru.mysticchest.core.Diag.Note n : notes)
+            plugin.lang().send(s, "debug.note", "ago", span(now - n.at), "src", n.source, "text", n.text);
+        return true;
     }
 
     // ---- loot ----------------------------------------------------------
@@ -600,8 +683,8 @@ public final class MysticCommand implements TabExecutor {
             else if (sub.equals("board") && a.length == 2) out.addAll(Arrays.asList("create", "remove", "list"));
             else if (sub.equals("board") && a.length == 4 && a[1].equalsIgnoreCase("create")) out.addAll(Arrays.asList(ru.mysticchest.stats.StatsService.STATS));
             else if (sub.equals("board") && a.length == 3 && a[1].equalsIgnoreCase("remove")) out.addAll(plugin.boards().names());
-            else if (sub.equals("structure") && a.length == 2) out.addAll(Arrays.asList("wand", "pos1", "pos2", "save", "delete", "edit", "list", "preview", "reload"));
-            else if (sub.equals("structure") && (a.length == 3) && (a[1].equalsIgnoreCase("preview") || a[1].equalsIgnoreCase("delete"))) { for (ru.mysticchest.structure.StructureCatalog.Entry en : plugin.structures().catalog().all()) out.add(en.id); }
+            else if (sub.equals("structure") && a.length == 2) out.addAll(Arrays.asList("wand", "pos1", "pos2", "save", "delete", "edit", "list", "preview", "reload", "export", "import"));
+            else if (sub.equals("structure") && (a.length == 3) && (a[1].equalsIgnoreCase("preview") || a[1].equalsIgnoreCase("delete") || a[1].equalsIgnoreCase("export"))) { for (ru.mysticchest.structure.StructureCatalog.Entry en : plugin.structures().catalog().all()) out.add(en.id); }
             else if (sub.equals("spawn") && a.length == 5) { for (ru.mysticchest.structure.Theme th : ru.mysticchest.structure.Theme.values()) out.add(th.name().toLowerCase()); }
             else if (sub.equals("loot")) {
                 if (a.length == 2) out.addAll(LOOT);
@@ -620,7 +703,7 @@ public final class MysticCommand implements TabExecutor {
 
     private boolean perm(CommandSender s, String sub) {
         switch (sub) {
-            case "give": case "spawn": case "reload": case "perf": case "point": case "economy": return s.hasPermission("mysticchest.admin");
+            case "give": case "spawn": case "reload": case "perf": case "debug": case "point": case "economy": return s.hasPermission("mysticchest.admin");
             case "loot": return s.hasPermission("mysticchest.admin.loot");
             case "structure": return s.hasPermission("mysticchest.admin.structure");
             case "event": return s.hasPermission("mysticchest.admin");

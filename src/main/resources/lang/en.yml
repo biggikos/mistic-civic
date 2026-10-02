@@ -60,7 +60,8 @@ help:
     - "[[&e/mystic give <player> <tier> [n]|suggest:/mystic give |&7Give chest items]]"
     - "[[&e/mystic spawn <tier> [here|profile] [shape] [theme]|suggest:/mystic spawn |&7Place / run a profile]]"
     - "[[&e/mystic loot ...|suggest:/mystic loot |&7add, addcmd, cmd, weight, remove, list, edit, clear]] &7- your inventory into rewards"
-    - "[[&e/mystic structure ...|suggest:/mystic structure |&7wand, pos1, pos2, save, edit, preview, list, delete]]"
+    - "[[&e/mystic structure ...|suggest:/mystic structure |&7wand, pos1, pos2, save, edit, preview, list, delete, export, import]]"
+    - "[[&e/mystic debug|run:/mystic debug|&7Why chests do or do not spawn]]"
     - "[[&e/mystic point|suggest:/mystic point |&7add, remove, list]], [[&e/mystic board|suggest:/mystic board |&7create, remove, list]], [[&e/mystic economy|run:/mystic economy]], [[&e/mystic reload|run:/mystic reload]]"
 
 shop:
@@ -352,7 +353,7 @@ structure:
     colosseum: "Arena"
     crystals: "Crystal cluster"
     runes: "Rune circle"
-  usage: "&e/mystic structure <wand|pos1|pos2|save <name>|delete <name>|list|edit|preview <name> [theme]|reload>"
+  usage: "&e/mystic structure <wand|pos1|pos2|save <name>|delete <name>|list|edit|preview <name> [theme]|reload|export <name>|import <file> [name] [overwrite]>"
   bad-name: "&cName: 1-32 characters, a-z 0-9 _ -"
   no-selection: "&cSelect two corners first (wand: left / right click, or /mystic structure pos1, pos2)."
   unknown: "&cNo such structure: &e{name}"
@@ -361,6 +362,12 @@ structure:
   corner: "&7Corner &e{n} &7set at &f{x} {y} {z} &7(selection {size})"
   saved: "&aSaved structure &e{name} &a({blocks} blocks, {w}×{d}×{h}). It is now in the rotation: /mystic structure edit"
   deleted: "&aStructure &e{name} &adeleted."
+  exported: "&aExported &e{name} &ato &f{path}&a. Copy that file to another server's plugins/MysticChest/exchange/ and run /mystic structure import {name}"
+  imported: "&aImported structure &e{name} &a({blocks} blocks, {w}×{d}×{h}). It is now in the rotation: /mystic structure edit"
+  import-missing: "&cNo file &e{file} &cin plugins/MysticChest/exchange/"
+  import-exists: "&cStructure &e{name} &calready exists. Add a new name, or: /mystic structure import <file> {name} overwrite"
+  import-builtin: "&c&e{name} &cis a built-in shape, choose another name: /mystic structure import <file> <new name>"
+  import-bad: "&cCannot import &e{file}&c: unreadable, no blocks, out of range, or saved on a different Minecraft generation (1.12 and 1.13+ files are not compatible). Details in the console."
   list-header: "&5Structures:"
   list-line: " &e{name} &7({kind}) weight {weight} = {chance}% &8| {on}"
   err:
@@ -508,3 +515,20 @@ event:
   starting: "&aStarting the beacon event now (it needs a spot and a moment to build)."
   already: "&cA beacon event is already running."
   stopped: "&aBeacon event stopped."
+
+## ═══ /mystic debug ═══
+debug:
+  header: "&5&lMysticChest debug &7- online &e{online}&7, standing chests &e{chests}&7, global spawn cooldown &e{cooldown}"
+  profile: " &f{name} &8({trigger}, {mode}) &7next in &e{next} &7active &e{active}/{max} &8- {state}"
+  ready: "&aready"
+  blocked: "&cblocked: &7{why}"
+  b-disabled: "profile is disabled (enabled: false)"
+  b-players: "only {online} online, needs {min}"
+  b-active: "already {n}/{max} chests of this profile"
+  b-cooldown: "global spawn cooldown, {t} left"
+  b-tiers: "none of the tier-weights tiers exists"
+  b-points: "no fixed points (/mystic point add <name>)"
+  notes: "&7Recent decisions (newest first):"
+  no-notes: "&7No decisions recorded yet since the last start."
+  note: " &8{ago} ago &7[{src}] &f{text}"
+  cleared: "&aDebug notes cleared."

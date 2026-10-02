@@ -57,7 +57,8 @@ help:
     - "[[&e/mystic give <игрок> <тир> [n]|suggest:/mystic give |&7Выдать сундук]]"
     - "[[&e/mystic spawn <тир> [here|профиль] [форма] [тема]|suggest:/mystic spawn |&7Поставить / запустить профиль]]"
     - "[[&e/mystic loot ...|suggest:/mystic loot |&7add, addcmd, cmd, weight, remove, list, edit, clear]] &7- инвентарь в награды"
-    - "[[&e/mystic structure ...|suggest:/mystic structure |&7wand, pos1, pos2, save, edit, preview, list, delete]]"
+    - "[[&e/mystic structure ...|suggest:/mystic structure |&7wand, pos1, pos2, save, edit, preview, list, delete, export, import]]"
+    - "[[&e/mystic debug|run:/mystic debug|&7Почему сундуки спавнятся или нет]]"
     - "[[&e/mystic point|suggest:/mystic point |&7add, remove, list]], [[&e/mystic board|suggest:/mystic board |&7create, remove, list]], [[&e/mystic economy|run:/mystic economy]], [[&e/mystic reload|run:/mystic reload]]"
 
 shop:
@@ -344,7 +345,7 @@ structure:
     colosseum: "Арена"
     crystals: "Кристальная друза"
     runes: "Рунный круг"
-  usage: "&e/mystic structure <wand|pos1|pos2|save <имя>|delete <имя>|list|edit|preview <имя> [тема]|reload>"
+  usage: "&e/mystic structure <wand|pos1|pos2|save <имя>|delete <имя>|list|edit|preview <имя> [тема]|reload|export <имя>|import <файл> [имя] [overwrite]>"
   bad-name: "&cИмя: 1-32 символа, a-z 0-9 _ -"
   no-selection: "&cСначала выделите два угла (палка: ЛКМ / ПКМ, или /mystic structure pos1, pos2)."
   unknown: "&cТакой структуры нет: &e{name}"
@@ -353,6 +354,12 @@ structure:
   corner: "&7Угол &e{n} &7на &f{x} {y} {z} &7(выделено {size})"
   saved: "&aСтруктура &e{name} &aсохранена ({blocks} блоков, {w}×{d}×{h}). Она уже в ротации: /mystic structure edit"
   deleted: "&aСтруктура &e{name} &aудалена."
+  exported: "&aЭкспортировано &e{name} &aв &f{path}&a. Скопируйте файл в plugins/MysticChest/exchange/ другого сервера и выполните /mystic structure import {name}"
+  imported: "&aСтруктура &e{name} &aимпортирована ({blocks} блоков, {w}×{d}×{h}). Она уже в ротации: /mystic structure edit"
+  import-missing: "&cФайла &e{file} &cнет в plugins/MysticChest/exchange/"
+  import-exists: "&cСтруктура &e{name} &cуже есть. Укажите другое имя или: /mystic structure import <файл> {name} overwrite"
+  import-builtin: "&c&e{name} &c- встроенная форма, выберите другое имя: /mystic structure import <файл> <новое имя>"
+  import-bad: "&cНе удалось импортировать &e{file}&c: файл нечитаем, пуст, выходит за размеры или сохранён на другом поколении Minecraft (файлы 1.12 и 1.13+ несовместимы). Подробности в консоли."
   list-header: "&5Структуры:"
   list-line: " &e{name} &7({kind}) вес {weight} = {chance}% &8| {on}"
   err:
@@ -500,3 +507,20 @@ event:
   starting: "&aЗапускаю маяк-убийцу (нужно найти место и построить площадку)."
   already: "&cМаяк-убийца уже идёт."
   stopped: "&aМаяк-убийца остановлен."
+
+## ═══ /mystic debug ═══
+debug:
+  header: "&5&lMysticChest debug &7- онлайн &e{online}&7, сундуков в мире &e{chests}&7, общий кулдаун спавна &e{cooldown}"
+  profile: " &f{name} &8({trigger}, {mode}) &7следующий через &e{next} &7активно &e{active}/{max} &8- {state}"
+  ready: "&aготов"
+  blocked: "&cне спавнит: &7{why}"
+  b-disabled: "профиль выключен (enabled: false)"
+  b-players: "онлайн {online}, нужно {min}"
+  b-active: "уже {n}/{max} сундуков этого профиля"
+  b-cooldown: "общий кулдаун спавна, осталось {t}"
+  b-tiers: "ни одного существующего сундука в tier-weights"
+  b-points: "нет фиксированных точек (/mystic point add <имя>)"
+  notes: "&7Последние решения (сначала новые):"
+  no-notes: "&7С последнего запуска решений ещё не было."
+  note: " &8{ago} назад &7[{src}] &f{text}"
+  cleared: "&aЗаметки debug очищены."

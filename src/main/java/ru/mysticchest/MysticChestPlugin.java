@@ -35,6 +35,7 @@ public final class MysticChestPlugin extends JavaPlugin {
     private Settings settings;
     private ConfigManager configs;
     private Scheduler scheduler;
+    private final ru.mysticchest.core.Diag diag = new ru.mysticchest.core.Diag();
     private Animator animator;
     private AsyncIO io;
     private Lang lang;
@@ -211,6 +212,7 @@ public final class MysticChestPlugin extends JavaPlugin {
     public Settings settings() { return settings; }
     public ConfigManager configs() { return configs; }
     public Scheduler scheduler() { return scheduler; }
+    public ru.mysticchest.core.Diag diag() { return diag; }
     public Animator animator() { return animator; }
     public AsyncIO io() { return io; }
     public Lang lang() { return lang; }
