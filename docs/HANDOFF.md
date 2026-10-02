@@ -13,7 +13,7 @@ Read this first. It says what the project is, how it is built and tested, what t
 
 ## 2. The project
 
-Spigot/Paper plugin "MysticChest": chests in the style of the FunTime server (mystic chest, death chest, beacon killer). One jar, **Minecraft 1.12.2 - 1.21.x**, Java 8 bytecode, compiled against `spigot-api 1.16.5`. Repo: `/Users/biggiko/Documents/GitHub/mistic-civic`, branch `main`, ~14 commits, **nothing pushed**. License: custom, no modification / no commercial use / attribution required (`LICENSE`).
+Spigot/Paper plugin "MysticChest": chests in the style of the FunTime server (mystic chest, death chest, beacon killer). One jar, **Minecraft 1.12.2 - 1.21.x**, Java 8 bytecode, compiled against `spigot-api 1.16.5`. Repo: `/Users/biggiko/Documents/GitHub/mistic-civic`, branch `main`, ~14 commits, pushed to `origin/main` (github.com/biggikos/mistic-civic). License: custom, no modification / no commercial use / attribution required (`LICENSE`).
 
 Docs already in the repo: `README.md` (GitHub), `docs/documentation.md` (full docs), `docs/MODRINTH.md` (page text), `docs/preview.html` (old feature page, partly outdated). Keep them in step with every feature.
 
@@ -83,9 +83,9 @@ Workflow used for every feature: edit -> `gradle build` -> copy jar and `lang/*.
 
 ## 7. Verified vs not
 
-Verified live: Paper 1.21.11 and 1.12.2 (full feature sweeps earlier; the latest events/structures/announcement work was run on 1.21.11 and smoke-tested on 1.12.2 up to the announcement/track update). Economies: Vault (VaultUnlocked), ExcellentEconomy 2.8.0 (command per currency, `%excellenteconomy_balance_raw_<cur>%`), PlayerPoints, mixed per tier. Unit tests: 25 or so, all green.
+Verified live: Paper 1.21.11 and 1.12.2 (2026-10-02 sweep on 1.12.2: guards/boss encounter, atmosphere, capture, volcano, pinata, hunt bonus, beacon event, config upgrade v8->v9, all clean; full feature sweeps earlier; the latest events/structures/announcement work was run on 1.21.11 and smoke-tested on 1.12.2 up to the announcement/track update). Economies: Vault (VaultUnlocked), ExcellentEconomy 2.8.0 (command per currency, `%excellenteconomy_balance_raw_<cur>%`), PlayerPoints, mixed per tier. Unit tests: 25 or so, all green.
 
-**Not verified:** versions 1.13-1.20; CoinsEngine preset (jar not downloadable); guards/capture/atmosphere/beacon/volcano/pinata/death zone on **1.12.2**; a real death by another player in the death zone; the look of auras, lines, fireworks, structures and sounds (only packets were checked, the user judges visuals); `docs/preview.html` is outdated.
+**Not verified:** versions 1.13-1.20; CoinsEngine preset (jar not downloadable); a real death by another player in the death zone; the look of auras, lines, fireworks, structures and sounds (only packets were checked, the user judges visuals); `docs/preview.html` is outdated.
 
 ## 8. Backlog / ideas
 

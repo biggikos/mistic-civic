@@ -153,10 +153,13 @@ public final class BeaconEvent implements Listener {
     // ---- start -------------------------------------------------------------
 
     /** Starts the event right now (command) or when the countdown ends. */
-    public boolean trigger() {
+    public boolean trigger() { return trigger(false); }
+
+    /** {@code force} (admin command) ignores the minimum player count. */
+    public boolean trigger(boolean force) {
         if (state != null) return false;
         Cfg c = cfg();
-        if (Bukkit.getOnlinePlayers().size() < c.integer("min-players", 1, 0, 1000)) {
+        if (!force && Bukkit.getOnlinePlayers().size() < c.integer("min-players", 1, 0, 1000)) {
             plugin.getLogger().info("[beacon] not enough players online, postponed.");
             scheduleNext();
             return false;

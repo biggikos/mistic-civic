@@ -244,7 +244,7 @@ public final class MysticCommand implements TabExecutor {
         if (a.length < 2 || !a[1].equalsIgnoreCase("beacon")) { plugin.lang().send(s, "event.usage"); return true; }
         if (sub.equals("start")) {
             plugin.lang().send(s, plugin.beacon().running() ? "event.already" : "event.starting");
-            if (!plugin.beacon().running()) plugin.beacon().trigger();
+            if (!plugin.beacon().running()) plugin.beacon().trigger(true);
         } else if (sub.equals("stop")) {
             plugin.beacon().stop();
             plugin.lang().send(s, "event.stopped");
