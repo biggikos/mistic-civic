@@ -16,6 +16,10 @@ public final class Structure {
     /** Other chest cells of the same structure (beacon platform) and its centre on the ground plane. */
     public final java.util.List<Location> extraChests = new java.util.ArrayList<Location>();
     public Location center;
+    /** Where eruptions start (volcano) or null; the time of the next one and whether one is running. */
+    public Location crater;
+    public long nextEruption;
+    public boolean erupting;
     /** Where guards and the boss stand (sign markers of a saved structure) and extra chests with their tier ("" = the main one). */
     public final java.util.List<Location> guardPoints = new java.util.ArrayList<Location>();
     public final java.util.List<Location> bossPoints = new java.util.ArrayList<Location>();
@@ -42,4 +46,7 @@ public final class Structure {
     }
 
     public int blocks() { return positions.size(); }
+
+    /** false once the structure is collapsing or gone. */
+    public boolean alive() { return !restoring && !restored; }
 }

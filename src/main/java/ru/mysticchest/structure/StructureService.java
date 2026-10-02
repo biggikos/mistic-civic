@@ -304,6 +304,7 @@ public final class StructureService {
         st.chunks.addAll(chunks);
         st.name = bp.name;
         st.center = new Location(w, cx + 0.5, baseY, cz + 0.5);
+        if (bp.crater != null) st.crater = new Location(w, cx + bp.crater[0] + 0.5, baseY + bp.crater[1] + 1, cz + bp.crater[2] + 0.5);
         for (int[] e : bp.extraChests) st.extraChests.add(new Location(w, cx + e[0], baseY + e[1], cz + e[2]));
         for (Template.Mark m : bp.marks) {
             Location at = new Location(w, cx + m.x, baseY + m.y, cz + m.z);

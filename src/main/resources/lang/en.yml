@@ -96,6 +96,9 @@ announce:
     spawned:
       title: "&d✦ &lMYSTIC CHEST &d✦"
       subtitle: "{tier} &7- &f{mode}"
+    activated:
+      title: "&a✦ &lCHEST AWAKE &a✦"
+      subtitle: "{tier}"
     airdrop:
       title: "&d✈ &lAIRDROP &d✈"
       subtitle: "{tier} &7- lands in &e{seconds}s"
@@ -108,6 +111,7 @@ announce:
     rare:
       title: "&6&l★ RARE ★"
       subtitle: "&f{player} &7won &e{item}"
+  wake-line: "&7▸ &fWakes up in: &e{time}"
   structure-line: " &8| &7{name}"
   guards-line: "&8| &c⚔ Guards: &f{count} &7({level}&7)"
   spawned:
@@ -115,7 +119,7 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &l{tier} &r&dhas appeared!"
       - "&7▸ &fType: &e{mode} {guards}"
-      - "&7▸ &fInside: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fWhere: &e{x} {y} {z} &7({world}){structure}"
       - "&7▸ &fDisappears in: &e{ttl}"
       - "{buttons}"
@@ -124,7 +128,7 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &l{tier} &r&dhas appeared!"
       - "&7▸ &fType: &e{mode} {guards}"
-      - "&7▸ &fInside: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fWhere: &e~{x} {z} &7({world}){structure}"
       - "&7▸ &fDisappears in: &e{ttl}"
       - "{buttons}"
@@ -133,7 +137,7 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &l{tier} &r&dhas appeared!"
       - "&7▸ &fType: &e{mode} {guards}"
-      - "&7▸ &fInside: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fWhere: &e~{distance} blocks &7to the &e{dir}{structure}"
       - "&7▸ &fDisappears in: &e{ttl}"
       - "{buttons}"
@@ -144,7 +148,7 @@ announce:
       - "&d✈ &lAIRDROP INCOMING: &r{tier}"
       - "&7▸ &fLands in: &e{seconds}s"
       - "&7▸ &fType: &e{mode} {guards}"
-      - "&7▸ &fInside: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fWhere: &e{x} {y} {z} &7({world}){structure}"
       - "&7▸ &fDisappears in: &e{ttl}"
       - "{buttons}"
@@ -154,7 +158,7 @@ announce:
       - "&d✈ &lAIRDROP INCOMING: &r{tier}"
       - "&7▸ &fLands in: &e{seconds}s"
       - "&7▸ &fType: &e{mode} {guards}"
-      - "&7▸ &fInside: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fWhere: &e~{x} {z} &7({world}){structure}"
       - "&7▸ &fDisappears in: &e{ttl}"
       - "{buttons}"
@@ -164,7 +168,7 @@ announce:
       - "&d✈ &lAIRDROP INCOMING: &r{tier}"
       - "&7▸ &fLands in: &e{seconds}s"
       - "&7▸ &fType: &e{mode} {guards}"
-      - "&7▸ &fInside: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fWhere: &e~{distance} blocks &7to the &e{dir}{structure}"
       - "&7▸ &fDisappears in: &e{ttl}"
       - "{buttons}"
@@ -174,7 +178,7 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &lAIRDROP LANDED: &r{tier}"
       - "&7▸ &fType: &e{mode} {guards}"
-      - "&7▸ &fInside: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fWhere: &e{x} {y} {z} &7({world}){structure}"
       - "&7▸ &fDisappears in: &e{ttl}"
       - "{buttons}"
@@ -183,7 +187,7 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &lAIRDROP LANDED: &r{tier}"
       - "&7▸ &fType: &e{mode} {guards}"
-      - "&7▸ &fInside: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fWhere: &e~{x} {z} &7({world}){structure}"
       - "&7▸ &fDisappears in: &e{ttl}"
       - "{buttons}"
@@ -192,12 +196,25 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &lAIRDROP LANDED: &r{tier}"
       - "&7▸ &fType: &e{mode} {guards}"
-      - "&7▸ &fInside: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fWhere: &e~{distance} blocks &7to the &e{dir}{structure}"
       - "&7▸ &fDisappears in: &e{ttl}"
       - "{buttons}"
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   expired: "&7A mystic chest &r{tier}&7 disappeared."
+  activated:
+    exact:
+      - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      - "&a✦ &l{tier} &r&ais AWAKE! Go and take it!"
+      - "&7▸ &fWhere: &e{x} {y} {z} &7({world})"
+      - "&7▸ &fDisappears in: &e{ttl}"
+      - "{buttons}"
+      - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    hint:
+      - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      - "&a✦ &l{tier} &r&ais AWAKE! Hurry!"
+      - "&7▸ &fDisappears in: &e{ttl}"
+      - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   opened: "&e{player} &fopened &r{tier} &7({mode})&f!"
   rare: "&6★ &e{player} &fwon &e{amount}x {item} &ffrom &r{tier}&f!"
 
@@ -354,9 +371,11 @@ compass:
   found: "&d✦ &fNearest chest: &r{tier}&f, about &e{distance} blocks &fto the &e{dir}&f. The compass points to it."
 
 hologram:
+  sleeping: "&cWakes up in &e{time}"
   timer: "&7Disappears in &e{time}"
 
 chests:
+  sleeping: "&cwakes in &e{time}"
   header: "&5Standing mystic chests: &e{count}"
   line: " &d✦ &r{tier} &7- &e{time} &7- {where} {track}"
   blocks: "blocks"
@@ -455,6 +474,7 @@ mode:
   random: "random"
 
 bossbar:
+  title-sleeping: "&d✦ &r{tier} &8| &cwakes in &e{time} &8| &f{x} {y} {z} &8| &7{mode}"
   title: "&d✦ &r{tier} &8| &e{time} &8| &f{x} {y} {z} &8| &7{mode}"
 
 ## ═══ leaderboard, stats, achievements ═══
@@ -576,3 +596,10 @@ debug:
   no-notes: "&7No decisions recorded yet since the last start."
   note: " &8{ago} ago &7[{src}] &f{text}"
   cleared: "&aDebug notes cleared."
+activation:
+  sleeping: "&c{tier} &cis still asleep. It wakes up in &e{time}&c!"
+  forced: "&aWoke up {count} chest(s)."
+  none: "&cNo sleeping chest with that id. /mystic chests"
+  usage: "&e/mystic activate <id|all>"
+eruption:
+  warning: "&c&l⚠ The volcano is erupting! Watch out for lava bombs!"

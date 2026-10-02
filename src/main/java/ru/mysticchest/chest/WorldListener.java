@@ -89,6 +89,11 @@ public final class WorldListener implements Listener {
             return;
         }
         if (plugin.open().pinataActive(a)) { plugin.open().openWorldChest(p, a); return; }   // keep hitting the pinata
+        if (a.sleeping()) {
+            plugin.lang().send(p, "activation.sleeping", "time", plugin.lang().time(p, plugin.chests().wakeIn(a)), "tier", a.tier.name(plugin.lang().code(p)));
+            plugin.effects().soundTo(p, "BLOCK_NOTE_BLOCK_BASS", 0.7f, 0.7f);
+            return;
+        }
         if (plugin.guards().locked(a)) {
             plugin.lang().send(p, "guards.locked", "count", String.valueOf(plugin.guards().left(a)));
             return;

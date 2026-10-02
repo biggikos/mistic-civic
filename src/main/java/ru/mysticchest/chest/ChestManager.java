@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import ru.mysticchest.MysticChestPlugin;
+import ru.mysticchest.config.Cfg;
 import ru.mysticchest.core.AsyncIO;
 import ru.mysticchest.config.Settings;
 import ru.mysticchest.core.Scheduler;
@@ -54,7 +55,13 @@ public final class ChestManager {
         public org.bukkit.boss.BossBar bar;
         ArmorStand holo, holo2;
         public long expiresAt, spawnedAt = System.currentTimeMillis();
-        Scheduler.Handle ttl;
+        Scheduler.Handle ttl, wake;
+        /** Activation: the chest cannot be opened before activeAt (epoch ms, 0 = never slept); activationMs is the length of the sleep. */
+        public long activeAt, activationMs;
+
+        public boolean sleeping() { return activeAt > System.currentTimeMillis(); }
+        /** The moment the chest became openable (the hunt bonus window counts from here). */
+        public long wokeAt() { return activeAt > 0 ? activeAt : spawnedAt; }
 
         Active(long key, Location loc, Tier tier, String profile, UUID owner, long claimUntil, Material block) {
             this.key = key; this.loc = loc; this.tier = tier; this.profile = profile;
@@ -176,6 +183,48 @@ public final class ChestManager {
 
     public List<Active> snapshot() { return all(); }
 
+    private void scheduleTtl(final Active a, long ms) {
+        if (a.ttl != null) a.ttl.cancel();
+        a.expiresAt = System.currentTimeMillis() + ms;
+        a.ttl = plugin.scheduler().later(ms, new Runnable() {
+            public void run() {
+                if (remove(a, true)) {
+                    plugin.effects().playAt(plugin.settings().fxExpire, a.loc);
+                    plugin.announcer().send(plugin.settings().onExpire, a.loc, "announce.expired", a.tier);
+                }
+            }
+        });
+    }
+
+    /** Seconds a new chest of this tier sleeps before it can be opened (0 = opens at once: activation off, or the beacon event). */
+    public int activationSeconds(Tier t, String profile) {
+        if ("beacon".equals(profile)) return 0;
+        ru.mysticchest.config.Layered l = t.layered("activation", plugin.settings());
+        if (!l.bool("enabled", true)) return 0;
+        return l.integer("seconds", 300, 0, 86400);
+    }
+
+    /** Wakes a sleeping chest now: the lifetime starts, everybody is told, effects play. */
+    public void wake(Active a, boolean announce) {
+        if (a.wake != null) { a.wake.cancel(); a.wake = null; }
+        if (at(a.loc.getBlock()) != a) return;
+        a.activeAt = System.currentTimeMillis();
+        scheduleTtl(a, a.tier.ttlSeconds(plugin.settings()) * 1000L);
+        updateTimers();
+        if (!announce) return;
+        Cfg act = plugin.settings().root.sub("activation");
+        plugin.effects().soundAt(act.str("sound", "BLOCK_BEACON_ACTIVATE"), a.loc, 1.2f, 1.0f);
+        if (act.bool("firework", true)) plugin.fireworks().launch(a.loc.clone().add(0.5, 0, 0.5), a.tier.color);
+        if (!act.bool("announce", true)) return;
+        ru.mysticchest.spawn.SpawnProfile p = plugin.spawner().profiles().get(a.profile);
+        if (p != null && p.announce == ru.mysticchest.spawn.SpawnProfile.Announce.NONE) return;
+        boolean exact = p == null || p.announce == ru.mysticchest.spawn.SpawnProfile.Announce.EXACT;
+        plugin.announcer().send(plugin.settings().onActivate, a.loc, exact ? "announce.activated.exact" : "announce.activated.hint", a.tier,
+                "x", String.valueOf(a.loc.getBlockX()), "y", String.valueOf(a.loc.getBlockY()), "z", String.valueOf(a.loc.getBlockZ()),
+                "world", a.loc.getWorld().getName(), "exact", String.valueOf(exact), "chestid", String.valueOf(a.id),
+                "ttlsec", String.valueOf(a.tier.ttlSeconds(plugin.settings())));
+    }
+
     /** Gives a standing chest a different lifetime (the beacon event keeps its chests for the whole event). */
     public void setTtl(final Active a, int seconds) {
         if (a.ttl != null) a.ttl.cancel();
@@ -247,15 +296,13 @@ public final class ChestManager {
             a.holo = stand(loc.clone().add(0.5, 1.3, 0.5), Text.color(txt.replace("{tier}", t.name(plugin.lang().code(Bukkit.getConsoleSender())))));
             if (plugin.settings().holoCountdown) a.holo2 = stand(loc.clone().add(0.5, 1.0, 0.5), "");
         }
-        a.expiresAt = System.currentTimeMillis() + t.ttlSeconds(plugin.settings()) * 1000L;
-        a.ttl = plugin.scheduler().later(t.ttlSeconds(plugin.settings()) * 1000L, new Runnable() {
-            public void run() {
-                if (remove(a, true)) {
-                    plugin.effects().playAt(plugin.settings().fxExpire, a.loc);
-                    plugin.announcer().send(plugin.settings().onExpire, a.loc, "announce.expired", a.tier);
-                }
-            }
-        });
+        int sleep = activationSeconds(t, profile);
+        if (sleep > 0) {
+            a.activationMs = sleep * 1000L;
+            a.activeAt = System.currentTimeMillis() + a.activationMs;
+            a.wake = plugin.scheduler().later(a.activationMs, new Runnable() { public void run() { wake(a, true); } });
+        }
+        scheduleTtl(a, a.activationMs + t.ttlSeconds(plugin.settings()) * 1000L);
         Map<Long, Active> m = byWorld.get(b.getWorld());
         if (m == null) { m = new HashMap<Long, Active>(); byWorld.put(b.getWorld(), m); }
         a.structure = structure;
@@ -286,11 +333,15 @@ public final class ChestManager {
         long now = System.currentTimeMillis();
         for (Active a : all()) {
             if (a.holo2 == null || !a.holo2.isValid()) continue;
-            long left = Math.max(0, (a.expiresAt - now + 999) / 1000);
-            a.holo2.setCustomName(plugin.lang().get("hologram.timer", "time", plugin.lang().time(Bukkit.getConsoleSender(), left)));
+            boolean asleep = a.activeAt > now;
+            long left = asleep ? Math.max(0, (a.activeAt - now + 999) / 1000) : Math.max(0, (a.expiresAt - now + 999) / 1000);
+            a.holo2.setCustomName(plugin.lang().get(asleep ? "hologram.sleeping" : "hologram.timer", "time", plugin.lang().time(Bukkit.getConsoleSender(), left)));
             a.holo2.setCustomNameVisible(true);
         }
     }
+
+    /** Seconds until a sleeping chest can be opened (0 when it is awake). */
+    public long wakeIn(Active a) { return Math.max(0, (a.activeAt - System.currentTimeMillis() + 999) / 1000); }
 
     public long secondsLeft(Active a) { return Math.max(0, (a.expiresAt - System.currentTimeMillis() + 999) / 1000); }
 
@@ -306,6 +357,7 @@ public final class ChestManager {
         total--;
         if (m.isEmpty()) byWorld.remove(a.loc.getWorld());
         if (a.ttl != null) a.ttl.cancel();
+        if (a.wake != null) { a.wake.cancel(); a.wake = null; }
         if (a.holo != null) {
             if (a.holo.isValid()) a.holo.remove(); else purgeHolograms(a.loc);   // stale reference = chunk was unloaded
         }

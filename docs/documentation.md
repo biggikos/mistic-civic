@@ -208,6 +208,14 @@ Saved structures keep their exact blocks, are rotated randomly (`rotate: true`) 
 
 **Outlines (glow).** `duel.glow` (+ `glow-color`, `glow-contested-color`) makes the capturer glow in a colour (it switches while an enemy stands in the zone); `guards.glow`, `glow-color` and `boss-glow-color` do the same for guards and the boss. Any chat colour name (`RED`, `GOLD`, `AQUA`...). A guard level or a single mob can override `glow` and `glow-color`; a tier can override the whole block like any other setting.
 
+## Activation: the chest sleeps first
+
+By default a new world chest does **not** open at once. It *sleeps* (`activation:` in `config.yml`, per tier `activation: {seconds: 240}` in `tiers.yml`; the shipped tiers use 60 s for poor up to 420 s for the death chest, the admin chest has none). While it sleeps the hologram and the boss bar count down to the wake-up, guards are already there, atmosphere and aura run, and anybody who clicks is told how long is left. When the time is up everybody gets the "awake" message (`announce.on-activate`, same channels and buttons as the spawn card; profiles that announce only a region or a hint get the matching short version, `announce: NONE` stays silent), a sound and a firework play, and only now does the lifetime (`ttl-seconds`) start; the hunt bonus window counts from the wake-up. The spawn card shows "wakes up in" and the total time until the chest disappears. `/mystic activate <id|all>` wakes chests early (admin). Set `activation.enabled: false` (or `activation: {enabled: false}` on one tier) for the old behaviour where a chest opens immediately. The beacon event does not use it.
+
+## Volcano eruptions
+
+A chest standing in the `volcano` structure makes it erupt (`eruption:` in `config.yml`, per tier override possible): a warning rumble with an action bar alert, smoke and fire over the crater, then lava bombs fly on arcs and land up to `bomb-radius` away. A bomb that lands within `hit-radius` of a survival player does `damage` and sets them on fire. Nothing is placed or destroyed; bombs are particles and sound. Eruptions only run while a player is within `view-range`, so an empty area costs nothing. Interval, duration, bomb rate, damage and sounds are all configurable, `enabled: false` turns it off.
+
 ## Why didn't a chest appear? `/mystic debug`
 
 Shows, per spawn profile, when it fires next and what blocks it right now (disabled, too few players, `max-active` reached, global cooldown, no valid tier, no fixed points), then the last 15 decisions the plugin made (skipped spawns, rejected structure sites such as "too steep", postponed beacon events, successful spawns). `/mystic debug clear` empties the list. No `debug: true` needed.
@@ -404,6 +412,7 @@ Check what the plugin found: `/mystic economy`, and your balance of a currency: 
 | `/mystic mute` | everyone |
 | `/mystic structure …` (incl. `export`, `import`) | `mysticchest.admin.structure` (op) |
 | `/mystic debug [clear]` | `mysticchest.admin` (op) |
+| `/mystic activate <id\|all>` | `mysticchest.admin` (op) |
 | `/mystic event beacon start\|stop\|status` | `mysticchest.admin` (op) |
 | `/mystic top`, `/mystic stats` | `mysticchest.top` (everyone) |
 | `/mystic board …` | `mysticchest.admin` (op) |

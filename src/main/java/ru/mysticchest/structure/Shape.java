@@ -290,6 +290,7 @@ public enum Shape {
             c.debris = new Canvas.Slot[]{ROCK, ASH, OBSIDIAN, MAGMA};
             c.foundation = ROCK;
             int R = c.rnd(11, 13), H = c.rnd(10, 13), cr = c.rnd(3, 4);
+            c.crater = new int[]{0, H, 0};
             double rimD = cr + 1.2;
             int n = 2 * R + 3, o = R + 1;
             int[][] top = new int[n][n];

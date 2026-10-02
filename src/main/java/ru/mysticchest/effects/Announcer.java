@@ -18,7 +18,7 @@ import java.util.List;
  *  - a typewriter effect for multi-line messages (a line every few ticks, a rising tick sound),
  *  - an animated shimmering title,
  *  - clickable buttons (track, copy coordinates, compass, mute, ...) from lang/*.yml ("button.*").
- * Placeholders filled automatically: {loot}, {mode} (modeid), {ttl} (ttlsec), {structure} (structid), {buttons}.
+ * Placeholders filled automatically: {mode} (modeid), {ttl} (ttlsec), {structure} (structid), {buttons}.
  */
 public final class Announcer {
     public interface Extra { String[] kv(Player p); }
@@ -45,11 +45,16 @@ public final class Announcer {
         List<String> all = new ArrayList<String>();
         for (String s : kv) all.add(s);
         all.add("tier"); all.add(tier == null ? "" : tier.name(plugin.lang().code(p)));
-        all.add("loot"); all.add(tier == null ? "" : tier.highlights());
         String mode = find(kv, "modeid");
         if (mode != null) { all.add("mode"); all.add(plugin.lang().get(p, "mode." + mode.toLowerCase())); }
         String ttl = find(kv, "ttlsec");
         if (ttl != null) { all.add("ttl"); all.add(plugin.lang().time(p, Long.parseLong(ttl))); }
+        String wake = find(kv, "wakesec");
+        if (wake != null) {
+            long w = Long.parseLong(wake);
+            all.add("wake"); all.add(plugin.lang().time(p, w));
+            all.add("wakeline"); all.add(w > 0 ? plugin.lang().get(p, "announce.wake-line", "time", plugin.lang().time(p, w)) : "");
+        }
         String st = find(kv, "structid");
         if (st != null) {
             all.add("structure");

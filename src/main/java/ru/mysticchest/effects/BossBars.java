@@ -57,8 +57,9 @@ public final class BossBars {
     private String title(ChestManager.Active a) {
         org.bukkit.Location l = a.loc;
         String code = plugin.lang().code(Bukkit.getConsoleSender());
-        return plugin.lang().get("bossbar.title", "tier", a.tier.name(code),
-                "time", plugin.lang().time(Bukkit.getConsoleSender(), plugin.chests().secondsLeft(a)),
+        boolean asleep = a.sleeping();
+        return plugin.lang().get(asleep ? "bossbar.title-sleeping" : "bossbar.title", "tier", a.tier.name(code),
+                "time", plugin.lang().time(Bukkit.getConsoleSender(), asleep ? plugin.chests().wakeIn(a) : plugin.chests().secondsLeft(a)),
                 "x", String.valueOf(l.getBlockX()), "y", String.valueOf(l.getBlockY()), "z", String.valueOf(l.getBlockZ()),
                 "world", l.getWorld().getName(),
                 "mode", a.mode == null ? "?" : plugin.lang().get("mode." + a.mode.name().toLowerCase()));
@@ -85,9 +86,11 @@ public final class BossBars {
         for (ChestManager.Active a : chests) {
             if (a.bar == null) continue;
             try {
-                long total = Math.max(1, a.tier.ttlSeconds(plugin.settings()));
+                boolean asleep = a.sleeping();
+                long total = asleep ? Math.max(1, a.activationMs / 1000) : Math.max(1, a.tier.ttlSeconds(plugin.settings()));
+                long left = asleep ? plugin.chests().wakeIn(a) : plugin.chests().secondsLeft(a);
                 a.bar.setTitle(title(a));
-                a.bar.setProgress(Math.max(0, Math.min(1, plugin.chests().secondsLeft(a) / (double) total)));
+                a.bar.setProgress(Math.max(0, Math.min(1, left / (double) total)));
                 sync(a);
             } catch (Throwable ignored) {}
         }

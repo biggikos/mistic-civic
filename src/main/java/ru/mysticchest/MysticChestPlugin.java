@@ -57,6 +57,7 @@ public final class MysticChestPlugin extends JavaPlugin {
     private ru.mysticchest.guard.GuardService guards;
     private ru.mysticchest.atmosphere.Atmosphere atmosphere;
     private ru.mysticchest.duel.Captures captures;
+    private ru.mysticchest.effects.Eruptions eruptions;
     private ru.mysticchest.event.BeaconEvent beacon;
     private ru.mysticchest.event.DeathZone deathZone;
     private ru.mysticchest.stats.StatsService stats;
@@ -94,6 +95,7 @@ public final class MysticChestPlugin extends JavaPlugin {
         guards = new ru.mysticchest.guard.GuardService(this);
         atmosphere = new ru.mysticchest.atmosphere.Atmosphere(this);
         captures = new ru.mysticchest.duel.Captures(this);
+        eruptions = new ru.mysticchest.effects.Eruptions(this);
         beacon = new ru.mysticchest.event.BeaconEvent(this);
         deathZone = new ru.mysticchest.event.DeathZone(this);
         stats = new ru.mysticchest.stats.StatsService(this);
@@ -251,6 +253,7 @@ public final class MysticChestPlugin extends JavaPlugin {
     public ru.mysticchest.guard.GuardService guards() { return guards; }
     public ru.mysticchest.atmosphere.Atmosphere atmosphere() { return atmosphere; }
     public ru.mysticchest.duel.Captures captures() { return captures; }
+    public ru.mysticchest.effects.Eruptions eruptions() { return eruptions; }
     public ru.mysticchest.event.BeaconEvent beacon() { return beacon; }
     public ru.mysticchest.event.DeathZone deathZone() { return deathZone; }
     public ru.mysticchest.stats.StatsService stats() { return stats; }

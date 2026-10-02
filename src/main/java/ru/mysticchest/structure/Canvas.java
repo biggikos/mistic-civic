@@ -19,6 +19,8 @@ public final class Canvas {
     public int chestX, chestY, chestZ;
     /** What fills the gap under the floor (columns under every y = 0 block). */
     public Slot foundation = Slot.BASE;
+    /** Optional point (x, y, z) where something spectacular happens, e.g. the crater of a volcano; null = none. */
+    public int[] crater;
     /** Materials of the rubble scattered around (base, accent, trim, light); the shape picks what fits its look. */
     public Slot[] debris = {Slot.BASE, Slot.ACCENT, Slot.TRIM, Slot.LIGHT};
     /** More chests in the same structure (the beacon platform has four). */

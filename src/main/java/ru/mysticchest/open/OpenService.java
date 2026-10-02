@@ -86,7 +86,7 @@ public final class OpenService {
         if (!plugin.chests().remove(a, true)) return;     // first opener wins
         Settings s = plugin.settings();
         ru.mysticchest.config.Layered h = a.tier.layered("hunt", s);
-        long age = Math.max(0, (System.currentTimeMillis() - a.spawnedAt) / 1000);
+        long age = Math.max(0, (System.currentTimeMillis() - a.wokeAt()) / 1000);
         boolean fast = h.bool("enabled", true) && age <= h.integer("window-seconds", 120, 0, 86400);
         open(p, a.tier, a.mode, fast ? h.integer("bonus-rolls", 1, 0, 50) : 0, a.loc);
         if (!fast) return;
@@ -151,7 +151,7 @@ public final class OpenService {
             if (deny != null) return;
             st = new Pinata();
             ru.mysticchest.config.Layered h = a.tier.layered("hunt", s);
-            long age = Math.max(0, (now - a.spawnedAt) / 1000);
+            long age = Math.max(0, (now - a.wokeAt()) / 1000);
             boolean fast = h.bool("enabled", true) && age <= h.integer("window-seconds", 120, 0, 86400);
             st.extra = fast ? h.integer("bonus-rolls", 1, 0, 50) : 0;
             int cd = a.tier.cooldownOpen(s);

@@ -27,7 +27,7 @@ import java.util.Map;
 
 public final class MysticCommand implements TabExecutor {
     private static final List<String> ROOT = Arrays.asList("shop", "preview", "list", "give", "spawn", "reload",
-            "perf", "loot", "point", "economy", "compass", "structure", "chests", "top", "stats", "board", "track", "mute", "event", "debug", "help");
+            "perf", "loot", "point", "economy", "compass", "structure", "chests", "top", "stats", "board", "track", "mute", "event", "debug", "activate", "help");
     private static final List<String> LOOT = Arrays.asList("add", "addcmd", "cmd", "weight", "remove", "list", "edit", "clear", "fill", "preset", "copy", "check", "export", "import");
 
     private final MysticChestPlugin plugin;
@@ -93,6 +93,7 @@ public final class MysticCommand implements TabExecutor {
             case "mute": return mute(s);
             case "event": return event(s, a);
             case "debug": return debug(s, a);
+            case "activate": return activate(s, a);
             case "top": return top(s, a);
             case "stats": return stats(s, a);
             case "board": return board(s, a);
@@ -344,7 +345,7 @@ public final class MysticCommand implements TabExecutor {
                         + plugin.lang().get(s, "dir." + DIRS[((dir % 8) + 8) % 8]);
             } else where = a.loc.getWorld().getName();
             send(s, plugin.lang().get(s, "chests.line", "tier", a.tier.name(plugin.lang().code(s)),
-                    "time", plugin.lang().time(s, plugin.chests().secondsLeft(a)), "where", where,
+                    "time", a.sleeping() ? plugin.lang().get(s, "chests.sleeping", "time", plugin.lang().time(s, plugin.chests().wakeIn(a))) : plugin.lang().time(s, plugin.chests().secondsLeft(a)), "where", where,
                     "track", coords || p == null ? plugin.lang().get(s, "button.track-small", "id", String.valueOf(a.id)) : plugin.lang().get(s, "button.track-small", "id", String.valueOf(a.id))));
             if (++shown >= 25) break;
         }
@@ -517,6 +518,19 @@ public final class MysticCommand implements TabExecutor {
         cat.add(t);
         plugin.lang().send(s, "structure.imported", "name", t.name, "blocks", String.valueOf(t.blocks()),
                 "w", String.valueOf(t.width()), "d", String.valueOf(t.depth()), "h", String.valueOf(t.height));
+        return true;
+    }
+
+    /** /mystic activate <id|all>: wakes sleeping chests now. */
+    private boolean activate(CommandSender s, String[] a) {
+        if (!need(s, "mysticchest.admin")) return true;
+        if (a.length < 2) { plugin.lang().send(s, "activation.usage"); return true; }
+        int n = 0;
+        for (ru.mysticchest.chest.ChestManager.Active c : plugin.chests().snapshot()) {
+            if (!c.sleeping()) continue;
+            if (a[1].equalsIgnoreCase("all") || a[1].equals(String.valueOf(c.id))) { plugin.chests().wake(c, true); n++; }
+        }
+        plugin.lang().send(s, n == 0 ? "activation.none" : "activation.forced", "count", String.valueOf(n));
         return true;
     }
 
@@ -913,7 +927,7 @@ public final class MysticCommand implements TabExecutor {
 
     private boolean perm(CommandSender s, String sub) {
         switch (sub) {
-            case "give": case "spawn": case "reload": case "perf": case "debug": case "point": case "economy": return s.hasPermission("mysticchest.admin");
+            case "give": case "spawn": case "reload": case "perf": case "debug": case "activate": case "point": case "economy": return s.hasPermission("mysticchest.admin");
             case "loot": return s.hasPermission("mysticchest.admin.loot");
             case "structure": return s.hasPermission("mysticchest.admin.structure");
             case "event": return s.hasPermission("mysticchest.admin");

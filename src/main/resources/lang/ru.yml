@@ -91,6 +91,9 @@ announce:
     spawned:
       title: "&d✦ &lМИСТИК &d✦"
       subtitle: "{tier} &7- &f{mode}"
+    activated:
+      title: "&a✦ &lСУНДУК ПРОСНУЛСЯ &a✦"
+      subtitle: "{tier}"
     airdrop:
       title: "&d✈ &lАИРДРОП &d✈"
       subtitle: "{tier} &7- приземлится через &e{seconds}с"
@@ -103,6 +106,7 @@ announce:
     rare:
       title: "&6&l★ РЕДКОЕ ★"
       subtitle: "&f{player} &7выиграл &e{item}"
+  wake-line: "&7▸ &fПроснётся через: &e{time}"
   structure-line: " &8| &7{name}"
   guards-line: "&8| &c⚔ Охрана: &f{count} &7({level}&7)"
   spawned:
@@ -110,7 +114,7 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &lПОЯВИЛСЯ {tier}&d!"
       - "&7▸ &fТип: &e{mode} {guards}"
-      - "&7▸ &fВнутри: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fГде: &e{x} {y} {z} &7({world}){structure}"
       - "&7▸ &fИсчезнет через: &e{ttl}"
       - "{buttons}"
@@ -119,7 +123,7 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &lПОЯВИЛСЯ {tier}&d!"
       - "&7▸ &fТип: &e{mode} {guards}"
-      - "&7▸ &fВнутри: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fГде: &e~{x} {z} &7({world}){structure}"
       - "&7▸ &fИсчезнет через: &e{ttl}"
       - "{buttons}"
@@ -128,7 +132,7 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &lПОЯВИЛСЯ {tier}&d!"
       - "&7▸ &fТип: &e{mode} {guards}"
-      - "&7▸ &fВнутри: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fГде: &e~{distance} блоков &7на &e{dir}{structure}"
       - "&7▸ &fИсчезнет через: &e{ttl}"
       - "{buttons}"
@@ -139,7 +143,7 @@ announce:
       - "&d✈ &lАИРДРОП В ПУТИ: &r{tier}"
       - "&7▸ &fПриземлится через: &e{seconds}с"
       - "&7▸ &fТип: &e{mode} {guards}"
-      - "&7▸ &fВнутри: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fГде: &e{x} {y} {z} &7({world}){structure}"
       - "&7▸ &fИсчезнет через: &e{ttl}"
       - "{buttons}"
@@ -149,7 +153,7 @@ announce:
       - "&d✈ &lАИРДРОП В ПУТИ: &r{tier}"
       - "&7▸ &fПриземлится через: &e{seconds}с"
       - "&7▸ &fТип: &e{mode} {guards}"
-      - "&7▸ &fВнутри: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fГде: &e~{x} {z} &7({world}){structure}"
       - "&7▸ &fИсчезнет через: &e{ttl}"
       - "{buttons}"
@@ -159,7 +163,7 @@ announce:
       - "&d✈ &lАИРДРОП В ПУТИ: &r{tier}"
       - "&7▸ &fПриземлится через: &e{seconds}с"
       - "&7▸ &fТип: &e{mode} {guards}"
-      - "&7▸ &fВнутри: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fГде: &e~{distance} блоков &7на &e{dir}{structure}"
       - "&7▸ &fИсчезнет через: &e{ttl}"
       - "{buttons}"
@@ -169,7 +173,7 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &lАИРДРОП ПРИЗЕМЛИЛСЯ: &r{tier}"
       - "&7▸ &fТип: &e{mode} {guards}"
-      - "&7▸ &fВнутри: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fГде: &e{x} {y} {z} &7({world}){structure}"
       - "&7▸ &fИсчезнет через: &e{ttl}"
       - "{buttons}"
@@ -178,7 +182,7 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &lАИРДРОП ПРИЗЕМЛИЛСЯ: &r{tier}"
       - "&7▸ &fТип: &e{mode} {guards}"
-      - "&7▸ &fВнутри: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fГде: &e~{x} {z} &7({world}){structure}"
       - "&7▸ &fИсчезнет через: &e{ttl}"
       - "{buttons}"
@@ -187,12 +191,25 @@ announce:
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - "&d✦ &lАИРДРОП ПРИЗЕМЛИЛСЯ: &r{tier}"
       - "&7▸ &fТип: &e{mode} {guards}"
-      - "&7▸ &fВнутри: &e{loot}"
+      - "{wakeline}"
       - "&7▸ &fГде: &e~{distance} блоков &7на &e{dir}{structure}"
       - "&7▸ &fИсчезнет через: &e{ttl}"
       - "{buttons}"
       - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   expired: "&7Мистический сундук &r{tier}&7 исчез."
+  activated:
+    exact:
+      - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      - "&a✦ &l{tier} &r&aПРОСНУЛСЯ! Скорее за добычей!"
+      - "&7▸ &fГде: &e{x} {y} {z} &7({world})"
+      - "&7▸ &fИсчезнет через: &e{ttl}"
+      - "{buttons}"
+      - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    hint:
+      - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      - "&a✦ &l{tier} &r&aПРОСНУЛСЯ! Торопитесь!"
+      - "&7▸ &fИсчезнет через: &e{ttl}"
+      - "&8━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   opened: "&e{player} &fоткрыл &r{tier} &7({mode})&f!"
   rare: "&6★ &e{player} &fвыиграл &e{amount}x {item} &fиз &r{tier}&f!"
 
@@ -346,9 +363,11 @@ compass:
   found: "&d✦ &fБлижайший сундук: &r{tier}&f, примерно в &e{distance} блоках &fна &e{dir}&f. Компас указывает на него."
 
 hologram:
+  sleeping: "&cПроснётся через &e{time}"
   timer: "&7Исчезнет через &e{time}"
 
 chests:
+  sleeping: "&cпроснётся через &e{time}"
   header: "&5Стоящие мистические сундуки: &e{count}"
   line: " &d✦ &r{tier} &7- &e{time} &7- {where} {track}"
   blocks: "блоков"
@@ -447,6 +466,7 @@ mode:
   random: "случайный"
 
 bossbar:
+  title-sleeping: "&d✦ &r{tier} &8| &cпроснётся через &e{time} &8| &f{x} {y} {z} &8| &7{mode}"
   title: "&d✦ &r{tier} &8| &e{time} &8| &f{x} {y} {z} &8| &7{mode}"
 
 ## ═══ таблица лидеров, статистика, достижения ═══
@@ -568,3 +588,10 @@ debug:
   no-notes: "&7С последнего запуска решений ещё не было."
   note: " &8{ago} назад &7[{src}] &f{text}"
   cleared: "&aЗаметки debug очищены."
+activation:
+  sleeping: "&c{tier} &cещё спит. Проснётся через &e{time}&c!"
+  forced: "&aРазбужено сундуков: {count}."
+  none: "&cНет спящего сундука с таким номером. /mystic chests"
+  usage: "&e/mystic activate <номер|all>"
+eruption:
+  warning: "&c&l⚠ Вулкан извергается! Берегитесь лавовых бомб!"

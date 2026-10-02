@@ -158,9 +158,11 @@ public final class SpawnService {
     private String[] details(Location loc, Tier tier, Structure st) {
         ru.mysticchest.chest.ChestManager.Active a = plugin.chests().at(loc.getBlock());
         String[] g = a == null ? null : plugin.guards().summary(a);
+        long wake = a != null ? a.activationMs / 1000 : plugin.chests().activationSeconds(tier, "");
         return new String[]{"modeid", a != null && a.mode != null ? a.mode.name() : tier.openMode(plugin.settings()).name(),
                 "structid", st == null || st.name == null ? "" : st.name,
-                "ttlsec", String.valueOf(tier.ttlSeconds(plugin.settings())),
+                "ttlsec", String.valueOf(tier.ttlSeconds(plugin.settings()) + wake),
+                "wakesec", String.valueOf(wake),
                 "guardcount", g == null ? "0" : g[0], "guardlevel", g == null ? "" : g[1]};
     }
 

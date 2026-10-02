@@ -19,7 +19,7 @@
 language: en
 
 ## Used to upgrade this file when the plugin updates. Do not change it.
-config-version: 9
+config-version: 10
 
 ## Extra console output for troubleshooting.
 debug: false
@@ -688,6 +688,18 @@ announce:
     pitch: 1.0
     animated: false
     buttons: []
+  ## Sent when a sleeping chest wakes up (see "activation:").
+  on-activate:
+    enabled: true
+    channels: [CHAT, TITLE]
+    radius: -1
+    world-only: false
+    tiers: []
+    permission: ""
+    mutable: true
+    sound: ""
+    animated: false
+    buttons: [TRACK, COPY, COMPASS, MUTE]
   on-expire:
     enabled: true
     channels: [CHAT]
@@ -808,3 +820,38 @@ performance:
   particle-limit: 60
   ## true = no particles, no holograms (weakest servers).
   low-resource: false
+
+## ═══ ACTIVATION (the chest sleeps before it can be opened) ═══════════════════
+## A new world chest does not open at once: it "sleeps" for a while. The hologram and the boss bar count down
+## to its wake-up, everybody can run to the place and prepare (guards are already there), and the lifetime
+## (ttl-seconds) only starts when it wakes up. Players who click meanwhile are told how long is left.
+##   enabled: false = the old way, every chest opens at once.
+## A tier can change it:  tiers.yml:  activation: {seconds: 120}   or   activation: {enabled: false}
+## Admin: /mystic activate <id|all> wakes a chest early.   Not used by the beacon event.
+activation:
+  enabled: true
+  seconds: 300
+  announce: true            # tell everybody when it wakes up (announce.on-activate)
+  sound: BLOCK_BEACON_ACTIVATE
+  firework: true
+
+## ═══ VOLCANO ERUPTIONS ═══════════════════════════════════════════════════════
+## A chest standing inside the "volcano" structure makes it erupt now and then: a warning rumble, smoke and fire
+## over the crater, then lava bombs fly out and land around it. A bomb that lands near a player hurts and sets
+## them on fire. Blocks are never destroyed. Only runs while a player is within "view-range" (nothing is
+## simulated for an empty area). A tier can override any key:  tiers.yml:  eruption: {interval-seconds: 40}
+eruption:
+  enabled: true
+  interval-seconds: 75      # average time between eruptions
+  jitter-percent: 40
+  warning-seconds: 4        # rumble and smoke before the first bomb
+  duration-seconds: 8       # how long bombs keep flying
+  bombs-per-second: 3
+  bomb-radius: 14           # how far from the crater they can land
+  hit-radius: 3.0           # a landing bomb hurts players this close
+  damage: 5.0               # half hearts
+  fire-seconds: 4
+  view-range: 90
+  sound: ENTITY_GENERIC_EXPLODE
+  warning-sound: ENTITY_WITHER_SPAWN
+  announce: true            # action bar warning for players within 60 blocks

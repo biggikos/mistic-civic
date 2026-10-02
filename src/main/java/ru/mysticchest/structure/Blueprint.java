@@ -19,6 +19,7 @@ final class Blueprint {
     /** true: everything inside the volume is cleared (built-in shapes). false: only trees/grass are, terrain stays. */
     boolean clearVolume;
     String name = "";
+    int[] crater;
     final List<Template.Mark> marks = new ArrayList<Template.Mark>();
     final Set<Long> markCells = new HashSet<Long>();
     /** Rubble materials: base, accent, trim, light. */
@@ -45,6 +46,7 @@ final class Blueprint {
         b.chestX = cv.chestX; b.chestY = cv.chestY; b.chestZ = cv.chestZ;
         b.extraChests.addAll(cv.extraChests);
         b.clearVolume = true;
+        b.crater = cv.crater;
         b.debris = new Placer[]{theme.mat(cv.debris[0]), theme.mat(cv.debris[1]), theme.mat(cv.debris[2]), theme.mat(cv.debris[3])};
         return b;
     }
