@@ -3,7 +3,8 @@ version: ${version}
 main: ru.mysticchest.MysticChestPlugin
 api-version: 1.13
 authors: [Biggiko]
-description: Mystic chests in the style of FunTime
+description: Mystic chests with roulette, structures, guards, events and an in-game loot editor
+website: https://github.com/biggikos/mistic-civic
 softdepend: [Vault, ExcellentEconomy, PlaceholderAPI]
 commands:
   mystic:

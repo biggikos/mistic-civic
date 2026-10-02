@@ -70,6 +70,7 @@ public final class MysticChestPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        ru.mysticchest.util.Banner.print(getDescription().getVersion());
         startMetrics();
         configs = new ConfigManager(this);
         scheduler = new Scheduler(this);

@@ -15,7 +15,7 @@ Read this first. It says what the project is, how it is built and tested, what t
 
 Spigot/Paper plugin "MysticChest": chests in the style of the FunTime server (mystic chest, death chest, beacon killer). One jar, **Minecraft 1.12.2 - 26.3**, Java 8 bytecode, compiled against `spigot-api 1.16.5`. Repo: `/Users/biggiko/Documents/GitHub/mistic-civic`, branch `main`, ~14 commits, pushed to `origin/main` (github.com/biggikos/mistic-civic). License: custom, no modification / no commercial use / attribution required (`LICENSE`).
 
-Docs already in the repo: `README.md` (GitHub), `docs/documentation.md` (full docs), `docs/MODRINTH.md` (page text), `docs/preview.html` (old feature page, partly outdated). Keep them in step with every feature.
+Docs already in the repo: `README.md` (GitHub), `docs/documentation.md` (full docs), `docs/MODRINTH.md` (page text), `CHANGELOG.md`. Keep them in step with every feature.
 
 ### Build and unit tests
 ```bash

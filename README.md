@@ -4,28 +4,30 @@
 [![Java](https://img.shields.io/badge/Java-8%2B-orange)](#build)
 [![Languages](https://img.shields.io/badge/lang-EN%20%7C%20RU-blue)](docs/documentation.md#languages)
 
-Mystic chests in the style of **FunTime** for Spigot / Paper servers. Players buy chests or find them in the world, open them with a roulette, mystery cards or a full loot chest, and admins fill the reward pool **straight from their inventory**.
+Mystic chests in the style of **FunTime** for Spigot / Paper / Purpur servers. Players buy chests or find them in the world, open them with a roulette, mystery cards or a full loot chest, and admins fill the reward pool **straight from their inventory**.
 
 One jar, **Minecraft 1.12.2 → 26.3** (including the year-based 26.x versions), English and Russian.
 
 ## Features
 
-- **Seven tiers** out of the box: Poor, Solid, Rich, Elite, Crusher (donate), Admin, Aristocratic. Add as many as you want.
+- **Eight tiers** out of the box: Poor, Solid, Rich, Elite, Crusher (donate), Admin, Aristocratic, Death. Add as many as you want.
 - **Four ways to open** a chest, per tier: `ROULETTE` (single flip or CS:GO-style scroll), `FULL_CHEST`, `INSTANT`, `PICK` (mystery cards).
-- **Structures** around chests: nine shapes (pyramid, temple, obelisk, stone ring, gate, spiral tower, arena, crystals, rune circle), each rolled with its own size and ruin level, in the biome's theme or a surprise one. They rise block by block, collapse afterwards and **restore the terrain**. Save **your own** with a wand and manage them in a GUI.
+- **Seventeen structures** around chests, each rolled with its own size and ruin level: pyramid, temple, obelisk, stone ring, gate, spiral tower, arena, crystals, rune circle and the worked-out ones - a **ruined nether portal**, a real **volcano** (lava crater, lava river, **eruptions with lava bombs**), a shipwreck, dragon bones, a castle ruin, a witch hut, a graveyard and a nether bridge outpost. **Build your own** with a wand and **sign markers** (`[chest]`, `[loot]`, `[guard]`, `[boss]`), tags, filters and export/import.
+- **Chests sleep first**: a timer (per tier, switchable) counts down on a hologram and boss bar before the chest can be opened; guards and atmosphere are already there.
 - **Animated, clickable announcements**: a typewriter effect, a shimmering title and buttons (track with an action-bar arrow, copy coordinates, compass, mute), configurable per event with channels, tier and permission filters.
-- **Announcements that say everything**: type of the chest, rarest loot inside, coordinates, structure, time left, a sound for everyone, a **boss bar** and a countdown hologram.
+- **Announcements that say everything**: type of the chest, coordinates, wake-up time, structure, time left, a sound for everyone, a **boss bar** and a countdown hologram.
 - **Events**: a **beacon killer** (countdown, a platform with four elite chests round a beacon, worsening effects and coins every second) and a **death chest** zone for your PvP arena. New open modes **Volcano** (the chest erupts, rewards fly out) and **Pinata** (hit it, rewards fall out).
-- **Hunt, guards, capture, atmosphere**: be first to a chest for a bonus, fight guard mobs and bosses of your own design, capture contested chests in a duel, and feel a local midnight storm around an elite chest.
+- **Hunt, guards, capture, atmosphere**: coloured glow for the capturer and guards, be first to a chest for a bonus, fight guard mobs and bosses of your own design, capture contested chests in a duel, and feel a local midnight storm around an elite chest.
 - **Leaderboard and achievements**: top lists, hologram boards, period rewards and configurable achievements.
 - **RANDOM open mode**: roulette, full chest, mystery cards or instant, rolled by weight.
 - **Four spawn modes** with several profiles at once: random in the world, next to a random player, fixed points, or an **airdrop** that falls from the sky. Triggers: every N minutes, at clock times, or when enough players are online.
 - **Cooldowns and limits** for opening, buying, claiming and spawning. Daily limits, per-player win limits, a pity system for rare rewards, bypass permissions.
-- **Edit loot in game.** `/mystic loot add <tier>` moves your whole inventory into the reward pool. A GUI editor changes weights, chances and commands; items can be dropped onto the window.
+- **Edit loot in game.** `/mystic loot add <tier>` moves your whole inventory into the reward pool. A GUI editor changes weights, chances and commands; items can be dropped onto the window. `/mystic loot fill`, ready **presets**, `copy`, `check`, `export` and `import` make big pools quick.
 - **Effects**: particle aura around standing chests (ring, light pillar, spiral) in random or rainbow colours, a **cross of particle lines leading to the chest** that flashes when you walk through it, random-coloured fireworks, titles, sounds, optional potions/lightning, and a **chest compass**.
 - **Command rewards** with chance and run-as-player/console, announcements for rare drops.
 - **Economy**: auto-detects ExcellentEconomy, CoinsEngine, Vault/VaultUnlocked and PlayerPoints. A tier can use its own, e.g. gold from Vault and tokens from PlayerPoints.
 - **PlaceholderAPI** placeholders for cooldowns, daily opens and pity.
+- **`/mystic debug`** shows why a chest did (not) appear.
 - **Config with tutorials** (`##` comments), automatic upgrade of old files, validation with readable errors.
 - **Light on the server**: zero Bukkit tasks while idle, file writes in the background and atomic, no memory growth after thousands of GUI openings.
 
