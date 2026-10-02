@@ -41,9 +41,10 @@ public final class Text {
     private static boolean detectLongTitles() {
         // inventory titles are capped at 32 chars before 1.14
         try {
-            String v = org.bukkit.Bukkit.getBukkitVersion();   // e.g. 1.12.2-R0.1-SNAPSHOT
-            int minor = Integer.parseInt(v.split("[.-]")[1]);
-            return minor >= 14;
+            String v = org.bukkit.Bukkit.getBukkitVersion();   // 1.12.2-R0.1-SNAPSHOT, or 26.1.2.build.N-stable since the year-based versions
+            String[] p = v.split("[.-]");
+            if (Integer.parseInt(p[0]) >= 26) return true;
+            return Integer.parseInt(p[1]) >= 14;
         } catch (Exception e) {
             return false;
         }

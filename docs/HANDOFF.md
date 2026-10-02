@@ -13,7 +13,7 @@ Read this first. It says what the project is, how it is built and tested, what t
 
 ## 2. The project
 
-Spigot/Paper plugin "MysticChest": chests in the style of the FunTime server (mystic chest, death chest, beacon killer). One jar, **Minecraft 1.12.2 - 1.21.x**, Java 8 bytecode, compiled against `spigot-api 1.16.5`. Repo: `/Users/biggiko/Documents/GitHub/mistic-civic`, branch `main`, ~14 commits, pushed to `origin/main` (github.com/biggikos/mistic-civic). License: custom, no modification / no commercial use / attribution required (`LICENSE`).
+Spigot/Paper plugin "MysticChest": chests in the style of the FunTime server (mystic chest, death chest, beacon killer). One jar, **Minecraft 1.12.2 - 26.3**, Java 8 bytecode, compiled against `spigot-api 1.16.5`. Repo: `/Users/biggiko/Documents/GitHub/mistic-civic`, branch `main`, ~14 commits, pushed to `origin/main` (github.com/biggikos/mistic-civic). License: custom, no modification / no commercial use / attribution required (`LICENSE`).
 
 Docs already in the repo: `README.md` (GitHub), `docs/documentation.md` (full docs), `docs/MODRINTH.md` (page text), `docs/preview.html` (old feature page, partly outdated). Keep them in step with every feature.
 
@@ -71,7 +71,7 @@ Workflow used for every feature: edit -> `gradle build` -> copy jar and `lang/*.
 ## 6. Traps already hit (do not repeat)
 
 1. **YAML 1.1:** keys `on`, `off`, `yes`, `no` become booleans. Never use them as lang/config keys (`mute.hidden/shown` exist because of this).
-2. **XSeries 9.10 cannot build `Sound` on 1.21.3+** (Sound stopped being an enum). `Effects.snd()` resolves by XSeries -> `Sound.valueOf` reflection -> raw namespaced key. Use `effects.playSound(...)`, never XSound directly.
+2. **XSeries must stay 13.x (9.10 could not parse the version "26.1.2-74-..." and the plugin failed to enable on 26.x).** XSeries 9.10 also cannot build `Sound` on 1.21.3+** (Sound stopped being an enum). `Effects.snd()` resolves by XSeries -> `Sound.valueOf` reflection -> raw namespaced key. Use `effects.playSound(...)`, never XSound directly.
 3. **1.12 returns a wrapper for the top inventory**: never compare inventories by identity; use `GuiHolder.top(e)/bottom(e)` (raw slot).
 4. `soft()` in `StructureService` must not match `GRASS_BLOCK`/planks (that sank every structure by one block). World height can be negative (use `Locators.minHeight`).
 5. Paper 1.21 rewrites hidden colour codes in lore: the chest item is identified by a visible `ID:` lore line (+ PDC on 1.14+).
@@ -83,7 +83,7 @@ Workflow used for every feature: edit -> `gradle build` -> copy jar and `lang/*.
 
 ## 7. Verified vs not
 
-Verified live: Paper 1.21.11 and 1.12.2 (2026-10-02 sweep on 1.12.2: guards/boss encounter, atmosphere, capture, volcano, pinata, hunt bonus, beacon event, config upgrade v8->v9, all clean; full feature sweeps earlier; the latest events/structures/announcement work was run on 1.21.11 and smoke-tested on 1.12.2 up to the announcement/track update). Economies: Vault (VaultUnlocked), ExcellentEconomy 2.8.0 (command per currency, `%excellenteconomy_balance_raw_<cur>%`), PlayerPoints, mixed per tier. Unit tests: 25 or so, all green.
+Verified live: Paper 1.21.11, 1.12.2, **26.1.2** (full bot sweep), **26.2 and 26.3** (console only: mineflayer has no protocol for them; spawn of all structure types, beacon event, reload, no exceptions). Test servers: `$S/srv26.1.2|srv26.2|srv26.3`, start any with `$S/startsrv.sh <version>`, console via `$S/console.sh <dir> <cmds>` (2026-10-02 sweep on 1.12.2: guards/boss encounter, atmosphere, capture, volcano, pinata, hunt bonus, beacon event, config upgrade v8->v9, all clean; full feature sweeps earlier; the latest events/structures/announcement work was run on 1.21.11 and smoke-tested on 1.12.2 up to the announcement/track update). Economies: Vault (VaultUnlocked), ExcellentEconomy 2.8.0 (command per currency, `%excellenteconomy_balance_raw_<cur>%`), PlayerPoints, mixed per tier. Unit tests: 25 or so, all green.
 
 **Not verified:** versions 1.13-1.20; CoinsEngine preset (jar not downloadable); a real death by another player in the death zone; the look of auras, lines, fireworks, structures and sounds (only packets were checked, the user judges visuals); `docs/preview.html` is outdated.
 

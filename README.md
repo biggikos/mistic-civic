@@ -1,12 +1,12 @@
 # MysticChest
 
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.12.2%20→%201.21.x-brightgreen)](#compatibility)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.12.2%20→%2026.3-brightgreen)](#compatibility)
 [![Java](https://img.shields.io/badge/Java-8%2B-orange)](#build)
 [![Languages](https://img.shields.io/badge/lang-EN%20%7C%20RU-blue)](docs/documentation.md#languages)
 
 Mystic chests in the style of **FunTime** for Spigot / Paper servers. Players buy chests or find them in the world, open them with a roulette, mystery cards or a full loot chest, and admins fill the reward pool **straight from their inventory**.
 
-One jar, **Minecraft 1.12.2 → 1.21.x**, English and Russian.
+One jar, **Minecraft 1.12.2 → 26.3** (including the year-based 26.x versions), English and Russian.
 
 ## Features
 
@@ -68,12 +68,12 @@ Full list with permissions: [docs/documentation.md#commands-and-permissions](doc
 
 | | |
 |---|---|
-| Server | Spigot / Paper (and forks) **1.12.2 – 1.21.x** |
+| Server | Spigot / Paper (and forks) **1.12.2 – 26.3** (1.21.x and 26.1 / 26.2 / 26.3 included) |
 | Java | 8 or newer (the jar targets Java 8 bytecode) |
 | Economy | Vault / VaultUnlocked, ExcellentEconomy, PlayerPoints, CoinsEngine (see notes) |
 | Optional | PlaceholderAPI |
 
-Tested on live servers: Paper 1.21.11 (Java 25) and Paper 1.12.2 (Java 8); with VaultUnlocked 2.20.3, ExcellentEconomy 2.8.0 (NightCore 2.16.6), PlayerPoints 3.3.3 and PlaceholderAPI 2.11.6. Versions in between are expected to work (the code avoids new APIs) but were not run. The CoinsEngine preset in `config.yml` is **not verified**; check its placeholder and command names for your version.
+Tested on live servers: Paper 26.1.2 and 26.3 (Java 25), Paper 26.2, Paper 1.21.11 (Java 25) and Paper 1.12.2 (Java 8); with VaultUnlocked 2.20.3, ExcellentEconomy 2.8.0 (NightCore 2.16.6), PlayerPoints 3.3.3 and PlaceholderAPI 2.11.6. Versions in between are expected to work (the code avoids new APIs) but were not run. The CoinsEngine preset in `config.yml` is **not verified**; check its placeholder and command names for your version.
 
 Items that do not exist on an old server (for example netherite on 1.12) are skipped silently when rewards are loaded.
 
