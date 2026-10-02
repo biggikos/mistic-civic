@@ -147,7 +147,7 @@ public final class SpawnService {
     private void fail(CommandSender who) { if (who != null) plugin.lang().send(who, "spawn.failed"); }
 
     private void land(final SpawnProfile p, final Tier tier, final Location loc, final String key) {
-        StructureService.Spec spec = plugin.structures().resolve(p.structure, tier.structure, null, null, loc);
+        StructureService.Spec spec = plugin.structures().resolve(p.structure, tier.structure, tier.id, null, null, loc);
         if (spec == null) { finishLand(p, tier, loc, null, key); return; }
         plugin.structures().build(spec, loc, new StructureService.Callback() {
             public void done(Structure st) { finishLand(p, tier, st == null ? loc : st.chest, st, key); }
@@ -170,6 +170,7 @@ public final class SpawnService {
             if (st != null) plugin.structures().scheduleRestore(st);
             return;
         }
+        if (st != null) plugin.structures().placeExtras(st, tier, p.name);
         if (plugin.settings().cdSpawn > 0) plugin.cooldowns().start(CooldownManager.GLOBAL, "spawn", plugin.settings().cdSpawn);
         announce(p.announce, loc, tier, key, details(loc, tier, st));
         plugin.effects().playAt(plugin.settings().fxSpawn, loc);
@@ -181,7 +182,7 @@ public final class SpawnService {
 
     /** Manual placement from /mystic spawn (exact coordinates, ignores conditions). shape/theme may be null. */
     public boolean spawnHere(final Tier tier, final Location loc, String shape, String theme) {
-        StructureService.Spec spec = plugin.structures().resolve(null, tier.structure, shape, theme, loc);
+        StructureService.Spec spec = plugin.structures().resolve(null, tier.structure, tier.id, shape, theme, loc);
         if (spec == null) return placeManual(tier, loc.getBlock().getLocation(), null);
         final Location here = loc.getBlock().getLocation();
         plugin.structures().build(spec, here, new StructureService.Callback() {
@@ -192,6 +193,7 @@ public final class SpawnService {
 
     private boolean placeManual(Tier tier, Location at, Structure st) {
         if (!plugin.chests().place(at, tier, "manual", null, st)) { if (st != null) plugin.structures().scheduleRestore(st); return false; }
+        if (st != null) plugin.structures().placeExtras(st, tier, "manual");
         announce(SpawnProfile.Announce.EXACT, at, tier, "announce.spawned", details(at, tier, st));
         plugin.effects().playAt(plugin.settings().fxSpawn, at);
         if (plugin.settings().fwOnSpawn) plugin.fireworks().launch(at.clone().add(0.5, 0, 0.5), tier.color);

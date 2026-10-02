@@ -178,7 +178,7 @@ It disappears in 4m 59s. Use /mystic compass to find it!
 
 ## Structures
 
-Chests can appear inside a building: nine built-in shapes (`pyramid`, `temple`, `obelisk`, `henge`, `gate`, `tower` with an outer spiral stair, `colosseum` arena, `crystals`, `runes`), plus your own. Every spawn rolls its own size, height, ornaments and ruin level, so no two look alike; the theme is the biome's most of the time (`theme-surprise-percent`) or fully random (`theme: RANDOM`). It rises layer by layer, the chest waits on top or on the altar, and after the chest is opened or times out the building collapses and the original terrain returns (also after a crash). `structures:` in `config.yml` sets the chance, theme (`AUTO` from the biome, or DESERT, STONE, NETHER, END, FROST, OCEAN), ruin level (`decay`), build speed and protection.
+Chests can appear inside a building: seventeen built-in shapes (`pyramid`, `temple`, `obelisk`, `henge`, `gate`, `tower` with an outer spiral stair, `colosseum` arena, `crystals`, `runes`, and the worked-out ones: `ruined_portal` (broken nether portal with crying obsidian, magma and lava pools), `volcano` (hollow cone with a lava crater, a lava river between rock lips and a stepped trail to the chest ledge), `shipwreck`, `dragon_bones`, `castle_ruin`, `witch_hut`, `graveyard`, `nether_outpost` (bridge over a contained lava stream)), plus your own. Every spawn rolls its own size, height, ornaments and ruin level, so no two look alike; the theme is the biome's most of the time (`theme-surprise-percent`) or fully random (`theme: RANDOM`). It rises layer by layer, the chest waits on top or on the altar, and after the chest is opened or times out the building collapses and the original terrain returns (also after a crash). `structures:` in `config.yml` sets the chance, theme (`AUTO` from the biome, or DESERT, STONE, NETHER, END, FROST, OCEAN), ruin level (`decay`), build speed and protection.
 
 **Your own structures**
 
@@ -187,11 +187,26 @@ Chests can appear inside a building: nine built-in shapes (`pyramid`, `temple`, 
 3. `/mystic structure save <name>`. The chest is detected automatically, air is not stored, the lowest layer sits on the ground, a foundation fills gaps below it.
 4. `/mystic structure edit` opens the catalog: weights with live chance %, on/off, fixed theme, preview (`F`), delete (`Q` twice). `/mystic structure preview <name>` builds it in front of you for 40 seconds.
 
+**Sign markers (the fast way to build a real encounter).** Put signs inside the selection before saving; their first line decides what they become, the signs themselves are removed:
+
+| First line | Meaning |
+|---|---|
+| `[chest]` | the main chest cell (instead of placing a chest block) |
+| `[loot]` + second line = tier (e.g. `elite`) | an extra mystic chest of that tier here (no second line = same tier as the main one). The structure collapses when the **last** of its chests is gone |
+| `[guard]` | a guard stands exactly here (several signs = several spots, used in turn; the rest spawn at random) |
+| `[boss]` | the boss of a boss level stands here |
+
+`/mystic structure save` reports how many markers it found.
+
+**Tags, filters and tuning** (`/mystic structure info <name>` shows them, `/mystic structure set <name> <key> <value>` changes them, `-` clears a list; all stored in `structures.yml`): `tags` (built-ins have some, e.g. `nether`, `ruins`, `castle`; use them as `shapes: [tag:nether]` in a spawn profile or a tier), `tiers` (only for these chests), `biomes` (part of a biome name, e.g. `desert,badlands`), `worlds`, `rotate` (false = never turned), `debris` (multiplier of the rubble), `weight`, `theme`, `enabled`. Rubble around a structure uses the structure's own materials (built-ins have a palette per shape, saved ones use their three most used blocks). `/mystic structure preview <name> r0..r3` shows a saved structure turned 0-3 quarter turns.
+
 **Sits in the landscape**: the floor is level with the ground, trees and plants on the site are cleared, columns under the floor are filled down to the ground, and where the ground beside the building is lower, earth (grass on top) is filled in and slopes down away from it (`structures.blend`, `width`). **Rubble** (`structures.debris`): rocks, clusters, toppled columns, broken stubs and now and then a piece of an arch are scattered up to `radius` (30) blocks around, appearing from the building outwards; the amount varies by ±40% per spawn, it only lands on free ground away from player-made blocks, and it is removed together with the structure unless `keep-after-collapse: true`. Tune or switch off per profile or tier: `structure: {debris: {radius: 40, pieces: 80}}`.
 
 Saved structures keep their exact blocks, are rotated randomly (`rotate: true`) and do not clear the terrain around them (only trees and grass). Sites that are steep, in water or contain player-made blocks (chests, doors, beds, signs…) are skipped and a plain chest appears instead. Per spawn profile or tier you can force a structure: `structure: {shape: gate, theme: end, chance: 100}`.
 
 **Share structures between servers.** `/mystic structure export <name>` writes `plugins/MysticChest/exchange/<name>.yml`. Copy that file into the `exchange/` folder of another server and run `/mystic structure import <file> [new name] [overwrite]`. Files are checked on import (size limits, valid blocks); built-in names are protected, an existing name needs `overwrite`. Files saved on 1.12 and on 1.13+ are not compatible with each other.
+
+**Outlines (glow).** `duel.glow` (+ `glow-color`, `glow-contested-color`) makes the capturer glow in a colour (it switches while an enemy stands in the zone); `guards.glow`, `glow-color` and `boss-glow-color` do the same for guards and the boss. Any chat colour name (`RED`, `GOLD`, `AQUA`...). A guard level or a single mob can override `glow` and `glow-color`; a tier can override the whole block like any other setting.
 
 ## Why didn't a chest appear? `/mystic debug`
 
@@ -275,6 +290,20 @@ limits:
 | `/mystic loot clear <tier> confirm` | delete everything |
 
 Identical items are merged (their weights add up) when `loot.merge-identical` is on.
+
+**Faster ways to fill a pool**
+
+| Command | Effect |
+|---|---|
+| `/mystic loot fill <tier> [weight] [--keep]` | opens an empty chest window: drop everything that should become a reward, close it, every stack is added (`--keep` gives the items back) |
+| `/mystic loot preset list` | ready sets: `food`, `diamond-gear`, `resources`, `redstone`, `nether` and your own |
+| `/mystic loot preset <tier> <name> [x2] [--replace]` | adds a preset to the pool (`x2` doubles its weights, `--replace` empties the pool first); items missing on your server version are skipped and counted |
+| `/mystic loot preset save <tier> <name>` | saves the pool as your own preset (`plugins/MysticChest/presets/`) |
+| `/mystic loot copy <from> <to> [--replace]` | copies a pool to another tier |
+| `/mystic loot check <tier>` | total weight, rare share, entries with commands, duplicates, entries lost to unsupported items |
+| `/mystic loot export <tier> [name]` / `import <file> <tier> [--replace]` | share a pool through `plugins/MysticChest/exchange/loot-<name>.yml` |
+
+In the GUI editor the number keys **3-7** set the weight to 100 / 40 / 12 / 4 / 1 (common … legendary).
 
 ### GUI editor
 

@@ -19,6 +19,8 @@ public final class Canvas {
     public int chestX, chestY, chestZ;
     /** What fills the gap under the floor (columns under every y = 0 block). */
     public Slot foundation = Slot.BASE;
+    /** Materials of the rubble scattered around (base, accent, trim, light); the shape picks what fits its look. */
+    public Slot[] debris = {Slot.BASE, Slot.ACCENT, Slot.TRIM, Slot.LIGHT};
     /** More chests in the same structure (the beacon platform has four). */
     public final java.util.List<int[]> extraChests = new java.util.ArrayList<int[]>();
     private int minX = 0, maxX = 0, minZ = 0, maxZ = 0, maxY = 0;

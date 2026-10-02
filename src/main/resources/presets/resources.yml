@@ -1,0 +1,9 @@
+## Preset "resources": common building and crafting resources.
+entries:
+  - {material: IRON_INGOT, min: 8, max: 32, weight: 40}
+  - {material: GOLD_INGOT, min: 6, max: 24, weight: 30}
+  - {material: DIAMOND, min: 2, max: 8, weight: 12}
+  - {material: EMERALD, min: 4, max: 16, weight: 14}
+  - {material: COAL, min: 16, max: 48, weight: 40}
+  - {material: LAPIS_LAZULI, min: 8, max: 32, weight: 20}
+  - {material: OBSIDIAN, min: 4, max: 12, weight: 12}

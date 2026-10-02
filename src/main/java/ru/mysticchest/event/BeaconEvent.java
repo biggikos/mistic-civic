@@ -176,7 +176,7 @@ public final class BeaconEvent implements Listener {
     }
 
     private void build(Location loc) {
-        StructureService.Spec spec = plugin.structures().resolve(null, null, "beacon", cfg().str("theme", "AUTO"), loc);
+        StructureService.Spec spec = plugin.structures().resolve(null, null, null, "beacon", cfg().str("theme", "AUTO"), loc);
         if (spec == null) { scheduleNext(); return; }
         plugin.structures().build(spec, loc, new StructureService.Callback() {
             public void done(Structure st) {

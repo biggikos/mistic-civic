@@ -29,6 +29,13 @@ public final class StructureCatalog {
         public boolean enabled = true;
         public int weight = 10;
         public String theme;            // null = decided by config / biome
+        /** Filters and tuning (structures.yml, /mystic structure set): empty list = no restriction. */
+        public final java.util.List<String> tags = new ArrayList<String>();
+        public final java.util.List<String> tiers = new ArrayList<String>();
+        public final java.util.List<String> biomes = new ArrayList<String>();
+        public final java.util.List<String> worlds = new ArrayList<String>();
+        public Boolean rotate;          // null = the global setting
+        public double debrisScale = 1.0;
 
         Entry(String id, Shape shape, Template template) { this.id = id; this.shape = shape; this.template = template; }
 
@@ -53,6 +60,7 @@ public final class StructureCatalog {
         entries.clear();
         for (Shape s : Shape.values()) {
             Entry e = new Entry(s.name().toLowerCase(Locale.ROOT), s, null);
+            e.tags.addAll(Arrays.asList(s.tags()));
             if (s.special()) e.enabled = false;        // event-only shapes stay out of the random rotation
             entries.put(e.id, e);
         }
@@ -81,6 +89,12 @@ public final class StructureCatalog {
                     e.weight = Math.max(0, s.getInt("weight", 10));
                     String th = s.getString("theme");
                     e.theme = th == null || th.equalsIgnoreCase("AUTO") ? null : th.toUpperCase(Locale.ROOT);
+                    if (s.isSet("tags")) { e.tags.clear(); e.tags.addAll(lower(s.getStringList("tags"))); }
+                    e.tiers.addAll(lower(s.getStringList("tiers")));
+                    e.biomes.addAll(lower(s.getStringList("biomes")));
+                    e.worlds.addAll(s.getStringList("worlds"));
+                    if (s.isSet("rotate")) e.rotate = s.getBoolean("rotate");
+                    e.debrisScale = Math.max(0, Math.min(5, s.getDouble("debris", 1.0)));
                 }
             }
         } else {
@@ -97,24 +111,56 @@ public final class StructureCatalog {
                     y.set(p + ".enabled", e.enabled);
                     y.set(p + ".weight", e.weight);
                     y.set(p + ".theme", e.theme == null ? "AUTO" : e.theme);
+                    y.set(p + ".tags", e.tags);
+                    if (!e.tiers.isEmpty()) y.set(p + ".tiers", e.tiers);
+                    if (!e.biomes.isEmpty()) y.set(p + ".biomes", e.biomes);
+                    if (!e.worlds.isEmpty()) y.set(p + ".worlds", e.worlds);
+                    if (e.rotate != null) y.set(p + ".rotate", e.rotate);
+                    if (e.debrisScale != 1.0) y.set(p + ".debris", e.debrisScale);
                 }
                 return "## Which structures mystic chests can appear in. Edit in game: /mystic structure edit\n"
                         + "## enabled: in the rotation or not    weight: bigger = picked more often\n"
                         + "## theme: AUTO (biome / config) or DESERT, STONE, NETHER, END, FROST, OCEAN (built-in shapes only)\n"
-                        + "## Built-ins: pyramid, temple, obelisk, henge, gate. Your own: /mystic structure save <name>\n" + y.saveToString();
+                        + "## tags: for shapes: [tag:nether] filters   tiers / biomes / worlds: where it may appear (empty = anywhere)\n"
+                        + "## rotate: false = never turn it (custom ones)   debris: multiplier of the rubble around it\n"
+                        + "## Easiest: /mystic structure set <name> <tags|tiers|biomes|worlds|rotate|debris|weight|theme> <value>\n" + y.saveToString();
             }
         });
     }
 
-    /** Weighted pick among enabled entries, optionally restricted to the given names. */
-    public Entry pick(List<String> filter, Random r) {
+    private static List<String> lower(List<String> in) {
+        List<String> out = new ArrayList<String>();
+        for (String s : in) out.add(s.trim().toLowerCase(Locale.ROOT));
+        return out;
+    }
+
+    /** What a structure is picked for: used to honour its tiers / biomes / worlds lists. */
+    public static final class Context {
+        public final String tier, biome, world;
+        public Context(String tier, String biome, String world) { this.tier = tier == null ? null : tier.toLowerCase(Locale.ROOT); this.biome = biome == null ? "" : biome.toLowerCase(Locale.ROOT); this.world = world; }
+    }
+
+    private static boolean allows(Entry e, Context c) {
+        if (c == null) return true;
+        if (!e.tiers.isEmpty() && (c.tier == null || !e.tiers.contains(c.tier))) return false;
+        if (!e.worlds.isEmpty()) { boolean in = false; for (String w : e.worlds) if (w.equalsIgnoreCase(c.world)) in = true; if (!in) return false; }
+        if (!e.biomes.isEmpty()) { boolean in = false; for (String b : e.biomes) if (c.biome.contains(b)) in = true; if (!in) return false; }
+        return true;
+    }
+
+    /** Weighted pick among enabled entries, optionally restricted to the given names ("tag:xyz" selects by tag). */
+    public Entry pick(List<String> filter, Random r, Context ctx) {
         List<Entry> ok = new ArrayList<Entry>();
         long total = 0;
         for (Entry e : entries.values()) {
-            if (!e.enabled || e.weight <= 0) continue;
+            if (!e.enabled || e.weight <= 0 || !allows(e, ctx)) continue;
             if (filter != null && !filter.isEmpty()) {
                 boolean in = false;
-                for (String f : filter) if (f.equalsIgnoreCase(e.id)) in = true;
+                for (String f : filter) {
+                    String q = f.trim();
+                    if (q.regionMatches(true, 0, "tag:", 0, 4)) { if (e.tags.contains(q.substring(4).trim().toLowerCase(Locale.ROOT))) in = true; }
+                    else if (q.equalsIgnoreCase(e.id)) in = true;
+                }
                 if (!in) continue;
             }
             ok.add(e);

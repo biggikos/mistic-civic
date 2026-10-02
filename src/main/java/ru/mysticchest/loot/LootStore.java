@@ -28,6 +28,7 @@ public final class LootStore {
 
     private final MysticChestPlugin plugin;
     private final Map<String, List<LootEntry>> data = new HashMap<String, List<LootEntry>>();
+    private final Map<String, Integer> skipped = new HashMap<String, Integer>();
 
     public LootStore(MysticChestPlugin plugin) { this.plugin = plugin; }
 
@@ -41,21 +42,57 @@ public final class LootStore {
 
     public void load(Tier t) {
         plugin.configs().ensure("loot/" + t.id + ".yml");   // only copies when the jar ships one
+        int[] skip = new int[1];
+        List<LootEntry> list = file(t).exists() ? read(file(t), "loot/" + t.id + ".yml", skip) : new ArrayList<LootEntry>();
+        data.put(t.id, list);
+        skipped.put(t.id, skip[0]);
+        rebuild(t);
+    }
+
+    /** Parses a loot file ({@code skipped[0]} counts entries dropped because the item does not exist on this server version). */
+    public List<LootEntry> read(File f, String label, int[] skipped) {
         List<LootEntry> list = new ArrayList<LootEntry>();
-        File f = file(t);
-        if (f.exists()) {
-            YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
-            for (Map<?, ?> m : y.getMapList("entries")) {
-                try {
-                    LootEntry e = fromMap(m);
-                    if (e != null) list.add(e);
-                } catch (Exception ex) {
-                    plugin.getLogger().warning("[loot/" + t.id + ".yml] bad entry skipped: " + ex.getMessage());
-                }
+        YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
+        for (Map<?, ?> m : y.getMapList("entries")) {
+            try {
+                LootEntry e = fromMap(m);
+                if (e != null) list.add(e); else skipped[0]++;
+            } catch (Exception ex) {
+                skipped[0]++;
+                plugin.getLogger().warning("[" + label + "] bad entry skipped: " + ex.getMessage());
             }
         }
-        data.put(t.id, list);
-        rebuild(t);
+        return list;
+    }
+
+    /** Entries of the tier file that were dropped at the last load (unsupported items). */
+    public int skipped(Tier t) { Integer n = skipped.get(t.id); return n == null ? 0 : n; }
+
+    public String serialize(List<LootEntry> list, String header) {
+        YamlConfiguration y = new YamlConfiguration();
+        List<Object> out = new ArrayList<Object>();
+        for (LootEntry e : list) out.add(toMap(e));
+        y.set("entries", out);
+        return header + y.saveToString();
+    }
+
+    /** A copy with a fresh id and the weight multiplied (presets, copy between tiers). */
+    public LootEntry copyOf(LootEntry e, double weightMultiplier) {
+        LootEntry c = new LootEntry(newId(), e.item.clone());
+        c.min = e.min; c.max = e.max;
+        c.weight = Math.max(1, (int) Math.round(e.weight * weightMultiplier));
+        c.giveItem = e.giveItem; c.broadcast = e.broadcast; c.permission = e.permission; c.limitPerPlayer = e.limitPerPlayer;
+        for (LootEntry.Cmd cm : e.commands) c.commands.add(new LootEntry.Cmd(cm.asPlayer, cm.text, cm.chance));
+        return c;
+    }
+
+    /** Adds copies of {@code src} to the tier ({@code replace}: the tier is emptied first). @return how many were added */
+    public int append(Tier t, List<LootEntry> src, double weightMultiplier, boolean replace) {
+        if (replace) clear(t);
+        List<LootEntry> dst = entries(t);
+        for (LootEntry e : src) dst.add(copyOf(e, weightMultiplier));
+        commit(t);
+        return src.size();
     }
 
     @SuppressWarnings("unchecked")
@@ -132,13 +169,7 @@ public final class LootStore {
         rebuild(t);
         final List<LootEntry> list = entries(t);
         plugin.io().request(file(t), new AsyncIO.Source() {
-            public String content() {
-                YamlConfiguration y = new YamlConfiguration();
-                List<Object> out = new ArrayList<Object>();
-                for (LootEntry e : list) out.add(toMap(e));
-                y.set("entries", out);
-                return HEADER + y.saveToString();
-            }
+            public String content() { return serialize(list, HEADER); }
         });
         plugin.invalidateGuis();
     }

@@ -259,6 +259,7 @@ public final class ChestManager {
         Map<Long, Active> m = byWorld.get(b.getWorld());
         if (m == null) { m = new HashMap<Long, Active>(); byWorld.put(b.getWorld(), m); }
         a.structure = structure;
+        if (structure != null) structure.refs++;
         ru.mysticchest.open.OpenType base = t.openMode(plugin.settings());
         a.mode = base != ru.mysticchest.open.OpenType.RANDOM ? base : (plugin.settings().randomReveal ? plugin.open().pickMode(t) : ru.mysticchest.open.OpenType.RANDOM);
         m.put(a.key, a);
@@ -315,7 +316,7 @@ public final class ChestManager {
         plugin.open().forgetPinata(a);
         if (clearBlock && a.loc.getBlock().getType() == a.block) a.loc.getBlock().setType(Material.AIR);
         release(a.loc.getWorld(), a.loc.getBlockX() >> 4, a.loc.getBlockZ() >> 4);
-        if (a.structure != null) plugin.structures().scheduleRestore(a.structure);
+        if (a.structure != null && --a.structure.refs <= 0) plugin.structures().scheduleRestore(a.structure);
         save();
         return true;
     }

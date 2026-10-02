@@ -113,17 +113,21 @@ public final class GuardService implements Listener {
         grp.center = a.loc.clone().add(0.5, 0, 0.5);
         grp.leash = g.integer("leash", 20, 5, 200);
         int radius = g.integer("radius", 7, 2, 40);
+        // a saved structure can mark where guards and the boss stand with [guard] / [boss] signs
+        boolean main = a.structure != null && a.structure.chest != null && a.structure.chest.getBlock().equals(a.loc.getBlock());
+        java.util.List<Location> points = main ? a.structure.guardPoints : new ArrayList<Location>();
+        int pi = 0;
         for (Map<?, ?> m : level.getMapList("mobs")) {
             ConfigurationSection spec = section(m);
             int count = Math.max(1, Math.min(30, spec.getInt("count", 1)));
             for (int i = 0; i < count; i++) {
-                LivingEntity e = spawnMob(spec, grp.center, radius, a);
+                LivingEntity e = spawnMob(spec, grp.center, radius, a, points.isEmpty() ? null : points.get(pi++ % points.size()));
                 if (e != null) { grp.alive.add(e.getUniqueId()); byEntity.put(e.getUniqueId(), a); glow(e, g, level, spec, false); }
             }
         }
         ConfigurationSection boss = level.getConfigurationSection("boss");
         if (boss != null) {
-            LivingEntity e = spawnMob(boss, grp.center, Math.min(radius, 4), a);
+            LivingEntity e = spawnMob(boss, grp.center, Math.min(radius, 4), a, main && !a.structure.bossPoints.isEmpty() ? a.structure.bossPoints.get(0) : null);
             if (e != null) {
                 grp.boss = e.getUniqueId();
                 grp.bossCfg = boss;
@@ -184,7 +188,7 @@ public final class GuardService implements Listener {
         return y;
     }
 
-    private LivingEntity spawnMob(ConfigurationSection spec, Location center, int radius, ChestManager.Active a) {
+    private LivingEntity spawnMob(ConfigurationSection spec, Location center, int radius, ChestManager.Active a, Location fixed) {
         EntityType type;
         try { type = EntityType.valueOf(spec.getString("type", "ZOMBIE").toUpperCase()); }
         catch (IllegalArgumentException e) { plugin.getLogger().warning("[guards] unknown mob type '" + spec.getString("type") + "' on this server version"); return null; }
@@ -195,6 +199,7 @@ public final class GuardService implements Listener {
         if (!w.isChunkLoaded(x >> 4, z >> 4)) { x = center.getBlockX(); z = center.getBlockZ(); }
         Location at = new Location(w, x + 0.5, surfaceY(w, x, z), z + 0.5);
         if (Math.abs(at.getY() - center.getY()) > 6) at.setY(center.getY() + 1);
+        if (fixed != null) at = fixed.clone().add(0.5, 0, 0.5);
         Entity ent;
         try { ent = w.spawnEntity(at, type); } catch (Throwable t) { return null; }
         if (!(ent instanceof LivingEntity)) { ent.remove(); return null; }

@@ -41,6 +41,8 @@ public final class StructureService {
         public final boolean rotate;
         public boolean debris;
         public int debrisRadius, debrisPieces;
+        /** Quarter turns of a saved structure; -1 = random (or none when rotate is off). */
+        public int turn = -1;
         Spec(StructureCatalog.Entry e, Theme t, double d, boolean r) { entry = e; theme = t; decay = d; rotate = r; }
     }
 
@@ -64,7 +66,10 @@ public final class StructureService {
     /** Builds a structure at the player's feet without a chest and takes it down again after 40 seconds. */
     public void preview(final Player p, String name, String theme) {
         final Location at = p.getLocation().getBlock().getLocation();
-        Spec spec = resolve(null, null, name, theme, at);
+        int turn = -1;
+        if (theme != null && theme.matches("(?i)r[0-3]")) { turn = theme.charAt(1) - '0'; theme = null; }      // preview <name> r2 = turned twice
+        Spec spec = resolve(null, null, null, name, theme, at);
+        if (spec != null) spec.turn = turn;
         if (spec == null) { plugin.lang().send(p, "structure.unknown", "name", name); return; }
         plugin.lang().send(p, "structure.previewing", "name", spec.entry.id);
         build(spec, at, new Callback() {
@@ -83,7 +88,7 @@ public final class StructureService {
      * @return null when this spawn gets no structure. forceName/forceTheme are for /mystic spawn and previews.
      * Filters: a profile or tier may restrict the choice with shapes: [..] / shape: name.
      */
-    public Spec resolve(Cfg profile, Cfg tier, String forceName, String forceTheme, Location at) {
+    public Spec resolve(Cfg profile, Cfg tier, String tierId, String forceName, String forceTheme, Location at) {
         Settings s = plugin.settings();
         boolean enabled = s.structEnabled;
         int chance = s.structChance;
@@ -119,7 +124,8 @@ public final class StructureService {
         if (forceName != null) {
             e = catalog.get(forceName);                       // forcing ignores enabled/weight
         } else {
-            e = catalog.pick(filter, ThreadLocalRandom.current());
+            e = catalog.pick(filter, ThreadLocalRandom.current(),
+                    new StructureCatalog.Context(tierId, String.valueOf(at.getBlock().getBiome()), at.getWorld().getName()));
         }
         if (e == null) return null;
         if (forceTheme == null && e.theme != null && (tier == null || !tier.has("theme"))) theme = e.theme;
@@ -133,11 +139,11 @@ public final class StructureService {
             // AUTO follows the biome most of the time, but every so often it is something unexpected
             if (s.structSurprise > 0 && ThreadLocalRandom.current().nextInt(100) < s.structSurprise) t = all[ThreadLocalRandom.current().nextInt(all.length)];
         }
-        Spec sp = new Spec(e, t, decay, s.structRotate);
+        Spec sp = new Spec(e, t, decay, e.rotate != null ? e.rotate : s.structRotate);
         sp.debris = debris;
         sp.debrisRadius = dRadius;
         // +-40% so the amount of rubble differs between spawns too
-        sp.debrisPieces = (int) Math.round(dPieces * (0.6 + ThreadLocalRandom.current().nextDouble() * 0.8));
+        sp.debrisPieces = (int) Math.round(dPieces * e.debrisScale * (0.6 + ThreadLocalRandom.current().nextDouble() * 0.8));
         return sp;
     }
 
@@ -149,7 +155,7 @@ public final class StructureService {
         final int cx = center.getBlockX(), cz = center.getBlockZ();
         final Blueprint bp;
         if (spec.entry.custom()) {
-            bp = Blueprint.of(spec.entry.template, spec.rotate ? ThreadLocalRandom.current().nextInt(4) : 0);
+            bp = Blueprint.of(spec.entry.template, spec.turn >= 0 ? spec.turn : (spec.rotate ? ThreadLocalRandom.current().nextInt(4) : 0));
         } else {
             Canvas cv = new Canvas(new Random(System.nanoTime() ^ (cx * 31L + cz * 17L)), spec.decay);
             spec.entry.shape.draw(cv);
@@ -189,6 +195,15 @@ public final class StructureService {
     }
 
     private static boolean isLiquid(Placer p) { return p instanceof Mat && ((Mat) p).liquid(); }
+
+    /** Chests marked with [loot] signs in a saved structure; each one is a mystic chest of the marked tier (or of {@code main}). */
+    public void placeExtras(Structure st, ru.mysticchest.chest.Tier main, String profile) {
+        for (int i = 0; i < st.lootPoints.size(); i++) {
+            ru.mysticchest.chest.Tier t = st.lootTiers.get(i).isEmpty() ? main : plugin.tiers().get(st.lootTiers.get(i));
+            if (t == null) { plugin.getLogger().warning("[structure " + st.name + "] [loot] sign names an unknown tier '" + st.lootTiers.get(i) + "', the main tier is used."); t = main; }
+            plugin.chests().place(st.lootPoints.get(i), t, profile, null, st);
+        }
+    }
 
     /** Things that are removed or built over: foliage and plants, never the ground itself. */
     private static boolean soft(String n) {
@@ -247,7 +262,7 @@ public final class StructureService {
                     String nm = b.getType().name();
                     if (nm.endsWith("AIR")) continue;
                     boolean chestCell = x - cx == bp.chestX && y - baseY == bp.chestY && z - cz == bp.chestZ;
-                    if (bp.clearVolume || soft(nm) || chestCell) { ops.add(new int[]{x, y, z}); placers.add(null); }
+                    if (bp.clearVolume || soft(nm) || chestCell || bp.markCells.contains(Canvas.key(x - cx, y - baseY, z - cz))) { ops.add(new int[]{x, y, z}); placers.add(null); }
                 }
             }
         }
@@ -282,7 +297,7 @@ public final class StructureService {
             placers.add(bp.placers.get(i));
         }
         int mainOps = ops.size();
-        if (spec.debris && spec.debrisPieces > 0) addDebris(ops, placers, w, cx, cz, bp, spec.theme, spec.debrisRadius, spec.debrisPieces);
+        if (spec.debris && spec.debrisPieces > 0) addDebris(ops, placers, w, cx, cz, bp, bp.debris != null ? bp.debris : new Placer[]{spec.theme.mat(Canvas.Slot.BASE), spec.theme.mat(Canvas.Slot.ACCENT), spec.theme.mat(Canvas.Slot.TRIM), spec.theme.mat(Canvas.Slot.LIGHT)}, spec.debrisRadius, spec.debrisPieces);
         int keepFrom = s.debrisKeep && ops.size() > mainOps ? mainOps : -1;
         Location chest = new Location(w, cx + bp.chestX, baseY + bp.chestY, cz + bp.chestZ);
         Structure st = new Structure(w, minX, maxX, baseY - 10, top, minZ, maxZ, chest);
@@ -290,6 +305,12 @@ public final class StructureService {
         st.name = bp.name;
         st.center = new Location(w, cx + 0.5, baseY, cz + 0.5);
         for (int[] e : bp.extraChests) st.extraChests.add(new Location(w, cx + e[0], baseY + e[1], cz + e[2]));
+        for (Template.Mark m : bp.marks) {
+            Location at = new Location(w, cx + m.x, baseY + m.y, cz + m.z);
+            if (m.type.equals("guard")) st.guardPoints.add(at);
+            else if (m.type.equals("boss")) st.bossPoints.add(at);
+            else { st.lootPoints.add(at); st.lootTiers.add(m.param); }
+        }
         active.add(st);
         plugin.animator().add(new BuildJob(st, ops, placers, cb, new Location(w, cx + 0.5, baseY + 1, cz + 0.5), keepFrom));
     }
@@ -324,7 +345,7 @@ public final class StructureService {
     }
 
     /** Scatters rubble (rocks, clusters, toppled columns, broken stubs, rare arch pieces) over the surroundings. */
-    private void addDebris(List<int[]> ops, List<Placer> placers, World w, int cx, int cz, Blueprint bp, Theme theme, int radius, int pieces) {
+    private void addDebris(List<int[]> ops, List<Placer> placers, World w, int cx, int cz, Blueprint bp, Placer[] pal, int radius, int pieces) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int minR = Math.max(Math.max(Math.abs(bp.minX), Math.abs(bp.maxX)), Math.max(Math.abs(bp.minZ), Math.abs(bp.maxZ))) + 3;
         if (radius <= minR + 1) return;
@@ -342,7 +363,7 @@ public final class StructureService {
             if (nearPlayerMade(w, x, g, z)) continue;
             int roll = r.nextInt(100);
             if (roll < 38) {                                                   // a single rock
-                put(newOps, newPl, planned, w, x, g, z, r.nextInt(4) == 0 ? theme.mat(Canvas.Slot.ACCENT) : theme.mat(Canvas.Slot.BASE));
+                put(newOps, newPl, planned, w, x, g, z, r.nextInt(4) == 0 ? pal[1] : pal[0]);
             } else if (roll < 63) {                                            // a small cluster, maybe two layers high
                 int n = 2 + r.nextInt(3);
                 for (int i = 0; i < n; i++) {
@@ -350,8 +371,8 @@ public final class StructureService {
                     if (!w.isChunkLoaded((x + dx) >> 4, (z + dz) >> 4)) continue;
                     int gg = groundY(w, x + dx, z + dz);
                     if (Math.abs(gg - g) > 1) continue;
-                    put(newOps, newPl, planned, w, x + dx, gg, z + dz, r.nextBoolean() ? theme.mat(Canvas.Slot.BASE) : theme.mat(Canvas.Slot.ACCENT));
-                    if (r.nextInt(3) == 0) put(newOps, newPl, planned, w, x + dx, gg + 1, z + dz, theme.mat(Canvas.Slot.BASE));
+                    put(newOps, newPl, planned, w, x + dx, gg, z + dz, r.nextBoolean() ? pal[0] : pal[1]);
+                    if (r.nextInt(3) == 0) put(newOps, newPl, planned, w, x + dx, gg + 1, z + dz, pal[0]);
                 }
             } else if (roll < 78) {                                            // a toppled column lying on the ground
                 boolean alongX = r.nextBoolean();
@@ -361,12 +382,12 @@ public final class StructureService {
                     if (!w.isChunkLoaded(px >> 4, pz >> 4)) break;
                     int gg = groundY(w, px, pz);
                     if (Math.abs(gg - g) > 1) break;
-                    put(newOps, newPl, planned, w, px, gg, pz, i == len - 1 ? theme.mat(Canvas.Slot.TRIM) : theme.mat(Canvas.Slot.ACCENT));
+                    put(newOps, newPl, planned, w, px, gg, pz, i == len - 1 ? pal[2] : pal[1]);
                 }
             } else if (roll < 95) {                                            // a broken stub still standing
                 int h = 2 + r.nextInt(3);
-                for (int i = 0; i < h; i++) put(newOps, newPl, planned, w, x, g + i, z, theme.mat(Canvas.Slot.BASE));
-                put(newOps, newPl, planned, w, x, g + h, z, r.nextInt(4) == 0 ? theme.mat(Canvas.Slot.LIGHT) : theme.mat(Canvas.Slot.ACCENT));
+                for (int i = 0; i < h; i++) put(newOps, newPl, planned, w, x, g + i, z, pal[0]);
+                put(newOps, newPl, planned, w, x, g + h, z, r.nextInt(4) == 0 ? pal[3] : pal[1]);
             } else {                                                           // two stubs and a lintel: part of an arch
                 int h = 3 + r.nextInt(2);
                 boolean alongX = r.nextBoolean();
@@ -374,8 +395,8 @@ public final class StructureService {
                 if (!w.isChunkLoaded((x + ox) >> 4, (z + oz) >> 4)) continue;
                 int g2 = groundY(w, x + ox, z + oz);
                 if (Math.abs(g2 - g) > 1) continue;
-                for (int i = 0; i < h; i++) { put(newOps, newPl, planned, w, x, g + i, z, theme.mat(Canvas.Slot.BASE)); put(newOps, newPl, planned, w, x + ox, g2 + i, z + oz, theme.mat(Canvas.Slot.BASE)); }
-                for (int t = 0; t <= 3; t++) put(newOps, newPl, planned, w, x + (alongX ? t : 0), g + h, z + (alongX ? 0 : t), t == 1 || t == 2 ? theme.mat(Canvas.Slot.ACCENT) : theme.mat(Canvas.Slot.TRIM));
+                for (int i = 0; i < h; i++) { put(newOps, newPl, planned, w, x, g + i, z, pal[0]); put(newOps, newPl, planned, w, x + ox, g2 + i, z + oz, pal[0]); }
+                for (int t = 0; t <= 3; t++) put(newOps, newPl, planned, w, x + (alongX ? t : 0), g + h, z + (alongX ? 0 : t), t == 1 || t == 2 ? pal[1] : pal[2]);
             }
             placed++;
         }

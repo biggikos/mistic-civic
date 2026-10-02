@@ -39,8 +39,12 @@ usage:
   spawn: "&e/mystic spawn <tier> [here|<profile>] [shape] [theme]"
   preview: "&e/mystic preview <tier>"
   point: "&e/mystic point <add <name>|remove <name>|list>"
-  loot: "&e/mystic loot <add|addcmd|cmd|weight|remove|list|edit|clear> <tier> ..."
+  loot: "&e/mystic loot <add|addcmd|cmd|weight|remove|list|edit|clear|fill|preset|copy|check|export|import> <tier> ..."
   loot-add: "&e/mystic loot add <tier> [weight] [--keep] [--hand]"
+  loot-fill: "&e/mystic loot fill <tier> [weight] [--keep]"
+  loot-copy: "&e/mystic loot copy <from> <to> [--replace]"
+  loot-preset: "&e/mystic loot preset <list | save <tier> <name> | <tier> <name> [x2] [--replace]>"
+  loot-import: "&e/mystic loot import <file> <tier> [--replace]"
   loot-addcmd: "&e/mystic loot addcmd <tier> <weight> <command...>"
   loot-cmd: "&e/mystic loot cmd <tier> <#> <add [player:] [50%] <command>|remove <n>|list|clear>"
   loot-weight: "&e/mystic loot weight <tier> <#> <weight>"
@@ -219,6 +223,18 @@ point:
 
 ## ═══ loot commands ═══
 loot:
+  fill-hint: "&7Put the items that should become rewards into the window (weight &e{weight}&7), then close it."
+  copied: "&aCopied &e{count} &arewards from &f{from} &ato &f{to}&a."
+  exported: "&aExported the rewards of &f{tier} &ato &f{path}&a. On another server: /mystic loot import {file} <tier>"
+  preset-list: "&7Presets: &e{names}&7. Load: /mystic loot preset <tier> <name> [x2] [--replace]. Save your own: /mystic loot preset save <tier> <name>"
+  preset-saved: "&aPreset &e{name} &asaved ({count} rewards)."
+  preset-missing: "&cNo preset &e{name}&c. Available: &f{names}"
+  preset-loaded: "&aLoaded &e{count} &arewards from &f{name} &ainto &f{tier}&a. (&7{skipped} &askipped: not available on this server version)"
+  import-empty: "&cNothing to import in &e{file}&c."
+  check: "&5Loot check &f{tier}&5: &7entries &e{entries}&7, total weight &e{weight}&7, rare &e{rare} &7(&e{rarechance}%&7 chance), with commands &e{cmds}&7, duplicates &e{dup}&7, lost to unsupported items &e{skipped}"
+  check-empty: "&cThe pool is empty: nothing can be won. Fill it: /mystic loot fill <tier>"
+  check-dup: "&eThe same item is in the pool more than once: merge them or raise one weight."
+  check-skipped: "&eSome entries in the file use items this server version does not have; they are ignored."
   added: "&aAdded &e{count} &astack(s) to &r{tier} &7(weight {weight})"
   nothing: "&cNothing to add - your inventory is empty."
   added-cmd: "&aAdded a command reward to &r{tier} &7(weight {weight}). Add the command text with /mystic loot cmd."
@@ -245,6 +261,8 @@ prompt:
 
 ## ═══ GUI texts ═══
 gui:
+  fill:
+    title: "&5Fill loot: {tier}"
   prev: "&e◀ Previous page"
   next: "&eNext page ▶"
   back: "&cBack to shop"
@@ -305,6 +323,7 @@ gui:
       - "&8Shift + click: &7weight +10 / -10"
       - "&8F: &7edit commands  &8Key 1: &7announce"
       - "&8Key 2: &7give item on/off"
+      - "&8Keys 3-7: &7weight 100 / 40 / 12 / 4 / 1 (common ... legendary)"
       - "&8Q: &7delete (press twice)"
     help-armed:
       - "&c&lPress Q again to delete #{n}"
@@ -361,7 +380,7 @@ structure:
     witch_hut: "Witch hut"
     graveyard: "Graveyard with a crypt"
     nether_outpost: "Nether bridge outpost"
-  usage: "&e/mystic structure <wand|pos1|pos2|save <name>|delete <name>|list|edit|preview <name> [theme]|reload|export <name>|import <file> [name] [overwrite]>"
+  usage: "&e/mystic structure <wand|pos1|pos2|save <name>|delete <name>|list|edit|preview <name> [theme|r0-r3]|reload|export <name>|import <file> [name] [overwrite]|info <name>|set <name> <key> <value>>"
   bad-name: "&cName: 1-32 characters, a-z 0-9 _ -"
   no-selection: "&cSelect two corners first (wand: left / right click, or /mystic structure pos1, pos2)."
   unknown: "&cNo such structure: &e{name}"
@@ -376,6 +395,23 @@ structure:
   import-exists: "&cStructure &e{name} &calready exists. Add a new name, or: /mystic structure import <file> {name} overwrite"
   import-builtin: "&c&e{name} &cis a built-in shape, choose another name: /mystic structure import <file> <new name>"
   import-bad: "&cCannot import &e{file}&c: unreadable, no blocks, out of range, or saved on a different Minecraft generation (1.12 and 1.13+ files are not compatible). Details in the console."
+  marks-found: "&7Markers found: &e{loot} &7extra chests ([loot]), &e{guard} &7guard points ([guard]), &e{boss} &7boss points ([boss]). Signs are removed from the structure."
+  set-usage: "&e/mystic structure set <name> <tags|tiers|biomes|worlds|rotate|debris|weight|theme|enabled> <value>&7  (\"-\" clears a list; lists: comma separated)"
+  set-done: "&a{name}: &e{key} &a= &f{value}"
+  info:
+    header: "&5Structure &e{name} &7({kind})"
+    row: " &7{key}: &f{value}"
+    size: "Size"
+    chest: "Chest cell"
+    marks: "Sign markers"
+    weight: "Weight"
+    tags: "Tags"
+    tiers: "Only for tiers"
+    biomes: "Only in biomes"
+    worlds: "Only in worlds"
+    rotate: "Random turn"
+    debris: "Rubble multiplier"
+    theme: "Theme"
   list-header: "&5Structures:"
   list-line: " &e{name} &7({kind}) weight {weight} = {chance}% &8| {on}"
   err:

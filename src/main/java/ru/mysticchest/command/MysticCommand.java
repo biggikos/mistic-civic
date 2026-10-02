@@ -28,7 +28,7 @@ import java.util.Map;
 public final class MysticCommand implements TabExecutor {
     private static final List<String> ROOT = Arrays.asList("shop", "preview", "list", "give", "spawn", "reload",
             "perf", "loot", "point", "economy", "compass", "structure", "chests", "top", "stats", "board", "track", "mute", "event", "debug", "help");
-    private static final List<String> LOOT = Arrays.asList("add", "addcmd", "cmd", "weight", "remove", "list", "edit", "clear");
+    private static final List<String> LOOT = Arrays.asList("add", "addcmd", "cmd", "weight", "remove", "list", "edit", "clear", "fill", "preset", "copy", "check", "export", "import");
 
     private final MysticChestPlugin plugin;
 
@@ -381,6 +381,7 @@ public final class MysticCommand implements TabExecutor {
                 sv.catalog().add(t);
                 plugin.lang().send(s, "structure.saved", "name", t.name, "blocks", String.valueOf(t.blocks()),
                         "w", String.valueOf(t.width()), "d", String.valueOf(t.depth()), "h", String.valueOf(t.height));
+                if (!t.marks.isEmpty()) plugin.lang().send(s, "structure.marks-found", "loot", String.valueOf(t.count("loot")), "guard", String.valueOf(t.count("guard")), "boss", String.valueOf(t.count("boss")));
                 return true;
             }
             case "delete":
@@ -404,6 +405,8 @@ public final class MysticCommand implements TabExecutor {
                 plugin.lang().send(s, "reloaded");
                 return true;
             case "export": case "import": return exchange(s, a, sub.equals("export"));
+            case "info": return structureInfo(s, a);
+            case "set": return structureSet(s, a);
             default: {
                 plugin.lang().send(s, "structure.list-header");
                 for (ru.mysticchest.structure.StructureCatalog.Entry e : sv.catalog().all()) {
@@ -415,6 +418,70 @@ public final class MysticCommand implements TabExecutor {
                 return true;
             }
         }
+    }
+
+    private void structureRow(CommandSender s, String key, String value) {
+        plugin.lang().send(s, "structure.info.row", "key", plugin.lang().get(s, "structure.info." + key), "value", value);
+    }
+
+    private static String listOrAny(java.util.List<String> l) { return l.isEmpty() ? "-" : String.join(", ", l); }
+
+    /** /mystic structure info <name>: size, markers, tags and filters of one structure. */
+    private boolean structureInfo(CommandSender s, String[] a) {
+        if (a.length < 3) { plugin.lang().send(s, "structure.usage"); return true; }
+        ru.mysticchest.structure.StructureCatalog cat = plugin.structures().catalog();
+        ru.mysticchest.structure.StructureCatalog.Entry e = cat.get(a[2]);
+        if (e == null) { plugin.lang().send(s, "structure.unknown", "name", a[2]); return true; }
+        plugin.lang().send(s, "structure.info.header", "name", e.id, "kind", plugin.lang().get(s, e.custom() ? "structure.editor.custom" : "structure.editor.builtin"));
+        if (e.custom()) {
+            ru.mysticchest.structure.Template t = e.template;
+            structureRow(s, "size", t.width() + "×" + t.depth() + "×" + t.height + ", " + t.blocks() + " blocks");
+            structureRow(s, "chest", t.chestX + " " + t.chestY + " " + t.chestZ);
+            structureRow(s, "marks", "[loot] " + t.count("loot") + ", [guard] " + t.count("guard") + ", [boss] " + t.count("boss"));
+        }
+        structureRow(s, "weight", e.weight + " (" + String.format(Locale.ROOT, "%.1f", cat.chance(e)) + "%), " + (e.enabled ? "on" : "off"));
+        structureRow(s, "tags", listOrAny(e.tags));
+        structureRow(s, "tiers", listOrAny(e.tiers));
+        structureRow(s, "biomes", listOrAny(e.biomes));
+        structureRow(s, "worlds", listOrAny(e.worlds));
+        structureRow(s, "rotate", e.rotate == null ? "global" : String.valueOf(e.rotate));
+        structureRow(s, "debris", String.valueOf(e.debrisScale));
+        structureRow(s, "theme", e.theme == null ? "AUTO" : e.theme);
+        return true;
+    }
+
+    private static final List<String> SET_KEYS = Arrays.asList("tags", "tiers", "biomes", "worlds", "rotate", "debris", "weight", "theme", "enabled");
+
+    /** /mystic structure set <name> <key> <value>: edits structures.yml without opening the file ("-" clears a list). */
+    private boolean structureSet(CommandSender s, String[] a) {
+        if (a.length < 5) { plugin.lang().send(s, "structure.set-usage"); return true; }
+        ru.mysticchest.structure.StructureCatalog cat = plugin.structures().catalog();
+        ru.mysticchest.structure.StructureCatalog.Entry e = cat.get(a[2]);
+        if (e == null) { plugin.lang().send(s, "structure.unknown", "name", a[2]); return true; }
+        String key = a[3].toLowerCase(Locale.ROOT), val = join(a, 4).trim();
+        List<String> items = new ArrayList<String>();
+        if (!val.equals("-")) for (String x : val.split("[,\\s]+")) if (!x.isEmpty()) items.add(x);
+        try {
+            if (key.equals("tags")) { e.tags.clear(); for (String x : items) e.tags.add(x.toLowerCase(Locale.ROOT)); }
+            else if (key.equals("tiers")) {
+                e.tiers.clear();
+                for (String x : items) {
+                    if (plugin.tiers().get(x) == null) { plugin.lang().send(s, "unknown-tier", "tier", x); return true; }
+                    e.tiers.add(x.toLowerCase(Locale.ROOT));
+                }
+            }
+            else if (key.equals("biomes")) { e.biomes.clear(); for (String x : items) e.biomes.add(x.toLowerCase(Locale.ROOT)); }
+            else if (key.equals("worlds")) { e.worlds.clear(); e.worlds.addAll(items); }
+            else if (key.equals("rotate")) e.rotate = val.equals("-") || val.equalsIgnoreCase("global") ? null : Boolean.valueOf(val.equalsIgnoreCase("true") || val.equalsIgnoreCase("on") || val.equalsIgnoreCase("yes"));
+            else if (key.equals("debris")) e.debrisScale = Math.max(0, Math.min(5, Double.parseDouble(val)));
+            else if (key.equals("weight")) e.weight = Math.max(0, Integer.parseInt(val));
+            else if (key.equals("enabled")) e.enabled = val.equalsIgnoreCase("true") || val.equalsIgnoreCase("on") || val.equalsIgnoreCase("yes");
+            else if (key.equals("theme")) e.theme = val.equals("-") || val.equalsIgnoreCase("AUTO") ? null : val.toUpperCase(Locale.ROOT);
+            else { plugin.lang().send(s, "structure.set-usage"); return true; }
+        } catch (NumberFormatException ex) { plugin.lang().send(s, "structure.set-usage"); return true; }
+        cat.save();
+        plugin.lang().send(s, "structure.set-done", "name", e.id, "key", key, "value", val);
+        return true;
     }
 
     /** /mystic structure export <name> and import <file> [name] [overwrite]: share files through plugins/MysticChest/exchange/. */
@@ -504,10 +571,43 @@ public final class MysticCommand implements TabExecutor {
         if (!need(s, "mysticchest.admin.loot")) return true;
         if (a.length < 3) { plugin.lang().send(s, "usage.loot"); return true; }
         String sub = a[1].toLowerCase(Locale.ROOT);
+        if (sub.equals("preset")) return lootPreset(s, a);
+        if (sub.equals("import")) return lootImport(s, a);
         Tier t = tier(s, a[2]);
         if (t == null) return true;
         String tn = tn(s, t);
         switch (sub) {
+            case "fill": {
+                Player p = player(s);
+                if (p == null) return true;
+                int weight = plugin.settings().defaultWeight;
+                boolean keep = false;
+                for (int i = 3; i < a.length; i++) {
+                    if (a[i].equalsIgnoreCase("--keep")) keep = true;
+                    else try { weight = Math.max(1, Integer.parseInt(a[i])); } catch (NumberFormatException e) { plugin.lang().send(s, "usage.loot-fill"); return true; }
+                }
+                ru.mysticchest.gui.LootFillGui.open(plugin, p, t, weight, keep);
+                return true;
+            }
+            case "copy": {
+                Tier to = a.length > 3 ? tier(s, a[3]) : null;
+                if (to == null) { if (a.length <= 3) plugin.lang().send(s, "usage.loot-copy"); return true; }
+                if (to == t) { plugin.lang().send(s, "usage.loot-copy"); return true; }
+                boolean replace = a.length > 4 && a[4].equalsIgnoreCase("--replace");
+                int n = plugin.loot().append(to, new ArrayList<LootEntry>(plugin.loot().entries(t)), 1.0, replace);
+                plugin.lang().send(s, "loot.copied", "count", String.valueOf(n), "from", tn, "to", tn(s, to));
+                return true;
+            }
+            case "check": return lootCheck(s, t);
+            case "export": {
+                String name = a.length > 3 ? a[3].toLowerCase(Locale.ROOT) : t.id;
+                if (!ru.mysticchest.structure.StructureCatalog.validName(name)) { plugin.lang().send(s, "structure.bad-name"); return true; }
+                java.io.File dir = new java.io.File(plugin.getDataFolder(), "exchange");
+                dir.mkdirs();
+                plugin.io().writeNow(new java.io.File(dir, "loot-" + name + ".yml"), plugin.loot().serialize(plugin.loot().entries(t), "## Loot exported by /mystic loot export. Import: /mystic loot import loot-" + name + " <tier> [--replace]\n"));
+                plugin.lang().send(s, "loot.exported", "tier", tn, "path", "plugins/MysticChest/exchange/loot-" + name + ".yml", "file", "loot-" + name);
+                return true;
+            }
             case "add": {
                 Player p = player(s);
                 if (p == null) return true;
@@ -589,6 +689,104 @@ public final class MysticCommand implements TabExecutor {
                 plugin.lang().send(s, "usage.loot");
                 return true;
         }
+    }
+
+    /** /mystic loot check <tier>: total weight, rare share, duplicates, entries lost to unsupported items. */
+    private boolean lootCheck(CommandSender s, Tier t) {
+        List<LootEntry> list = plugin.loot().entries(t);
+        long total = 0;
+        int rare = 0, cmds = 0, dup = 0, noItem = 0;
+        double rareChance = 0;
+        java.util.Set<String> seen = new java.util.HashSet<String>();
+        for (LootEntry e : list) {
+            total += e.weight;
+            if (e.rare) { rare++; rareChance += e.chance; }
+            if (!e.commands.isEmpty()) cmds++;
+            if (!e.giveItem) noItem++;
+            ItemStack one = e.item.clone();
+            one.setAmount(1);
+            if (e.giveItem && !seen.add(one.toString())) dup++;
+        }
+        plugin.lang().send(s, "loot.check", "tier", tn(s, t), "entries", String.valueOf(list.size()), "weight", String.valueOf(total),
+                "rare", String.valueOf(rare), "rarechance", String.format(Locale.ROOT, "%.1f", rareChance), "cmds", String.valueOf(cmds),
+                "dup", String.valueOf(dup), "skipped", String.valueOf(plugin.loot().skipped(t)));
+        if (list.isEmpty()) plugin.lang().send(s, "loot.check-empty");
+        else if (dup > 0) plugin.lang().send(s, "loot.check-dup");
+        if (plugin.loot().skipped(t) > 0) plugin.lang().send(s, "loot.check-skipped");
+        return true;
+    }
+
+    private static final List<String> PRESETS = Arrays.asList("food", "diamond-gear", "resources", "redstone", "nether");
+
+    private java.io.File presetFile(String name) {
+        String res = "presets/" + name + ".yml";
+        if (PRESETS.contains(name)) return plugin.configs().ensure(res);
+        return new java.io.File(plugin.getDataFolder(), res);
+    }
+
+    private List<String> presetNames() {
+        List<String> out = new ArrayList<String>(PRESETS);
+        java.io.File[] fs = new java.io.File(plugin.getDataFolder(), "presets").listFiles();
+        if (fs != null) for (java.io.File f : fs) {
+            String n = f.getName();
+            if (n.endsWith(".yml") && !out.contains(n.substring(0, n.length() - 4))) out.add(n.substring(0, n.length() - 4));
+        }
+        return out;
+    }
+
+    /** /mystic loot preset list | save <tier> <name> | <tier> <name> [x<multiplier>] [--replace] */
+    private boolean lootPreset(CommandSender s, String[] a) {
+        String first = a[2].toLowerCase(Locale.ROOT);
+        if (first.equals("list")) {
+            plugin.lang().send(s, "loot.preset-list", "names", String.join(", ", presetNames()));
+            return true;
+        }
+        if (first.equals("save")) {
+            Tier t = a.length > 3 ? tier(s, a[3]) : null;
+            if (t == null) { if (a.length <= 3) plugin.lang().send(s, "usage.loot-preset"); return true; }
+            String name = a.length > 4 ? a[4].toLowerCase(Locale.ROOT) : t.id;
+            if (!ru.mysticchest.structure.StructureCatalog.validName(name)) { plugin.lang().send(s, "structure.bad-name"); return true; }
+            java.io.File f = new java.io.File(plugin.getDataFolder(), "presets/" + name + ".yml");
+            f.getParentFile().mkdirs();
+            plugin.io().writeNow(f, plugin.loot().serialize(plugin.loot().entries(t), "## Preset saved by /mystic loot preset save. Load: /mystic loot preset <tier> " + name + "\n"));
+            plugin.lang().send(s, "loot.preset-saved", "name", name, "count", String.valueOf(plugin.loot().entries(t).size()));
+            return true;
+        }
+        Tier t = tier(s, a[2]);
+        if (t == null) return true;
+        if (a.length < 4) { plugin.lang().send(s, "usage.loot-preset"); return true; }
+        String name = a[3].toLowerCase(Locale.ROOT);
+        java.io.File f = presetFile(name);
+        if (!f.isFile()) { plugin.lang().send(s, "loot.preset-missing", "name", name, "names", String.join(", ", presetNames())); return true; }
+        double mult = 1.0;
+        boolean replace = false;
+        for (int i = 4; i < a.length; i++) {
+            if (a[i].equalsIgnoreCase("--replace")) replace = true;
+            else if (a[i].matches("(?i)x\\d+(\\.\\d+)?")) mult = Double.parseDouble(a[i].substring(1));
+        }
+        int[] skip = new int[1];
+        List<LootEntry> src = plugin.loot().read(f, "presets/" + name + ".yml", skip);
+        int n = plugin.loot().append(t, src, mult, replace);
+        plugin.lang().send(s, "loot.preset-loaded", "name", name, "count", String.valueOf(n), "tier", tn(s, t), "skipped", String.valueOf(skip[0]));
+        return true;
+    }
+
+    /** /mystic loot import <file> <tier> [--replace]: a file from plugins/MysticChest/exchange/. */
+    private boolean lootImport(CommandSender s, String[] a) {
+        if (a.length < 4) { plugin.lang().send(s, "usage.loot-import"); return true; }
+        String file = a[2].toLowerCase(Locale.ROOT);
+        if (file.endsWith(".yml")) file = file.substring(0, file.length() - 4);
+        if (!ru.mysticchest.structure.StructureCatalog.validName(file)) { plugin.lang().send(s, "structure.bad-name"); return true; }
+        Tier t = tier(s, a[3]);
+        if (t == null) return true;
+        java.io.File f = new java.io.File(new java.io.File(plugin.getDataFolder(), "exchange"), file + ".yml");
+        if (!f.isFile()) { plugin.lang().send(s, "structure.import-missing", "file", file + ".yml"); return true; }
+        int[] skip = new int[1];
+        List<LootEntry> src = plugin.loot().read(f, "exchange/" + file + ".yml", skip);
+        if (src.isEmpty()) { plugin.lang().send(s, "loot.import-empty", "file", file + ".yml"); return true; }
+        int n = plugin.loot().append(t, src, 1.0, a.length > 4 && a[4].equalsIgnoreCase("--replace"));
+        plugin.lang().send(s, "loot.preset-loaded", "name", file, "count", String.valueOf(n), "tier", tn(s, t), "skipped", String.valueOf(skip[0]));
+        return true;
     }
 
     private boolean lootCmd(CommandSender s, String[] a, Tier t) {
@@ -683,12 +881,24 @@ public final class MysticCommand implements TabExecutor {
             else if (sub.equals("board") && a.length == 2) out.addAll(Arrays.asList("create", "remove", "list"));
             else if (sub.equals("board") && a.length == 4 && a[1].equalsIgnoreCase("create")) out.addAll(Arrays.asList(ru.mysticchest.stats.StatsService.STATS));
             else if (sub.equals("board") && a.length == 3 && a[1].equalsIgnoreCase("remove")) out.addAll(plugin.boards().names());
-            else if (sub.equals("structure") && a.length == 2) out.addAll(Arrays.asList("wand", "pos1", "pos2", "save", "delete", "edit", "list", "preview", "reload", "export", "import"));
-            else if (sub.equals("structure") && (a.length == 3) && (a[1].equalsIgnoreCase("preview") || a[1].equalsIgnoreCase("delete") || a[1].equalsIgnoreCase("export"))) { for (ru.mysticchest.structure.StructureCatalog.Entry en : plugin.structures().catalog().all()) out.add(en.id); }
+            else if (sub.equals("structure") && a.length == 2) out.addAll(Arrays.asList("wand", "pos1", "pos2", "save", "delete", "edit", "list", "preview", "reload", "export", "import", "info", "set"));
+            else if (sub.equals("structure") && (a.length == 3) && (a[1].equalsIgnoreCase("preview") || a[1].equalsIgnoreCase("delete") || a[1].equalsIgnoreCase("export") || a[1].equalsIgnoreCase("info") || a[1].equalsIgnoreCase("set"))) { for (ru.mysticchest.structure.StructureCatalog.Entry en : plugin.structures().catalog().all()) out.add(en.id); }
+            else if (sub.equals("structure") && a.length == 4 && a[1].equalsIgnoreCase("set")) out.addAll(SET_KEYS);
+            else if (sub.equals("structure") && a.length == 4 && a[1].equalsIgnoreCase("preview")) out.addAll(Arrays.asList("r0", "r1", "r2", "r3"));
             else if (sub.equals("spawn") && a.length == 5) { for (ru.mysticchest.structure.Theme th : ru.mysticchest.structure.Theme.values()) out.add(th.name().toLowerCase()); }
             else if (sub.equals("loot")) {
                 if (a.length == 2) out.addAll(LOOT);
+                else if (a.length == 3 && a[1].equalsIgnoreCase("preset")) { out.add("list"); out.add("save"); tiers(out); }
+                else if (a.length == 3 && a[1].equalsIgnoreCase("import")) {
+                    java.io.File[] fs = new java.io.File(plugin.getDataFolder(), "exchange").listFiles();
+                    if (fs != null) for (java.io.File f : fs) if (f.getName().endsWith(".yml")) out.add(f.getName().substring(0, f.getName().length() - 4));
+                }
                 else if (a.length == 3) tiers(out);
+                else if (a.length == 4 && a[1].equalsIgnoreCase("preset")) { if (a[2].equalsIgnoreCase("save")) tiers(out); else out.addAll(presetNames()); }
+                else if (a.length == 4 && (a[1].equalsIgnoreCase("copy") || a[1].equalsIgnoreCase("import"))) tiers(out);
+                else if (a[1].equalsIgnoreCase("fill")) out.add("--keep");
+                else if (a[1].equalsIgnoreCase("copy") || a[1].equalsIgnoreCase("import")) out.add("--replace");
+                else if (a[1].equalsIgnoreCase("preset") && a.length >= 5) { out.add("--replace"); out.add("x2"); out.add("x0.5"); }
                 else if (a.length == 5 && a[1].equalsIgnoreCase("cmd")) out.addAll(Arrays.asList("add", "remove", "list", "clear"));
                 else if (a[1].equalsIgnoreCase("add")) out.addAll(Arrays.asList("--keep", "--hand"));
                 else if (a[1].equalsIgnoreCase("remove") && a.length == 5) out.add("--return");

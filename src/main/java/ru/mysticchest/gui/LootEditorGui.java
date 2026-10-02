@@ -26,6 +26,8 @@ import java.util.Locale;
  */
 public final class LootEditorGui implements GuiHolder {
     private static final int PER_PAGE = 45;
+    /** Number keys 3-7 in the editor set the weight to: common, uncommon, rare, epic, legendary. */
+    private static final int[] RARITY = {100, 40, 12, 4, 1};
     private final MysticChestPlugin plugin;
     private final Player p;
     private final Tier tier;
@@ -182,6 +184,7 @@ public final class LootEditorGui implements GuiHolder {
             int b = e.getHotbarButton();
             if (b == 0) en.broadcast = !en.broadcast;
             else if (b == 1) en.giveItem = !en.giveItem;
+            else if (b >= 2 && b <= 6) en.weight = RARITY[b - 2];            // keys 3-7: common ... legendary
             else return;
             changed();
             return;

@@ -16,6 +16,13 @@ public final class Structure {
     /** Other chest cells of the same structure (beacon platform) and its centre on the ground plane. */
     public final java.util.List<Location> extraChests = new java.util.ArrayList<Location>();
     public Location center;
+    /** Where guards and the boss stand (sign markers of a saved structure) and extra chests with their tier ("" = the main one). */
+    public final java.util.List<Location> guardPoints = new java.util.ArrayList<Location>();
+    public final java.util.List<Location> bossPoints = new java.util.ArrayList<Location>();
+    public final java.util.List<Location> lootPoints = new java.util.ArrayList<Location>();
+    public final java.util.List<String> lootTiers = new java.util.ArrayList<String>();
+    /** Standing chests that belong to this structure: it collapses when the last one is gone. */
+    public int refs;
     final List<int[]> positions = new ArrayList<int[]>();
     final List<Snap> originals = new ArrayList<Snap>();
     final List<int[]> chunks = new ArrayList<int[]>();

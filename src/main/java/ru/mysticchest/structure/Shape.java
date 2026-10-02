@@ -240,6 +240,7 @@ public enum Shape {
      */
     RUINED_PORTAL {
         public void draw(Canvas c) {
+            c.debris = new Canvas.Slot[]{ROCK, NETHERRACK, CRYING, MAGMA};
             c.foundation = NETHERRACK;
             boolean sw = c.chance(0.5);                       // frame along x or along z
             int r = c.rnd(5, 6);
@@ -286,6 +287,7 @@ public enum Shape {
      */
     VOLCANO {
         public void draw(Canvas c) {
+            c.debris = new Canvas.Slot[]{ROCK, ASH, OBSIDIAN, MAGMA};
             c.foundation = ROCK;
             int R = c.rnd(11, 13), H = c.rnd(10, 13), cr = c.rnd(3, 4);
             double rimD = cr + 1.2;
@@ -368,6 +370,7 @@ public enum Shape {
     /** A stranded ship: dark-oak hull with ribs, a broken mast with tattered cobweb sails, a stern cabin with the chest. */
     SHIPWRECK {
         public void draw(Canvas c) {
+            c.debris = new Canvas.Slot[]{DARKWOOD, LOG, WOOD, DARKWOOD};
             c.foundation = DIRT;
             int half = c.rnd(7, 8);                                   // the hull runs from x = -half to +half
             boolean broken = c.chance(0.6);
@@ -425,6 +428,7 @@ public enum Shape {
     /** The skeleton of a dragon: arched ribs along a spine, a skull with glowing eyes, a tail, the chest inside the ribcage. */
     DRAGON_BONES {
         public void draw(Canvas c) {
+            c.debris = new Canvas.Slot[]{BONE, ASH, BONE, BONE};
             c.foundation = ASH;
             int ribs = c.rnd(6, 8);
             int len = ribs * 2;                                         // ribs at every second x
@@ -517,6 +521,7 @@ public enum Shape {
     /** A witch hut on stilts: log legs, a plank deck with steps, dark-oak walls with windows, a pitched roof, cauldron, cobwebs; the chest inside. */
     WITCH_HUT {
         public void draw(Canvas c) {
+            c.debris = new Canvas.Slot[]{DARKWOOD, LOG, WOOD, DARKWOOD};
             c.foundation = DIRT;
             for (int x = -5; x <= 5; x++) for (int z = -5; z <= 5; z++) {
                 double d = Math.sqrt(x * x + z * z);
@@ -555,6 +560,7 @@ public enum Shape {
     /** A graveyard: an iron-railed plot, rows of headstones and mounds, a dead tree, a gate with lamps and a crypt with the chest. */
     GRAVEYARD {
         public void draw(Canvas c) {
+            c.debris = new Canvas.Slot[]{ROCK, ACCENT, ROCK, ROCK};
             c.foundation = DIRT;
             int w = 7;
             for (int x = -w; x <= w; x++) for (int z = -w; z <= w; z++) c.set(x, 0, z, c.chance(0.2) ? SOUL : (c.chance(0.5) ? DIRT : ASH));
@@ -605,6 +611,7 @@ public enum Shape {
     /** A nether outpost: a nether-brick bridge on pillars across a contained lava stream, rails, a watch tower in the middle with the chest. */
     NETHER_OUTPOST {
         public void draw(Canvas c) {
+            c.debris = new Canvas.Slot[]{NBRICK, NRED, NBRICK, NRED};
             c.foundation = NBRICK;
             int half = c.rnd(8, 9), deck = 4;
             for (int x = -half - 1; x <= half + 1; x++) for (int z = -4; z <= 4; z++) c.set(x, 0, z, Math.abs(z) == 4 || Math.abs(x) >= half ? NBRICK : (c.chance(0.15) ? MAGMA : NETHERRACK));
@@ -694,6 +701,30 @@ public enum Shape {
     private static boolean onPath(java.util.List<int[]> path, int x, int z) {
         for (int[] p : path) if (p[0] == x && p[1] == z) return true;
         return false;
+    }
+
+    /** Default tags (filter with shapes: [tag:nether] in a profile or a tier). */
+    public String[] tags() {
+        switch (this) {
+            case PYRAMID: return new String[]{"desert", "ancient"};
+            case TEMPLE: return new String[]{"ancient"};
+            case OBELISK: return new String[]{"ancient", "magic"};
+            case HENGE: return new String[]{"ancient", "nature"};
+            case GATE: return new String[]{"ancient"};
+            case TOWER: return new String[]{"castle"};
+            case COLOSSEUM: return new String[]{"arena", "pvp"};
+            case CRYSTALS: return new String[]{"magic", "nature"};
+            case RUNES: return new String[]{"magic"};
+            case RUINED_PORTAL: return new String[]{"nether", "ruins"};
+            case VOLCANO: return new String[]{"nature", "nether", "fire"};
+            case SHIPWRECK: return new String[]{"ruins", "sea"};
+            case DRAGON_BONES: return new String[]{"ancient", "monster"};
+            case CASTLE_RUIN: return new String[]{"castle", "ruins"};
+            case WITCH_HUT: return new String[]{"swamp", "magic"};
+            case GRAVEYARD: return new String[]{"undead", "ruins"};
+            case NETHER_OUTPOST: return new String[]{"nether", "castle"};
+            default: return new String[0];
+        }
     }
 
     /** Not part of the random rotation. */
