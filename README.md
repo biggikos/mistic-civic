@@ -73,7 +73,7 @@ Full list with permissions: [docs/documentation.md#commands-and-permissions](doc
 | Economy | Vault / VaultUnlocked, ExcellentEconomy, PlayerPoints, CoinsEngine (see notes) |
 | Optional | PlaceholderAPI |
 
-Tested on live servers: Paper 26.1.2 and 26.3 (Java 25), Paper 26.2, Paper 1.21.11 (Java 25) and Paper 1.12.2 (Java 8); with VaultUnlocked 2.20.3, ExcellentEconomy 2.8.0 (NightCore 2.16.6), PlayerPoints 3.3.3 and PlaceholderAPI 2.11.6. Versions in between are expected to work (the code avoids new APIs) but were not run. The CoinsEngine preset in `config.yml` is **not verified**; check its placeholder and command names for your version.
+Tested on live servers: Purpur 1.21.11, Paper 26.1.2 and 26.3 (Java 25), Paper 26.2, Paper 1.21.11 (Java 25) and Paper 1.12.2 (Java 8); with VaultUnlocked 2.20.3, ExcellentEconomy 2.8.0 (NightCore 2.16.6), PlayerPoints 3.3.3 and PlaceholderAPI 2.11.6. Versions in between are expected to work (the code avoids new APIs) but were not run. The CoinsEngine preset in `config.yml` is **not verified**; check its placeholder and command names for your version.
 
 Items that do not exist on an old server (for example netherite on 1.12) are skipped silently when rewards are loaded.
 
