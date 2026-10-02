@@ -42,8 +42,9 @@ public final class Effects {
         if (pt == null) return;
         int n = Math.min(count, s.particleLimit);
         double max = s.viewDistance;
+        Location pl = new Location(null, 0, 0, 0);
         for (Player p : loc.getWorld().getPlayers()) {
-            if (p.getLocation().distanceSquared(loc) <= max * max) {
+            if (p.getLocation(pl).distanceSquared(loc) <= max * max) {
                 try { p.spawnParticle(pt, loc, n, dx, dy, dz, speed); } catch (Throwable ignored) {}
             }
         }

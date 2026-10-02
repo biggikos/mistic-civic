@@ -55,6 +55,7 @@ public final class Aura implements Animator.Animation {
         boolean chime = !s.auraSound.isEmpty() && System.currentTimeMillis() >= nextSound;
         if (chime) nextSound = System.currentTimeMillis() + s.auraSoundInterval * 1000L;
         double view2 = (double) s.viewDistance * s.viewDistance;
+        Location pl = tmp2;
         for (ChestManager.Active a : chests) {
             World w = a.loc.getWorld();
             if (w == null) continue;
@@ -62,8 +63,9 @@ public final class Aura implements Animator.Animation {
             Settings.AuraStyle style = style(a, s);
             Particle pt = particle(a, s);
             if (pt == null || style == Settings.AuraStyle.NONE) continue;
+            dustNow = isDust(pt);
             for (Player p : w.getPlayers()) {
-                if (p.getLocation().distanceSquared(base) > view2) continue;
+                if (p.getLocation(pl).distanceSquared(base) > view2) continue;
                 draw(p, pt, base, style, a.tier.color, s);
                 if (chime) plugin.effects().playSound(p, base, s.auraSound, s.auraVolume, s.auraPitch);
             }
@@ -84,8 +86,9 @@ public final class Aura implements Animator.Animation {
             World w = a.loc.getWorld();
             if (w == null) continue;
             Lines l = null;
+            double lim = (reach + s.linesLength) * (reach + s.linesLength) / 2.2;
             for (Player p : w.getPlayers()) {
-                if (p.getLocation().distanceSquared(a.loc) > (reach + s.linesLength) * (reach + s.linesLength) / 2.2) continue;
+                if (p.getLocation(tmp2).distanceSquared(a.loc) > lim) continue;
                 if (l == null) { l = lines.get(a); if (l == null) { l = new Lines(a, s); lines.put(a, l); } }
                 l.draw(a, p, s, pt, a.tier.color, phase + tick, dust, spawner);
             }
@@ -132,11 +135,22 @@ public final class Aura implements Animator.Animation {
 
     private Settings.ColorMode mode(Settings s) { return s.auraColorMode; }
 
+    /** Reused for every particle and distance check: the ticker runs every tick, no garbage per particle. */
+    private final Location tmp = new Location(null, 0, 0, 0), tmp2 = new Location(null, 0, 0, 0);
+    private Particle dustOf;
+    private boolean dustNow, dustCached;
+
+    private boolean isDust(Particle pt) {
+        if (pt != dustOf || !dustCached) { dustOf = pt; dustCached = true; dustNow = pt.name().equals("REDSTONE") || pt.name().equals("DUST"); }
+        return dustNow;
+    }
+
     @SuppressWarnings("deprecation")
     private void put(Player p, Particle pt, double x, double y, double z, Color color) {
-        Location l = new Location(p.getWorld(), x, y, z);
+        Location l = tmp;
+        l.setWorld(p.getWorld()); l.setX(x); l.setY(y); l.setZ(z);
         try {
-            boolean dust = pt.name().equals("REDSTONE") || pt.name().equals("DUST");
+            boolean dust = isDust(pt);
             if (dust && DUST) Dust.spawn(p, pt, l, 1, color);
             else if (dust) p.spawnParticle(pt, l, 0, Math.max(0.001, color.getRed() / 255.0), color.getGreen() / 255.0, color.getBlue() / 255.0, 1.0);   // 1.12: colour through the offsets
             else p.spawnParticle(pt, l, 1, 0, 0, 0, 0);

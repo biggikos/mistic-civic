@@ -265,10 +265,16 @@ public final class ChestManager {
         return best;
     }
 
+    /** Read-only snapshot, rebuilt only when a chest is placed or removed (the ticker asks for it every tick). */
+    private List<Active> cache;
+
     private List<Active> all() {
+        List<Active> c = cache;
+        if (c != null) return c;
         List<Active> out = new ArrayList<Active>(total);
         for (Map<Long, Active> m : byWorld.values()) out.addAll(m.values());
-        return out;
+        cache = java.util.Collections.unmodifiableList(out);
+        return cache;
     }
 
     public int countProfile(String profile) {
@@ -311,6 +317,7 @@ public final class ChestManager {
         a.mode = base != ru.mysticchest.open.OpenType.RANDOM ? base : (plugin.settings().randomReveal ? plugin.open().pickMode(t) : ru.mysticchest.open.OpenType.RANDOM);
         m.put(a.key, a);
         total++;
+        cache = null;
         hold(b.getWorld(), b.getX() >> 4, b.getZ() >> 4);
         startAura();
         if (!"beacon".equals(profile)) { plugin.bossBars().add(a); plugin.guards().spawnFor(a); }
@@ -355,6 +362,7 @@ public final class ChestManager {
         Map<Long, Active> m = byWorld.get(a.loc.getWorld());
         if (m == null || m.remove(a.key) == null) return false;
         total--;
+        cache = null;
         if (m.isEmpty()) byWorld.remove(a.loc.getWorld());
         if (a.ttl != null) a.ttl.cancel();
         if (a.wake != null) { a.wake.cancel(); a.wake = null; }

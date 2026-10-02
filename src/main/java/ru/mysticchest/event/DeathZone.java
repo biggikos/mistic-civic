@@ -33,13 +33,13 @@ public final class DeathZone implements Listener {
             double r = l.integer("radius", 25, 3, 200);
             List<String> effects = l.strings("effects");
             if (effects.isEmpty()) effects.add("GLOWING:3:0");
+            List<PotionEffect> parsed = new java.util.ArrayList<PotionEffect>(effects.size());
+            for (String s : effects) { PotionEffect pe = Potions.parse(s, 3); if (pe != null) parsed.add(pe); }
+            if (parsed.isEmpty()) continue;
             for (Player p : a.loc.getWorld().getPlayers()) {
                 if (p.getLocation().distanceSquared(a.loc) > r * r || p.isDead()) continue;
                 if (p.getGameMode() != GameMode.SURVIVAL && p.getGameMode() != GameMode.ADVENTURE) continue;
-                for (String s : effects) {
-                    PotionEffect pe = Potions.parse(s, 3);
-                    if (pe != null) p.addPotionEffect(pe, true);
-                }
+                for (PotionEffect pe : parsed) p.addPotionEffect(pe, true);
             }
         }
     }
