@@ -284,6 +284,8 @@ public final class StructureService {
         Structure st = new Structure(w, minX, maxX, baseY - 10, top, minZ, maxZ, chest);
         st.chunks.addAll(chunks);
         st.name = bp.name;
+        st.center = new Location(w, cx + 0.5, baseY, cz + 0.5);
+        for (int[] e : bp.extraChests) st.extraChests.add(new Location(w, cx + e[0], baseY + e[1], cz + e[2]));
         active.add(st);
         plugin.animator().add(new BuildJob(st, ops, placers, cb, new Location(w, cx + 0.5, baseY + 1, cz + 0.5), keepFrom));
     }

@@ -233,7 +233,30 @@ public enum Shape {
             c.set(0, 2, 0, ACCENT);
             c.chest(0, 3, 0);
         }
+    },
+    /** The beacon-killer platform: four chests round an iron pyramid with a beacon. Used by the beacon event only. */
+    BEACON {
+        public void draw(Canvas c) {
+            int r = 6;
+            c.fill(-r, 0, -r, r, 0, r, BASE);
+            for (int t = -r; t <= r; t++) { c.set(t, 0, -r, ACCENT); c.set(t, 0, r, ACCENT); c.set(-r, 0, t, ACCENT); c.set(r, 0, t, ACCENT); }
+            c.fill(-2, 0, -2, 2, 0, 2, TRIM);
+            c.fill(-1, 1, -1, 1, 1, 1, IRON);          // the beacon needs this 3x3 of iron below it
+            c.set(0, 2, 0, CORE);
+            for (int sx = -1; sx <= 1; sx += 2) for (int sz = -1; sz <= 1; sz += 2) {
+                c.fill(sx * r, 1, sz * r, sx * r, 3, sz * r, TRIM);
+                c.set(sx * r, 4, sz * r, LIGHT);
+                c.set(sx * 4, 0, sz * 4, TRIM);          // pedestals of the chests
+            }
+            c.chest(4, 1, 4);
+            c.extraChest(-4, 1, 4);
+            c.extraChest(4, 1, -4);
+            c.extraChest(-4, 1, -4);
+        }
     };
+
+    /** Not part of the random rotation. */
+    public boolean special() { return this == BEACON; }
 
     public abstract void draw(Canvas c);
 

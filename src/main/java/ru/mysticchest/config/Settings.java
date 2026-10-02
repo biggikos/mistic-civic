@@ -108,7 +108,7 @@ public final class Settings {
     public final boolean showChances, mergeIdentical;
     public final double rareBelow;
 
-    public final Announce onSpawn, onOpen, onRare, onExpire, onHunt, onGuards;
+    public final Announce onSpawn, onOpen, onRare, onExpire, onHunt, onGuards, onBeacon;
     public final Effect fxOpen, fxTick, fxWin, fxRare, fxSpawn;
 
     public enum AuraStyle { NONE, RING, PILLAR, SPIRAL }
@@ -216,6 +216,7 @@ public final class Settings {
         onExpire = new Announce(an.sub("on-expire"));
         onHunt = new Announce(an.sub("on-hunt"));
         onGuards = new Announce(an.sub("on-guards"));
+        onBeacon = new Announce(an.sub("on-beacon"));
         Cfg fx = c.sub("effects");
         int cap = lowResource ? 0 : particleLimit;
         fxOpen = new Effect(fx.sub("open"), cap);

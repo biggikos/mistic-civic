@@ -14,6 +14,7 @@ final class Blueprint {
     final Set<Long> occupied = new HashSet<Long>();
     final Map<Long, Placer> foundation = new HashMap<Long, Placer>();   // column (dx,dz) -> block to extend downwards
     Placer defaultFoundation;
+    final List<int[]> extraChests = new ArrayList<int[]>();
     int minX, maxX, minZ, maxZ, height, chestX, chestY, chestZ;
     /** true: everything inside the volume is cleared (built-in shapes). false: only trees/grass are, terrain stays. */
     boolean clearVolume;
@@ -38,6 +39,7 @@ final class Blueprint {
         for (Long k : new ArrayList<Long>(b.foundation.keySet())) b.foundation.put(k, base);
         b.minX = cv.minX(); b.maxX = cv.maxX(); b.minZ = cv.minZ(); b.maxZ = cv.maxZ(); b.height = cv.height();
         b.chestX = cv.chestX; b.chestY = cv.chestY; b.chestZ = cv.chestZ;
+        b.extraChests.addAll(cv.extraChests);
         b.clearVolume = true;
         return b;
     }

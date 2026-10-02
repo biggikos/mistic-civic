@@ -88,6 +88,7 @@ public final class WorldListener implements Listener {
             plugin.lang().send(p, "deny.claimed", "time", plugin.lang().time(p, (a.claimUntil - now + 999) / 1000));
             return;
         }
+        if (plugin.open().pinataActive(a)) { plugin.open().openWorldChest(p, a); return; }   // keep hitting the pinata
         if (plugin.guards().locked(a)) {
             plugin.lang().send(p, "guards.locked", "count", String.valueOf(plugin.guards().left(a)));
             return;

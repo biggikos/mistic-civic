@@ -8,6 +8,7 @@
 - [Spawning chests](#spawning-chests)
 - [Announcements, boss bar, timers](#announcements-boss-bar-timers)
 - [Structures](#structures)
+- [Events: beacon killer, death chest](#events-beacon-killer-death-chest)
 - [Hunt, guards, atmosphere, capture](#hunt-guards-atmosphere-capture)
 - [Leaderboard, stats, achievements](#leaderboard-stats-achievements)
 - [Cooldowns, limits, pity](#cooldowns-limits-pity)
@@ -190,6 +191,16 @@ Chests can appear inside a building: nine built-in shapes (`pyramid`, `temple`, 
 
 Saved structures keep their exact blocks, are rotated randomly (`rotate: true`) and do not clear the terrain around them (only trees and grass). Sites that are steep, in water or contain player-made blocks (chests, doors, beds, signs…) are skipped and a plain chest appears instead. Per spawn profile or tier you can force a structure: `structure: {shape: gate, theme: end, chance: 100}`.
 
+## Events: beacon killer, death chest
+
+**Beacon killer** (`beacon-event:` in `config.yml`, off by default): announced ahead (boss bar countdown plus warnings at `warn-seconds`), it appears at a random spot as a platform with a real beacon on an iron pyramid and **four elite chests** around it. Inside `zone-radius` players get harsher potion effects at every **stage** (`stages`, freely editable) and **coins every second** - `start + growth × seconds spent inside`, at most `max` - paid to the economy (`currency`, or a `command`) when they leave the zone or it ends. Dying in the zone loses the unpaid coins (`lose-on-death`). Chests are looted like any other (capture, hunt), guards are not spawned. After `duration-seconds` everything collapses and the terrain returns; the top earners are announced. `trigger` is `INTERVAL` (with jitter) or `TIMES`. Run or stop one by hand: `/mystic event beacon start|stop|status`.
+
+**Death chest**: give a tier `deathzone: {enabled: true, radius: 25}` (the `death` tier is included). Players inside **glow** (or get any `effects`), a death inside drops `drop-rolls` extra rewards from the tier's pool for the killer, the kill is announced and can run `kill-commands`; the *zonekills* stat is counted. Put it on a PvP arena: add a point with `/mystic point add pvp_arena`, enable the `death_chest` spawn profile (FIXED_POINTS, TIMES), and the tier already requires a 20-second **capture**.
+
+**New open modes**: `VOLCANO` - the chest erupts, lava and flames burst out and every reward is launched as an item in a fountain (`volcano:` duration, spread, launch power); `PINATA` - hit the standing chest (right click) and a reward falls out with every hit, the last hit breaks it (`pinata:` hits, cooldown). Both work in `RANDOM` (`random-mode.weights`) and per tier. A pinata needs a standing chest; opened from an item it becomes a volcano in front of you.
+
+**Tidier announcements**: one card per spawn with the type, the guards (`Guards: 4 (Boss)`), the loot, the place and the time; the separate guard alert is off by default (`announce.on-guards`).
+
 ## Hunt, guards, atmosphere, capture
 
 Each of these is configured in `config.yml` and can be overridden **per tier** in `tiers.yml` (a tier key wins over the global one).
@@ -357,6 +368,7 @@ Check what the plugin found: `/mystic economy`, and your balance of a currency: 
 | `/mystic chests`, `/mystic track [id]` | `mysticchest.chests` (everyone); coordinates: `mysticchest.chests.coords` (op) |
 | `/mystic mute` | everyone |
 | `/mystic structure …` | `mysticchest.admin.structure` (op) |
+| `/mystic event beacon start\|stop\|status` | `mysticchest.admin` (op) |
 | `/mystic top`, `/mystic stats` | `mysticchest.top` (everyone) |
 | `/mystic board …` | `mysticchest.admin` (op) |
 | `/mystic give`, `spawn`, `reload`, `perf`, `point`, `economy` | `mysticchest.admin` (op) |

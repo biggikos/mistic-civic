@@ -13,6 +13,7 @@ public enum Theme {
 
     private final String[][] names;
     private Mat[] cache;
+    private static Mat IRON_MAT, CORE_MAT;
 
     Theme(String base, String accent, String trim, String light) {
         // trim falls back to the base material when a block is missing on old versions
@@ -26,6 +27,8 @@ public enum Theme {
             cache = c;
         }
         switch (s) {
+            case IRON: return IRON_MAT != null ? IRON_MAT : (IRON_MAT = Mat.of("IRON_BLOCK"));
+            case CORE: return CORE_MAT != null ? CORE_MAT : (CORE_MAT = Mat.of("BEACON"));
             case ACCENT: return cache[1];
             case TRIM: return cache[2];
             case LIGHT: return cache[3];

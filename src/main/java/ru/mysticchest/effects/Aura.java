@@ -45,6 +45,7 @@ public final class Aura implements Animator.Animation {
             plugin.guards().tick();
             plugin.atmosphere().update(chests);
             plugin.captures().tick();
+            plugin.deathZone().update(chests);
         }
         if (s.linesEnabled && tick % s.linesInterval == 0) drawLines(chests, s);
         lines.keySet().retainAll(chests);

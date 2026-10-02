@@ -56,6 +56,8 @@ public final class MysticChestPlugin extends JavaPlugin {
     private ru.mysticchest.guard.GuardService guards;
     private ru.mysticchest.atmosphere.Atmosphere atmosphere;
     private ru.mysticchest.duel.Captures captures;
+    private ru.mysticchest.event.BeaconEvent beacon;
+    private ru.mysticchest.event.DeathZone deathZone;
     private ru.mysticchest.stats.StatsService stats;
     private ru.mysticchest.stats.BoardService boards;
     private ru.mysticchest.stats.Prefs prefs;
@@ -90,6 +92,8 @@ public final class MysticChestPlugin extends JavaPlugin {
         guards = new ru.mysticchest.guard.GuardService(this);
         atmosphere = new ru.mysticchest.atmosphere.Atmosphere(this);
         captures = new ru.mysticchest.duel.Captures(this);
+        beacon = new ru.mysticchest.event.BeaconEvent(this);
+        deathZone = new ru.mysticchest.event.DeathZone(this);
         stats = new ru.mysticchest.stats.StatsService(this);
         boards = new ru.mysticchest.stats.BoardService(this);
         prefs = new ru.mysticchest.stats.Prefs(this);
@@ -116,6 +120,8 @@ public final class MysticChestPlugin extends JavaPlugin {
         }
         getServer().getPluginManager().registerEvents(fireworks, this);
         getServer().getPluginManager().registerEvents(guards, this);
+        getServer().getPluginManager().registerEvents(beacon, this);
+        getServer().getPluginManager().registerEvents(deathZone, this);
         getServer().getPluginManager().registerEvents(structures.wand(), this);
         getServer().getPluginManager().registerEvents(new GuiListener(this), this);
         getServer().getPluginManager().registerEvents(new ru.mysticchest.chest.WorldListener(this), this);
@@ -129,6 +135,7 @@ public final class MysticChestPlugin extends JavaPlugin {
         if (guards != null) guards.shutdown();
         if (atmosphere != null) atmosphere.clearAll();
         if (captures != null) captures.shutdown();
+        if (beacon != null) beacon.shutdown();
         if (chests != null) chests.removeAll();
         if (structures != null) structures.shutdown();
         if (boards != null) boards.shutdown();
@@ -154,6 +161,7 @@ public final class MysticChestPlugin extends JavaPlugin {
         boards.load();
         schedulePeriodCheck();
         spawner.reload();
+        beacon.reload();
         guiCache.clear();
         getLogger().info("Loaded " + tiers.all().size() + " tiers, language=" + settings.language
                 + ", economy=" + economies.defaultId());
@@ -224,6 +232,8 @@ public final class MysticChestPlugin extends JavaPlugin {
     public ru.mysticchest.guard.GuardService guards() { return guards; }
     public ru.mysticchest.atmosphere.Atmosphere atmosphere() { return atmosphere; }
     public ru.mysticchest.duel.Captures captures() { return captures; }
+    public ru.mysticchest.event.BeaconEvent beacon() { return beacon; }
+    public ru.mysticchest.event.DeathZone deathZone() { return deathZone; }
     public ru.mysticchest.stats.StatsService stats() { return stats; }
     public ru.mysticchest.stats.BoardService boards() { return boards; }
     public ru.mysticchest.stats.Prefs prefs() { return prefs; }

@@ -176,6 +176,15 @@ public final class ChestManager {
 
     public List<Active> snapshot() { return all(); }
 
+    /** Gives a standing chest a different lifetime (the beacon event keeps its chests for the whole event). */
+    public void setTtl(final Active a, int seconds) {
+        if (a.ttl != null) a.ttl.cancel();
+        a.expiresAt = System.currentTimeMillis() + seconds * 1000L;
+        a.ttl = plugin.scheduler().later(seconds * 1000L, new Runnable() {
+            public void run() { remove(a, true); }
+        });
+    }
+
     public Active byId(int id) {
         for (Map<Long, Active> m : byWorld.values()) for (Active a : m.values()) if (a.id == id) return a;
         return null;
@@ -256,8 +265,7 @@ public final class ChestManager {
         total++;
         hold(b.getWorld(), b.getX() >> 4, b.getZ() >> 4);
         startAura();
-        plugin.bossBars().add(a);
-        plugin.guards().spawnFor(a);
+        if (!"beacon".equals(profile)) { plugin.bossBars().add(a); plugin.guards().spawnFor(a); }
         save();
         return true;
     }
@@ -304,6 +312,7 @@ public final class ChestManager {
         plugin.bossBars().remove(a);
         plugin.guards().cleanup(a);
         plugin.captures().cancelFor(a);
+        plugin.open().forgetPinata(a);
         if (clearBlock && a.loc.getBlock().getType() == a.block) a.loc.getBlock().setType(Material.AIR);
         release(a.loc.getWorld(), a.loc.getBlockX() >> 4, a.loc.getBlockZ() >> 4);
         if (a.structure != null) plugin.structures().scheduleRestore(a.structure);

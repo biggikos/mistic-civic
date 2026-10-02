@@ -147,9 +147,11 @@ public final class SpawnService {
     /** modeid / structid / ttlsec placeholders for the announcement of a chest that was just placed. */
     private String[] details(Location loc, Tier tier, Structure st) {
         ru.mysticchest.chest.ChestManager.Active a = plugin.chests().at(loc.getBlock());
+        String[] g = a == null ? null : plugin.guards().summary(a);
         return new String[]{"modeid", a != null && a.mode != null ? a.mode.name() : tier.openMode(plugin.settings()).name(),
                 "structid", st == null || st.name == null ? "" : st.name,
-                "ttlsec", String.valueOf(tier.ttlSeconds(plugin.settings()))};
+                "ttlsec", String.valueOf(tier.ttlSeconds(plugin.settings())),
+                "guardcount", g == null ? "0" : g[0], "guardlevel", g == null ? "" : g[1]};
     }
 
     private void finishLand(SpawnProfile p, Tier tier, Location loc, Structure st, String key) {

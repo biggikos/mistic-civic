@@ -6,12 +6,14 @@ import java.util.Random;
 
 /** A structure drawn in relative coordinates (x/z around the centre, y = 0 is the ground plane). No Bukkit here. */
 public final class Canvas {
-    public enum Slot { AIR, BASE, ACCENT, TRIM, LIGHT }
+    public enum Slot { AIR, BASE, ACCENT, TRIM, LIGHT, IRON, CORE }
 
     private final Map<Long, Slot> cells = new LinkedHashMap<Long, Slot>();
     public final Random rnd;
     public final double decay;
     public int chestX, chestY, chestZ;
+    /** More chests in the same structure (the beacon platform has four). */
+    public final java.util.List<int[]> extraChests = new java.util.ArrayList<int[]>();
     private int minX = 0, maxX = 0, minZ = 0, maxZ = 0, maxY = 0;
 
     public Canvas(Random rnd, double decay) {
@@ -60,6 +62,8 @@ public final class Canvas {
     public boolean chance(double p) { return rnd.nextDouble() < p; }
 
     public void chest(int x, int y, int z) { chestX = x; chestY = y; chestZ = z; set(x, y, z, Slot.AIR); }
+
+    public void extraChest(int x, int y, int z) { extraChests.add(new int[]{x, y, z}); set(x, y, z, Slot.AIR); }
 
     public Slot get(int x, int y, int z) {
         Slot s = cells.get(key(x, y, z));

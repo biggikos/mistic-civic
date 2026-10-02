@@ -70,6 +70,13 @@ public final class GuardService implements Listener {
         return g != null && !g.alive.isEmpty() && a.tier.layered("guards", plugin.settings()).bool("lock-chest", true);
     }
 
+    /** {count, level} for the spawn announcement, or null when the chest has no guards. */
+    public String[] summary(ChestManager.Active a) {
+        Group g = groups.get(a);
+        if (g == null || g.alive.isEmpty()) return null;
+        return new String[]{String.valueOf(g.total), Text.color(g.levelName)};
+    }
+
     public int left(ChestManager.Active a) {
         Group g = groups.get(a);
         return g == null ? 0 : g.alive.size();

@@ -51,7 +51,11 @@ public final class StructureCatalog {
 
     public void load() {
         entries.clear();
-        for (Shape s : Shape.values()) entries.put(s.name().toLowerCase(Locale.ROOT), new Entry(s.name().toLowerCase(Locale.ROOT), s, null));
+        for (Shape s : Shape.values()) {
+            Entry e = new Entry(s.name().toLowerCase(Locale.ROOT), s, null);
+            if (s.special()) e.enabled = false;        // event-only shapes stay out of the random rotation
+            entries.put(e.id, e);
+        }
         File[] files = folder().listFiles();
         if (files != null) {
             Arrays.sort(files);

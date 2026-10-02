@@ -85,3 +85,15 @@ tiers:
     purchasable: false
     rolls: 10
     open-mode: FULL_CHEST
+
+  death:
+    name: {en: "&4&lDeath chest", ru: "&4&lСундук смерти"}
+    purchasable: false
+    rolls: 7
+    icon: ENDER_CHEST
+    open-mode: VOLCANO
+    ttl-seconds: 900
+    guards: {chance: 0}
+    deathzone: {enabled: true, radius: 25, drop-rolls: 1}
+    duel: {enabled: true, trigger: ALWAYS, capture-seconds: 20, zone-radius: 6}
+    atmosphere: {enabled: true, time: MIDNIGHT, weather: STORM, radius: 40, lightning-interval-seconds: 6}

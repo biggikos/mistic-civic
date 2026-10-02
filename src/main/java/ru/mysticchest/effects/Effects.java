@@ -20,7 +20,7 @@ public final class Effects {
     private static final String[][] PARTICLE_ALIASES = {
             {"HAPPY_VILLAGER", "VILLAGER_HAPPY"}, {"TOTEM_OF_UNDYING", "TOTEM"},
             {"ANGRY_VILLAGER", "VILLAGER_ANGRY"}, {"CRIT", "CRIT"}, {"FIREWORK", "FIREWORKS_SPARK"},
-            {"ENCHANT", "ENCHANTMENT_TABLE"}, {"DUST", "REDSTONE"}, {"SMOKE", "SMOKE_NORMAL"}, {"FLAME", "FLAME"}
+            {"ENCHANT", "ENCHANTMENT_TABLE"}, {"DUST", "REDSTONE"}, {"LARGE_SMOKE", "SMOKE_LARGE"}, {"POOF", "EXPLOSION_NORMAL"}, {"EXPLOSION", "EXPLOSION_LARGE"}, {"ELECTRIC_SPARK", "CRIT_MAGIC"}, {"SMOKE", "SMOKE_NORMAL"}, {"FLAME", "FLAME"}
     };
 
     private final MysticChestPlugin plugin;
@@ -32,6 +32,21 @@ public final class Effects {
     /** A sound only this player hears (announcements, boss bar pings). */
     public void soundTo(Player p, String name, float vol, float pitch) {
         playSound(p, p.getLocation(), name, vol, pitch);
+    }
+
+    /** A burst of particles for everyone near (volcano eruptions, pinata hits). Honors low-resource and the particle cap. */
+    public void burst(String name, Location loc, int count, double dx, double dy, double dz, double speed) {
+        Settings s = plugin.settings();
+        if (s.lowResource || loc.getWorld() == null || s.particleLimit <= 0) return;
+        Particle pt = particle(name);
+        if (pt == null) return;
+        int n = Math.min(count, s.particleLimit);
+        double max = s.viewDistance;
+        for (Player p : loc.getWorld().getPlayers()) {
+            if (p.getLocation().distanceSquared(loc) <= max * max) {
+                try { p.spawnParticle(pt, loc, n, dx, dy, dz, speed); } catch (Throwable ignored) {}
+            }
+        }
     }
 
     /** One-off sound at a location for nearby players (structure building). */
@@ -146,13 +161,8 @@ public final class Effects {
     /** Optional potion effects and a harmless lightning bolt for the player. */
     private void extras(Settings.Effect fx, Player p, org.bukkit.Color color) {
         for (String spec : fx.potions) {
-            String[] a = spec.split(":");
-            try {
-                org.bukkit.potion.PotionEffectType t = org.bukkit.potion.PotionEffectType.getByName(a[0].trim().toUpperCase());
-                if (t == null) continue;
-                int sec = a.length > 1 ? Integer.parseInt(a[1].trim()) : 5, amp = a.length > 2 ? Integer.parseInt(a[2].trim()) : 0;
-                p.addPotionEffect(new org.bukkit.potion.PotionEffect(t, sec * 20, amp, true, false));
-            } catch (Exception ignored) {}
+            org.bukkit.potion.PotionEffect pe = ru.mysticchest.util.Potions.parse(spec, 5);
+            if (pe != null) p.addPotionEffect(pe);
         }
         if (fx.lightning) p.getWorld().strikeLightningEffect(p.getLocation());
         if (fx.firework) plugin.fireworks().launch(p.getLocation(), color);

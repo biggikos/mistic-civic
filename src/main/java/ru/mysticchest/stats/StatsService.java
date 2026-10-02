@@ -26,7 +26,7 @@ import java.util.UUID;
  * a leaderboard, period-end rewards and achievements. Everything is in memory and saved debounced.
  */
 public final class StatsService {
-    public static final String[] STATS = {"opens", "rares", "hunts", "guards", "bosses", "captures"};
+    public static final String[] STATS = {"opens", "rares", "hunts", "guards", "bosses", "captures", "zonekills"};
 
     public static final class Row {
         public final UUID id; public final String name; public final int value;

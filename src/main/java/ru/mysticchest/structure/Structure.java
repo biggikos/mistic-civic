@@ -13,6 +13,9 @@ public final class Structure {
     public final World world;
     public final int minX, maxX, minY, maxY, minZ, maxZ;
     public final Location chest;
+    /** Other chest cells of the same structure (beacon platform) and its centre on the ground plane. */
+    public final java.util.List<Location> extraChests = new java.util.ArrayList<Location>();
+    public Location center;
     final List<int[]> positions = new ArrayList<int[]>();
     final List<Snap> originals = new ArrayList<Snap>();
     final List<int[]> chunks = new ArrayList<int[]>();

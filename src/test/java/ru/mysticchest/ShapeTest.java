@@ -40,6 +40,7 @@ class ShapeTest {
     @Test
     void shapesAreRandomised() {
         for (Shape s : Shape.values()) {
+            if (s.special()) continue;      // the beacon platform is fixed by design
             java.util.Set<Integer> sizes = new java.util.HashSet<Integer>();
             for (long seed = 0; seed < 30; seed++) { Canvas c = new Canvas(new Random(seed), 0); s.draw(c); sizes.add(c.count() * 31 + c.height()); }
             assertTrue(sizes.size() > 1, s + " should vary between spawns");

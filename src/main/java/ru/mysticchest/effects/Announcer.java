@@ -59,6 +59,9 @@ public final class Announcer {
                 all.add(plugin.lang().get(p, "announce.structure-line", "name", plugin.lang().has(p, key) ? plugin.lang().get(p, key) : st));
             }
         }
+        String gc = find(kv, "guardcount");
+        all.add("guards");
+        all.add(gc == null || gc.isEmpty() || gc.equals("0") ? "" : plugin.lang().get(p, "announce.guards-line", "count", gc, "level", find(kv, "guardlevel") == null ? "" : find(kv, "guardlevel")));
         String id = find(kv, "chestid");
         if (id != null) { all.add("id"); all.add(id); }
         return all.toArray(new String[0]);

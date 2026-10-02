@@ -19,7 +19,7 @@
 language: en
 
 ## Used to upgrade this file when the plugin updates. Do not change it.
-config-version: 8
+config-version: 9
 
 ## Extra console output for troubleshooting.
 debug: false
@@ -30,6 +30,8 @@ debug: false
 ##   FULL_CHEST - a chest GUI full of loot, the player takes what they want
 ##   INSTANT    - everything goes straight to the inventory, no GUI
 ##   PICK       - mystery cards: pick N face-down cards (see "pick")
+##   VOLCANO    - the chest ERUPTS: lava and flames, and every reward is launched as an item in a fountain
+##   PINATA     - hit the standing chest (right click): a reward falls out of it with every hit
 ##   RANDOM     - a random one of the above every time (see "random-mode")
 default-open-mode: ROULETTE
 
@@ -230,6 +232,18 @@ spawn:
       fixed-points:
         ## Only these points (empty list = all points).
         names: []
+    # Example: the DEATH CHEST on a PvP arena (set the point with /mystic point add pvp_arena).
+    death_chest:
+      enabled: false
+      mode: FIXED_POINTS
+      trigger: {type: TIMES, times: ["19:00"]}
+      worlds: [world]
+      tier-weights: {death: 100}
+      announce: EXACT
+      max-active: 1
+      fixed-points:
+        names: [pvp_arena]
+      structure: {shape: colosseum, chance: 100}
     # Example: an airdrop event twice a day.
     airdrop:
       enabled: false
@@ -398,6 +412,61 @@ structures:
   ## Highest allowed height difference of the ground under the structure.
   max-slope: 4
   sound: BLOCK_STONE_PLACE
+
+## ═══ DEATH CHEST (a bloody zone) ═══════════════════════════════════════════
+## A tier with  deathzone: {enabled: true}  gets a danger zone around its standing chests: players inside GLOW,
+## a death inside drops extra loot from that tier's pool for the killer, kills are announced and can run commands.
+## Best used on your PvP arena: put the tier "death" on a FIXED_POINTS profile (see spawn.profiles.death_chest),
+## with capture (duel) ALWAYS. Defaults here, per tier overrides in tiers.yml.
+deathzone:
+  enabled: false
+  radius: 25
+  effects: ["GLOWING:3:0"]     # NAME:seconds:level, re-applied every second while inside
+  drop-rolls: 1                # extra rewards dropped by every player who dies in the zone
+  kill-commands: []            # for the killer: ["eco give {player} 100"]
+  announce: true
+  announce-radius: -1
+
+## ═══ BEACON KILLER (a timed event) ══════════════════════════════════════════
+## Announced a few minutes ahead (boss bar countdown + warnings), it appears at a random spot: a platform with
+## FOUR chests round a beacon. Inside the zone players get harsher potion effects at every stage and are paid
+## coins every second - the longer they stay, the more per second - but dying in the zone loses the unpaid coins.
+## Chests are looted normally (guards are not spawned here). When the time is up it collapses.
+## Start one by hand:  /mystic event beacon start    stop: /mystic event beacon stop
+beacon-event:
+  enabled: false
+  tier: elite                  # loot of the four chests
+  trigger:
+    type: INTERVAL             # or TIMES + times: ["20:00"]
+    minutes: 180
+    jitter-percent: 25
+  min-players: 3
+  warn-seconds: [180, 120, 60, 30, 10, 5]
+  warn-bossbar: true
+  duration-seconds: 480
+  zone-radius: 24
+  bossbar: true
+  bossbar-extra-radius: 120
+  theme: AUTO
+  prefer-flat: 80
+  worlds: [world]
+  random-world: {radius: 2500, min-distance-from-spawn: 200}
+  ## Stages: from "after-seconds" on, players in the zone get these effects (NAME:seconds:level).
+  stages:
+    - {after-seconds: 0,   name: "&eUnease",  effects: ["SLOWNESS:6:0"]}
+    - {after-seconds: 90,  name: "&6Dread",   effects: ["SLOWNESS:6:1", "WEAKNESS:6:0"]}
+    - {after-seconds: 200, name: "&cAgony",   effects: ["SLOWNESS:6:1", "WEAKNESS:6:1", "HUNGER:6:1"]}
+    - {after-seconds: 320, name: "&4Death",   effects: ["WITHER:6:0", "SLOWNESS:6:2", "BLINDNESS:4:0"]}
+  ## Coins per second for every player in the zone: start + growth * seconds spent inside, at most "max".
+  ## Paid when you leave the zone or the event ends. payout: ECONOMY (currency below) or COMMAND.
+  coins:
+    currency: money
+    start: 5
+    growth: 1.0
+    max: 80
+    lose-on-death: true
+    payout: ECONOMY
+    command: "eco give {player} {amount}"
 
 ## ═══ HUNT (be the first) ═══════════════════════════════════════════════════
 ## Open a world chest within "window-seconds" of its appearance and you get a hunter's bonus:
@@ -628,8 +697,22 @@ announce:
     volume: 0.8
     animated: false
     buttons: []
-  on-guards:
+  ## The spawn card already shows the guards (Guards: 4 (Boss)); this extra alert is off by default.
+  on-beacon:
     enabled: true
+    channels: [CHAT, TITLE]
+    radius: -1
+    world-only: false
+    mutable: false
+    sound: ENTITY_WITHER_SPAWN
+    volume: 0.5
+    pitch: 1.4
+    animated: true
+    line-delay-ticks: 5
+    title-animation: SHIMMER
+    buttons: [TRACK, COPY, MUTE]
+  on-guards:
+    enabled: false
     channels: [CHAT, ACTIONBAR]
     radius: -1
     world-only: false
@@ -674,6 +757,20 @@ random-mode:
     FULL_CHEST: 25
     PICK: 25
     INSTANT: 10
+    VOLCANO: 15
+    PINATA: 10
+
+## ═══ VOLCANO and PINATA modes ═══════════════════════════════════════════════
+## Both can be overridden per tier (tiers.yml  volcano: {duration-ticks: 120}  pinata: {hits: 10}).
+volcano:
+  duration-ticks: 70          # length of the eruption (20 ticks = 1 s); rewards are launched evenly over it
+  spread: 0.5                 # how far the items fly sideways
+  launch-power: 0.85          # how high they fly
+  owner-protect-seconds: 0    # >0: only the opener can pick up (not yet reliable on every server version)
+pinata:
+  hits: 6                     # hits to break it (never more than the number of rewards)
+  hit-cooldown-ms: 250        # anti-spam between hits
+  hit-sound: ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR
 
 ## ═══ GUI ════════════════════════════════════════════════════════════════════
 gui:

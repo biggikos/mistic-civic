@@ -15,6 +15,7 @@ One jar, **Minecraft 1.12.2 → 1.21.x**, English and Russian.
 - **Structures** around chests: nine shapes (pyramid, temple, obelisk, stone ring, gate, spiral tower, arena, crystals, rune circle), each rolled with its own size and ruin level, in the biome's theme or a surprise one. They rise block by block, collapse afterwards and **restore the terrain**. Save **your own** with a wand and manage them in a GUI.
 - **Animated, clickable announcements**: a typewriter effect, a shimmering title and buttons (track with an action-bar arrow, copy coordinates, compass, mute), configurable per event with channels, tier and permission filters.
 - **Announcements that say everything**: type of the chest, rarest loot inside, coordinates, structure, time left, a sound for everyone, a **boss bar** and a countdown hologram.
+- **Events**: a **beacon killer** (countdown, a platform with four elite chests round a beacon, worsening effects and coins every second) and a **death chest** zone for your PvP arena. New open modes **Volcano** (the chest erupts, rewards fly out) and **Pinata** (hit it, rewards fall out).
 - **Hunt, guards, capture, atmosphere**: be first to a chest for a bonus, fight guard mobs and bosses of your own design, capture contested chests in a duel, and feel a local midnight storm around an elite chest.
 - **Leaderboard and achievements**: top lists, hologram boards, period rewards and configurable achievements.
 - **RANDOM open mode**: roulette, full chest, mystery cards or instant, rolled by weight.

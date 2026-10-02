@@ -27,7 +27,7 @@ import java.util.Map;
 
 public final class MysticCommand implements TabExecutor {
     private static final List<String> ROOT = Arrays.asList("shop", "preview", "list", "give", "spawn", "reload",
-            "perf", "loot", "point", "economy", "compass", "structure", "chests", "top", "stats", "board", "track", "mute", "help");
+            "perf", "loot", "point", "economy", "compass", "structure", "chests", "top", "stats", "board", "track", "mute", "event", "help");
     private static final List<String> LOOT = Arrays.asList("add", "addcmd", "cmd", "weight", "remove", "list", "edit", "clear");
 
     private final MysticChestPlugin plugin;
@@ -91,6 +91,7 @@ public final class MysticCommand implements TabExecutor {
             case "chests": return chests(s);
             case "track": return track(s, a);
             case "mute": return mute(s);
+            case "event": return event(s, a);
             case "top": return top(s, a);
             case "stats": return stats(s, a);
             case "board": return board(s, a);
@@ -234,6 +235,22 @@ public final class MysticCommand implements TabExecutor {
         if (a.length > 1 && !plugin.settings().onSpawn.enabled) { plugin.lang().send(s, "nav.none"); return true; }
         if (!plugin.tracker().start(p, chest)) { plugin.lang().send(s, "nav.none"); return true; }
         plugin.lang().send(s, "nav.started", "tier", chest.tier.name(plugin.lang().code(s)));
+        return true;
+    }
+
+    private boolean event(CommandSender s, String[] a) {
+        if (!need(s, "mysticchest.admin")) return true;
+        String sub = a.length > 2 ? a[2].toLowerCase(Locale.ROOT) : "status";
+        if (a.length < 2 || !a[1].equalsIgnoreCase("beacon")) { plugin.lang().send(s, "event.usage"); return true; }
+        if (sub.equals("start")) {
+            plugin.lang().send(s, plugin.beacon().running() ? "event.already" : "event.starting");
+            if (!plugin.beacon().running()) plugin.beacon().trigger();
+        } else if (sub.equals("stop")) {
+            plugin.beacon().stop();
+            plugin.lang().send(s, "event.stopped");
+        } else {
+            s.sendMessage(plugin.lang().get(s, "prefix") + "beacon: " + plugin.beacon().status());
+        }
         return true;
     }
 
@@ -576,6 +593,8 @@ public final class MysticCommand implements TabExecutor {
                     || (sub.equals("spawn") && a.length == 2)) tiers(out);
             else if (sub.equals("spawn") && a.length == 3) { out.add("here"); out.addAll(plugin.spawner().profiles().keySet()); }
             else if (sub.equals("spawn") && a.length == 4) { for (ru.mysticchest.structure.StructureCatalog.Entry en : plugin.structures().catalog().all()) out.add(en.id); }
+            else if (sub.equals("event") && a.length == 2) out.add("beacon");
+            else if (sub.equals("event") && a.length == 3) out.addAll(Arrays.asList("start", "stop", "status"));
             else if (sub.equals("top") && a.length == 2) { out.addAll(Arrays.asList(ru.mysticchest.stats.StatsService.STATS)); out.add("all"); }
             else if (sub.equals("top") && a.length == 3) out.add("all");
             else if (sub.equals("board") && a.length == 2) out.addAll(Arrays.asList("create", "remove", "list"));
@@ -604,6 +623,7 @@ public final class MysticCommand implements TabExecutor {
             case "give": case "spawn": case "reload": case "perf": case "point": case "economy": return s.hasPermission("mysticchest.admin");
             case "loot": return s.hasPermission("mysticchest.admin.loot");
             case "structure": return s.hasPermission("mysticchest.admin.structure");
+            case "event": return s.hasPermission("mysticchest.admin");
             case "chests": case "track": return s.hasPermission("mysticchest.chests");
             case "mute": return true;
             case "top": case "stats": return s.hasPermission("mysticchest.top");

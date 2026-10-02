@@ -71,13 +71,24 @@ public final class OpenService {
      * A player opens a chest that stood in the world. Hunt: whoever is fast enough (hunt.window-seconds)
      * gets bonus rolls and commands, and a "hunts" point for the leaderboard.
      */
+    private final java.util.Map<ru.mysticchest.chest.ChestManager.Active, Pinata> pinatas = new java.util.HashMap<ru.mysticchest.chest.ChestManager.Active, Pinata>();
+
+    /** Pinata state: the rewards are rolled at the first hit and fall out one hit at a time. */
+    private static final class Pinata {
+        java.util.List<Reward> rewards;
+        int hitsLeft;
+        long lastHit;
+        int extra;
+    }
+
     public void openWorldChest(Player p, ru.mysticchest.chest.ChestManager.Active a) {
+        if (a.mode == OpenType.PINATA) { hitPinata(p, a); return; }
         if (!plugin.chests().remove(a, true)) return;     // first opener wins
         Settings s = plugin.settings();
         ru.mysticchest.config.Layered h = a.tier.layered("hunt", s);
         long age = Math.max(0, (System.currentTimeMillis() - a.spawnedAt) / 1000);
         boolean fast = h.bool("enabled", true) && age <= h.integer("window-seconds", 120, 0, 86400);
-        open(p, a.tier, a.mode, fast ? h.integer("bonus-rolls", 1, 0, 50) : 0);
+        open(p, a.tier, a.mode, fast ? h.integer("bonus-rolls", 1, 0, 50) : 0, a.loc);
         if (!fast) return;
         plugin.stats().add(p, "hunts");
         for (String c : h.strings("commands")) {
@@ -87,7 +98,10 @@ public final class OpenService {
         if (h.bool("announce", true)) plugin.announcer().send(s.onHunt, p.getLocation(), "hunt.fast", a.tier, "player", p.getName(), "ttlsec", String.valueOf(age));
     }
 
-    public void open(Player p, Tier t, OpenType fixed, int extraRolls) {
+    public void open(Player p, Tier t, OpenType fixed, int extraRolls) { open(p, t, fixed, extraRolls, null); }
+
+    /** @param at where eruptions happen (the chest); null = in front of the player. */
+    public void open(Player p, Tier t, OpenType fixed, int extraRolls, org.bukkit.Location at) {
         long start = System.nanoTime();
         Settings s = plugin.settings();
         int cd = t.cooldownOpen(s);
@@ -96,6 +110,7 @@ public final class OpenService {
         plugin.stats().add(p, "opens");
 
         OpenType type = fixed != null && fixed != OpenType.RANDOM ? fixed : pickMode(t);
+        if (type == OpenType.PINATA && at == null) type = OpenType.VOLCANO;    // a pinata needs a standing chest
         if (type != OpenType.INSTANT && plugin.animator().size() >= s.maxAnimations) type = OpenType.FULL_CHEST;
         List<Reward> rewards = plugin.rewards().roll(p, t, (type == OpenType.PICK ? s.pickCards : t.rolls()) + extraRolls);
         plugin.effects().playTier(s.fxOpen, p, t);
@@ -112,9 +127,71 @@ public final class OpenService {
             case PICK:
                 new PickSession(plugin, p, t, rewards).start();
                 break;
+            case VOLCANO:
+                new VolcanoSession(plugin, p, t, rewards, at != null ? at.clone().add(0.5, 0.6, 0.5)
+                        : p.getLocation().add(p.getLocation().getDirection().setY(0).normalize().multiply(2.5)).add(0, 0.5, 0)).start();
+                break;
             default:
                 new RouletteSession(plugin, p, t, rewards).start();
         }
         Metrics.open(start);
     }
+
+    // ---- pinata ------------------------------------------------------------
+
+    private void hitPinata(Player p, ru.mysticchest.chest.ChestManager.Active a) {
+        Settings s = plugin.settings();
+        ru.mysticchest.config.Layered cfg = a.tier.layered("pinata", s);
+        Pinata st = pinatas.get(a);
+        long now = System.currentTimeMillis();
+        if (st != null && now - st.lastHit < cfg.integer("hit-cooldown-ms", 250, 0, 5000)) return;
+        if (st == null) {
+            // the first hit opens the chest for real: cooldowns, stats, hunt bonus
+            String[] deny = check(p, a.tier);
+            if (deny != null) return;
+            st = new Pinata();
+            ru.mysticchest.config.Layered h = a.tier.layered("hunt", s);
+            long age = Math.max(0, (now - a.spawnedAt) / 1000);
+            boolean fast = h.bool("enabled", true) && age <= h.integer("window-seconds", 120, 0, 86400);
+            st.extra = fast ? h.integer("bonus-rolls", 1, 0, 50) : 0;
+            int cd = a.tier.cooldownOpen(s);
+            if (cd > 0 && !p.hasPermission("mysticchest.bypass.cooldown")) plugin.cooldowns().start(owner(p), key(a.tier), cd);
+            plugin.cooldowns().addOpen(p.getUniqueId());
+            plugin.stats().add(p, "opens");
+            if (fast) plugin.stats().add(p, "hunts");
+            st.rewards = plugin.rewards().roll(p, a.tier, a.tier.rolls() + st.extra);
+            st.hitsLeft = Math.max(1, Math.min(cfg.integer("hits", 6, 1, 100), Math.max(1, st.rewards.size())));
+            pinatas.put(a, st);
+            plugin.announcer().send(s.onOpen, a.loc, "announce.opened", a.tier, "player", p.getName(), "modeid", "PINATA");
+        }
+        st.lastHit = now;
+        int pop = (int) Math.ceil(st.rewards.size() / (double) st.hitsLeft);
+        org.bukkit.Location at = a.loc.clone().add(0.5, 1.1, 0.5);
+        plugin.effects().playSound(p, at, cfg.str("hit-sound", "ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR"), 0.9f, 0.8f + 0.12f * (1 - st.hitsLeft / (float) Math.max(1, st.hitsLeft + 1)));
+        plugin.effects().burst("CRIT", at, 14, 0.35, 0.3, 0.35, 0.15);
+        java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+        for (int i = 0; i < pop && !st.rewards.isEmpty(); i++) {
+            Reward rw = st.rewards.remove(0);
+            plugin.rewards().apply(p, a.tier, rw, false, false);
+            if (rw.entry.giveItem) {
+                org.bukkit.entity.Item it = at.getWorld().dropItem(at, rw.stack.clone());
+                it.setVelocity(new org.bukkit.util.Vector((r.nextDouble() - 0.5) * 0.5, 0.35 + r.nextDouble() * 0.3, (r.nextDouble() - 0.5) * 0.5));
+                it.setPickupDelay(15);
+            }
+        }
+        st.hitsLeft--;
+        if (st.hitsLeft <= 0 || st.rewards.isEmpty()) {
+            pinatas.remove(a);
+            plugin.chests().remove(a, true);
+            plugin.effects().burst("EXPLOSION", at, 3, 0.4, 0.4, 0.4, 0);
+            plugin.effects().playSound(p, at, "ENTITY_GENERIC_EXPLODE", 0.8f, 1.2f);
+            plugin.effects().playTier(s.fxWin, p, a.tier, "player", p.getName(), "item", "");
+        } else {
+            plugin.lang().send(p, "pinata.hit", "left", String.valueOf(st.hitsLeft));
+        }
+    }
+
+    public boolean pinataActive(ru.mysticchest.chest.ChestManager.Active a) { return pinatas.containsKey(a); }
+
+    public void forgetPinata(ru.mysticchest.chest.ChestManager.Active a) { pinatas.remove(a); }
 }
