@@ -133,7 +133,7 @@ public final class Captures {
 
     private void dispose(Cap c) {
         Player p = Bukkit.getPlayer(c.capturer);
-        if (p != null) ru.mysticchest.effects.Glow.off(p); else ru.mysticchest.effects.Glow.off(c.capturer);
+        if (p != null) ru.mysticchest.effects.Glow.off(p); else ru.mysticchest.effects.Glow.offName(c.name);
         if (c.bar != null) { try { c.bar.removeAll(); } catch (Throwable ignored) {} c.bar = null; }
     }
 

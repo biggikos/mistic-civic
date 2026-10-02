@@ -215,7 +215,7 @@ public final class ChestManager {
         Cfg act = plugin.settings().root.sub("activation");
         plugin.effects().soundAt(act.str("sound", "BLOCK_BEACON_ACTIVATE"), a.loc, 1.2f, 1.0f);
         if (act.bool("firework", true)) plugin.fireworks().launch(a.loc.clone().add(0.5, 0, 0.5), a.tier.color);
-        if (!act.bool("announce", true)) return;
+        if (!act.bool("announce", true) || a.profile.endsWith(ru.mysticchest.structure.StructureService.EXTRA)) return;
         ru.mysticchest.spawn.SpawnProfile p = plugin.spawner().profiles().get(a.profile);
         if (p != null && p.announce == ru.mysticchest.spawn.SpawnProfile.Announce.NONE) return;
         boolean exact = p == null || p.announce == ru.mysticchest.spawn.SpawnProfile.Announce.EXACT;

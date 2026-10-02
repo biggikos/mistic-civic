@@ -170,7 +170,7 @@ public final class GuardService implements Listener {
             if (s == null) continue;
             if (s.isSet("glow")) on = s.getBoolean("glow");
             if (boss && s.isSet("boss-glow-color")) color = s.getString("boss-glow-color");
-            if (s.isSet("glow-color")) color = s.getString("glow-color");
+            if (s.isSet("glow-color") && (!boss || s == mob)) color = s.getString("glow-color");
         }
         if (on) ru.mysticchest.effects.Glow.on(e, color);
     }

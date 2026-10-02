@@ -48,6 +48,9 @@ public final class Glow {
         release(entry(e));
     }
 
+    /** A player who already left: only the team bookkeeping (players are entered by name). */
+    public static void offName(String name) { release(name); }
+
     /** For entities that are already gone (dead guards): only the team bookkeeping. */
     public static void off(UUID id) { release(id.toString()); }
 

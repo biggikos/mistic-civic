@@ -551,7 +551,7 @@ public final class MysticCommand implements TabExecutor {
         int online = org.bukkit.Bukkit.getOnlinePlayers().size();
         long cd = plugin.settings().cdSpawn > 0 ? plugin.cooldowns().remaining(ru.mysticchest.cooldown.CooldownManager.GLOBAL, "spawn") : 0;
         plugin.lang().send(s, "debug.header", "online", String.valueOf(online), "chests", String.valueOf(plugin.chests().count()),
-                "cooldown", cd > 0 ? span(cd) : "-");
+                "cooldown", cd > 0 ? span(cd * 1000) : "-");
         for (ru.mysticchest.spawn.SpawnProfile p : plugin.spawner().profiles().values()) {
             List<String> block = new ArrayList<String>();
             if (!p.enabled) block.add(plugin.lang().get(s, "debug.b-disabled"));
@@ -559,7 +559,7 @@ public final class MysticCommand implements TabExecutor {
                 if (online < p.minPlayers) block.add(plugin.lang().get(s, "debug.b-players", "online", String.valueOf(online), "min", String.valueOf(p.minPlayers)));
                 int act = plugin.chests().countProfile(p.name);
                 if (act >= p.maxActive) block.add(plugin.lang().get(s, "debug.b-active", "n", String.valueOf(act), "max", String.valueOf(p.maxActive)));
-                if (cd > 0) block.add(plugin.lang().get(s, "debug.b-cooldown", "t", span(cd)));
+                if (cd > 0) block.add(plugin.lang().get(s, "debug.b-cooldown", "t", span(cd * 1000)));
                 boolean anyTier = false;
                 for (String id : p.tierWeights.keySet()) if (plugin.tiers().get(id) != null) anyTier = true;
                 if (!anyTier) block.add(plugin.lang().get(s, "debug.b-tiers"));

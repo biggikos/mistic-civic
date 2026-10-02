@@ -196,12 +196,15 @@ public final class StructureService {
 
     private static boolean isLiquid(Placer p) { return p instanceof Mat && ((Mat) p).liquid(); }
 
+    /** Profile suffix of [loot] chests: they do not count towards max-active and do not announce their own wake-up. */
+    public static final String EXTRA = ":extra";
+
     /** Chests marked with [loot] signs in a saved structure; each one is a mystic chest of the marked tier (or of {@code main}). */
     public void placeExtras(Structure st, ru.mysticchest.chest.Tier main, String profile) {
         for (int i = 0; i < st.lootPoints.size(); i++) {
             ru.mysticchest.chest.Tier t = st.lootTiers.get(i).isEmpty() ? main : plugin.tiers().get(st.lootTiers.get(i));
             if (t == null) { plugin.getLogger().warning("[structure " + st.name + "] [loot] sign names an unknown tier '" + st.lootTiers.get(i) + "', the main tier is used."); t = main; }
-            plugin.chests().place(st.lootPoints.get(i), t, profile, null, st);
+            plugin.chests().place(st.lootPoints.get(i), t, profile + EXTRA, null, st);
         }
     }
 
